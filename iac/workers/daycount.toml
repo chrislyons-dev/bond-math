@@ -1,0 +1,30 @@
+name = "daycount"
+main = "../../services/daycount/src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Service metadata for Architecture as Code
+# @service daycount
+# @type cloudflare-worker
+# @layer business-logic
+# @description Authoritative day-count and year-fraction calculations for fixed income
+
+[observability]
+enabled = true
+
+# Development environment
+[env.dev]
+name = "daycount-dev"
+vars = { ENVIRONMENT = "development" }
+
+# Preview environment
+[env.preview]
+name = "daycount-preview"
+vars = { ENVIRONMENT = "preview" }
+
+# Production environment (default)
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+# Routes will be configured via Terraform
+# Internal access via service bindings from gateway, valuation, metrics workers
