@@ -148,39 +148,58 @@ export function globalErrorHandler(err: Error, c: Context<{ Bindings: Env }>) {
 }
 
 /**
+ * Error pattern mappings for reduced complexity
+ * Maps error patterns to response factory functions
+ */
+const ERROR_MAPPINGS: Array<{
+  pattern: RegExp;
+  handler: (instance?: string) => Response;
+}> = [
+  // Authentication errors (401)
+  {
+    pattern: /token.*expired/i,
+    handler: (inst) => createUnauthorizedResponse('Authentication token expired', inst),
+  },
+  {
+    pattern: /token.*invalid/i,
+    handler: (inst) => createUnauthorizedResponse('Invalid authentication token', inst),
+  },
+  {
+    pattern: /missing.*token/i,
+    handler: (inst) => createUnauthorizedResponse('Missing authentication token', inst),
+  },
+  // Authorization errors (403)
+  {
+    pattern: /audience/i,
+    handler: (inst) => createForbiddenResponse('Invalid token audience', inst),
+  },
+  {
+    pattern: /issuer/i,
+    handler: (inst) => createForbiddenResponse('Invalid token issuer', inst),
+  },
+  // Service errors (500)
+  {
+    pattern: /service.*not configured/i,
+    handler: (inst) => createInternalErrorResponse('Service temporarily unavailable', inst),
+  },
+];
+
+/**
  * Maps specific error messages to appropriate HTTP responses
+ * Uses pattern matching to reduce cyclomatic complexity
  *
  * @param error - Error object
  * @param instance - Optional request path
  * @returns Error Response
  */
 function mapErrorToResponse(error: Error, instance?: string): Response {
-  const message = error.message.toLowerCase();
+  const message = error.message;
 
-  // Check for audience/issuer errors first (more specific)
-  if (message.includes('audience')) {
-    return createForbiddenResponse('Invalid token audience', instance);
-  }
-
-  if (message.includes('issuer')) {
-    return createForbiddenResponse('Invalid token issuer', instance);
-  }
-
-  // Then check for general token errors
-  if (message.includes('token') && message.includes('invalid')) {
-    return createUnauthorizedResponse('Invalid authentication token', instance);
-  }
-
-  if (message.includes('token') && message.includes('expired')) {
-    return createUnauthorizedResponse('Authentication token expired', instance);
-  }
-
-  if (message.includes('missing') && message.includes('token')) {
-    return createUnauthorizedResponse('Missing authentication token', instance);
-  }
-
-  if (message.includes('service') && message.includes('not configured')) {
-    return createInternalErrorResponse('Service temporarily unavailable', instance);
+  // Find first matching pattern
+  for (const mapping of ERROR_MAPPINGS) {
+    if (mapping.pattern.test(message)) {
+      return mapping.handler(instance);
+    }
   }
 
   // Default to internal error for unknown errors

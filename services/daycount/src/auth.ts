@@ -77,6 +77,19 @@ export function verifyInternalJWT(expectedAudience: string) {
       });
     }
 
+    // Validate secret strength
+    if (secret.length < 32) {
+      console.error('INTERNAL_JWT_SECRET is too short (minimum 32 characters)');
+      throw new HTTPException(500, {
+        message: 'Service configuration error',
+      });
+    }
+
+    // Warn about weak secrets in production
+    if (c.env.ENVIRONMENT === 'production' && /^(test|dev|secret|password)/i.test(secret)) {
+      console.warn('INTERNAL_JWT_SECRET appears to be a weak or default value');
+    }
+
     // Verify and decode token
     try {
       const payload = await verifyToken(token, secret, expectedAudience);

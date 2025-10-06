@@ -54,14 +54,37 @@ app.use('*', timing);
 // 4. Logging - after request ID is set
 app.use('*', logger);
 
-// 5. CORS - for browser access
+// 5. CORS - restrict to single domain (bondmath.chrislyons.dev)
 app.use(
   '*',
   cors({
-    origin: '*', // Configure based on environment
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    origin: (origin) => {
+      // Allow requests with no origin (same-origin, curl, Postman, server-to-server)
+      if (!origin) return origin;
+
+      // Production: Allow only bondmath.chrislyons.dev
+      const allowedOrigins = [
+        'https://bondmath.chrislyons.dev',
+        'https://www.bondmath.chrislyons.dev',
+      ];
+
+      // Development: Allow localhost in non-production
+      const env = c.env?.ENVIRONMENT;
+      if (env !== 'production' && /^https?:\/\/localhost(:\d+)?$/.test(origin)) {
+        return origin;
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return origin;
+      }
+
+      console.warn(`Blocked CORS request from origin: ${origin}`);
+      return null;
+    },
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
     exposeHeaders: ['X-Request-ID', 'X-RateLimit-Limit', 'X-RateLimit-Remaining'],
+    credentials: true,
     maxAge: 86400,
   })
 );

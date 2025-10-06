@@ -16,6 +16,7 @@ import type { DateComponents } from './types';
  * @internal
  */
 export function parseDate(dateString: string): DateComponents {
+  // Step 1: Format validation
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
 
   if (!match) {
@@ -29,12 +30,31 @@ export function parseDate(dateString: string): DateComponents {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const day = parseInt(match[3]!, 10);
 
+  // Step 2: Range validation
+  if (year < 1000 || year > 9999) {
+    throw new Error(`Invalid year: ${year}. Must be 1000-9999`);
+  }
+
   if (month < 1 || month > 12) {
     throw new Error(`Invalid month: ${month}. Must be 1-12`);
   }
 
-  if (day < 1 || day > 31) {
-    throw new Error(`Invalid day: ${day}. Must be 1-31`);
+  // Step 3: Logical validation - check day against actual month length
+  const maxDay = daysInMonth(year, month);
+  if (day < 1 || day > maxDay) {
+    throw new Error(
+      `Invalid day: ${day}. ${year}-${String(month).padStart(2, '0')} has only ${maxDay} days`
+    );
+  }
+
+  // Step 4: JavaScript Date validation - catches remaining edge cases
+  const testDate = new Date(Date.UTC(year, month - 1, day));
+  if (
+    testDate.getUTCFullYear() !== year ||
+    testDate.getUTCMonth() !== month - 1 ||
+    testDate.getUTCDate() !== day
+  ) {
+    throw new Error(`Invalid date: ${dateString}`);
   }
 
   return { year, month, day };

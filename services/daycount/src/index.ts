@@ -16,6 +16,7 @@
 
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import { bodyLimit } from 'hono/body-limit';
 import type {
   DayCountRequest,
   DayCountResponse,
@@ -82,6 +83,21 @@ app.use('*', cors({
   origin: '*',
   allowMethods: ['GET', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
+}));
+
+// Request body size limit - prevent DoS attacks
+app.use('/count', bodyLimit({
+  maxSize: 100 * 1024, // 100KB
+  onError: (c) => {
+    return c.json(
+      createErrorBody(
+        413,
+        'Payload Too Large',
+        'Request body must not exceed 100KB'
+      ),
+      413
+    );
+  }
 }));
 
 // Authentication middleware - verify internal JWT from Gateway

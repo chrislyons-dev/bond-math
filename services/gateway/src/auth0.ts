@@ -85,19 +85,39 @@ function validateTokenClaims(
 async function fetchJWK(domain: string, kid: string): Promise<JWK> {
   const jwksUrl = `https://${domain}/.well-known/jwks.json`;
 
-  const response = await fetch(jwksUrl);
-  if (!response.ok) {
-    throw new Error('Failed to fetch JWKS');
+  // Add timeout to prevent hanging requests
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+  try {
+    const response = await fetch(jwksUrl, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'BondMath-Gateway/2025.10',
+      },
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch JWKS: ${response.status} ${response.statusText}`);
+    }
+
+    const jwks = (await response.json()) as JWKS;
+    const key = jwks.keys.find((k) => k.kid === kid);
+
+    if (!key) {
+      throw new Error('Key not found in JWKS');
+    }
+
+    return key;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('JWKS fetch timeout after 5 seconds');
+    }
+    throw error;
   }
-
-  const jwks = (await response.json()) as JWKS;
-  const key = jwks.keys.find((k) => k.kid === kid);
-
-  if (!key) {
-    throw new Error('Key not found in JWKS');
-  }
-
-  return key;
 }
 
 /**

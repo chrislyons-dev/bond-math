@@ -4,7 +4,7 @@ import type { Auth0Claims } from '../src/types';
 
 describe('JWT Module', () => {
   let mockAuth0Claims: Auth0Claims;
-  const testSecret = 'test-secret-key-for-hmac-signing';
+  const testSecret = 'test-secret-key-for-hmac-signing-minimum-32-chars';
 
   beforeEach(() => {
     mockAuth0Claims = {
@@ -91,7 +91,7 @@ describe('JWT Module', () => {
         90
       );
 
-      const wrongSecret = 'wrong-secret';
+      const wrongSecret = 'wrong-secret-but-still-32-chars-minimum!';
 
       await expect(
         verifyInternalToken(token, wrongSecret, 'svc-pricing')

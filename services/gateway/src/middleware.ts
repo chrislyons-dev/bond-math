@@ -138,13 +138,44 @@ export function rateLimiter(options: {
  * Security headers middleware
  *
  * @endpoint-middleware ALL *
- * @description Adds security-related HTTP headers
+ * @description Adds comprehensive security-related HTTP headers
  */
 export function securityHeaders(c: Context<{ Bindings: Env }>, next: Next) {
+  // Prevent MIME sniffing
   c.header('X-Content-Type-Options', 'nosniff');
+
+  // Prevent clickjacking
   c.header('X-Frame-Options', 'DENY');
+
+  // XSS protection (legacy, but doesn't hurt)
   c.header('X-XSS-Protection', '1; mode=block');
+
+  // Control referrer information
   c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  // Content Security Policy (strict for API)
+  c.header(
+    'Content-Security-Policy',
+    "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+  );
+
+  // HSTS (only in production) - enforce HTTPS
+  const env = c.env?.ENVIRONMENT;
+  if (env === 'production') {
+    c.header(
+      'Strict-Transport-Security',
+      'max-age=31536000; includeSubDomains; preload'
+    );
+  }
+
+  // Permissions Policy (restrict all browser features)
+  c.header(
+    'Permissions-Policy',
+    'accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()'
+  );
+
+  // Prevent Flash/PDF cross-domain policies
+  c.header('X-Permitted-Cross-Domain-Policies', 'none');
 
   return next();
 }

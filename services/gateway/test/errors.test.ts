@@ -61,7 +61,7 @@ describe('Errors Module', () => {
 
   describe('handleError', () => {
     it('should map invalid token error to 401', async () => {
-      const error = new Error('Invalid token');
+      const error = new Error('Token is invalid');
       const response = handleError(error, '/api/test');
 
       expect(response.status).toBe(401);

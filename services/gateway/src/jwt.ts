@@ -147,6 +147,11 @@ export async function verifyInternalToken(
   secret: string,
   expectedAudience: string
 ): Promise<InternalJWT> {
+  // Validate secret strength before use
+  if (secret.length < 32) {
+    throw new Error('INTERNAL_JWT_SECRET must be at least 32 characters');
+  }
+
   const parts = token.split('.');
   if (parts.length !== 3) {
     throw new Error('Invalid token format');
