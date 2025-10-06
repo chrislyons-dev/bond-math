@@ -6,6 +6,7 @@ import {
   createInternalErrorResponse,
   handleError,
 } from '../src/errors';
+import type { ErrorResponse } from '../src/types';
 
 describe('Errors Module', () => {
   describe('createUnauthorizedResponse', () => {
@@ -15,7 +16,7 @@ describe('Errors Module', () => {
       expect(response.status).toBe(401);
       expect(response.headers.get('Content-Type')).toBe('application/problem+json');
 
-      const body = await response.json();
+      const body = (await response.json()) as ErrorResponse;
       expect(body.type).toContain('/errors/unauthorized');
       expect(body.title).toBe('Unauthorized');
       expect(body.status).toBe(401);
@@ -29,7 +30,7 @@ describe('Errors Module', () => {
 
       expect(response.status).toBe(403);
 
-      const body = await response.json();
+      const body = (await response.json()) as ErrorResponse;
       expect(body.title).toBe('Forbidden');
       expect(body.detail).toBe('Insufficient permissions');
     });
@@ -41,7 +42,7 @@ describe('Errors Module', () => {
 
       expect(response.status).toBe(404);
 
-      const body = await response.json();
+      const body = (await response.json()) as ErrorResponse;
       expect(body.title).toBe('Not Found');
       expect(body.detail).toBe('Service not found');
     });
@@ -53,7 +54,7 @@ describe('Errors Module', () => {
 
       expect(response.status).toBe(500);
 
-      const body = await response.json();
+      const body = (await response.json()) as ErrorResponse;
       expect(body.title).toBe('Internal Server Error');
       expect(body.detail).toBe('Database connection failed');
     });
@@ -66,7 +67,7 @@ describe('Errors Module', () => {
 
       expect(response.status).toBe(401);
 
-      const body = await response.json();
+      const body = (await response.json()) as ErrorResponse;
       expect(body.detail).toBe('Invalid authentication token');
     });
 
@@ -76,7 +77,7 @@ describe('Errors Module', () => {
 
       expect(response.status).toBe(401);
 
-      const body = await response.json();
+      const body = (await response.json()) as ErrorResponse;
       expect(body.detail).toBe('Authentication token expired');
     });
 
@@ -86,7 +87,7 @@ describe('Errors Module', () => {
 
       expect(response.status).toBe(403);
 
-      const body = await response.json();
+      const body = (await response.json()) as ErrorResponse;
       expect(body.detail).toBe('Invalid token audience');
     });
 
@@ -110,7 +111,7 @@ describe('Errors Module', () => {
 
       expect(response.status).toBe(500);
 
-      const body = await response.json();
+      const body = (await response.json()) as ErrorResponse;
       expect(body.detail).toBe('An unexpected error occurred');
     });
   });

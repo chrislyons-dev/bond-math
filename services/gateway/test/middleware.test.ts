@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
 import { logger, requestId, rateLimiter, securityHeaders, timing } from '../src/middleware';
-import type { Env } from '../src/types';
+import type { Env, Variables } from '../src/types';
 
 describe('Middleware Module', () => {
   describe('requestId middleware', () => {
     it('should generate new request ID if not present', async () => {
-      const app = new Hono<{ Bindings: Env }>();
+      const app = new Hono<{ Bindings: Env; Variables: Variables }>();
       app.use('*', requestId);
       app.get('/test', (c) => {
         const rid = c.get('requestId');
@@ -14,7 +14,7 @@ describe('Middleware Module', () => {
       });
 
       const res = await app.request('/test');
-      const data = await res.json();
+      const data = (await res.json()) as { requestId: string };
 
       expect(res.status).toBe(200);
       expect(data.requestId).toBeTruthy();
@@ -22,7 +22,7 @@ describe('Middleware Module', () => {
     });
 
     it('should use existing request ID from header', async () => {
-      const app = new Hono<{ Bindings: Env }>();
+      const app = new Hono<{ Bindings: Env; Variables: Variables }>();
       app.use('*', requestId);
       app.get('/test', (c) => {
         const rid = c.get('requestId');
@@ -33,7 +33,7 @@ describe('Middleware Module', () => {
       const res = await app.request('/test', {
         headers: { 'X-Request-ID': existingId },
       });
-      const data = await res.json();
+      const data = (await res.json()) as { requestId: string };
 
       expect(res.status).toBe(200);
       expect(data.requestId).toBe(existingId);
@@ -43,7 +43,7 @@ describe('Middleware Module', () => {
 
   describe('securityHeaders middleware', () => {
     it('should add all security headers', async () => {
-      const app = new Hono<{ Bindings: Env }>();
+      const app = new Hono<{ Bindings: Env; Variables: Variables }>();
       app.use('*', securityHeaders);
       app.get('/test', (c) => c.text('OK'));
 
@@ -58,7 +58,7 @@ describe('Middleware Module', () => {
 
   describe('timing middleware', () => {
     it('should add Server-Timing header', async () => {
-      const app = new Hono<{ Bindings: Env }>();
+      const app = new Hono<{ Bindings: Env; Variables: Variables }>();
       app.use('*', timing);
       app.get('/test', (c) => c.text('OK'));
 
@@ -73,7 +73,7 @@ describe('Middleware Module', () => {
   describe('logger middleware', () => {
     it('should log request and response', async () => {
       const consoleSpy = vi.spyOn(console, 'log');
-      const app = new Hono<{ Bindings: Env }>();
+      const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
       app.use('*', requestId);
       app.use('*', logger);
@@ -97,7 +97,7 @@ describe('Middleware Module', () => {
     });
 
     it('should allow requests within limit', async () => {
-      const app = new Hono<{ Bindings: Env }>();
+      const app = new Hono<{ Bindings: Env; Variables: Variables }>();
       app.use(
         '*',
         rateLimiter({
@@ -116,7 +116,7 @@ describe('Middleware Module', () => {
     });
 
     it('should block requests exceeding limit', async () => {
-      const app = new Hono<{ Bindings: Env }>();
+      const app = new Hono<{ Bindings: Env; Variables: Variables }>();
       app.use(
         '*',
         rateLimiter({
@@ -134,13 +134,13 @@ describe('Middleware Module', () => {
       const res = await app.request('/test');
       expect(res.status).toBe(429);
 
-      const data = await res.json();
+      const data = (await res.json()) as { title: string; status: number };
       expect(data.title).toBe('Too Many Requests');
       expect(data.status).toBe(429);
     });
 
     it('should include rate limit headers', async () => {
-      const app = new Hono<{ Bindings: Env }>();
+      const app = new Hono<{ Bindings: Env; Variables: Variables }>();
       app.use(
         '*',
         rateLimiter({
@@ -160,7 +160,7 @@ describe('Middleware Module', () => {
     it('should reset counter after window expires', async () => {
       vi.useRealTimers(); // Use real timers for this test
 
-      const app = new Hono<{ Bindings: Env }>();
+      const app = new Hono<{ Bindings: Env; Variables: Variables }>();
       app.use(
         '*',
         rateLimiter({
@@ -187,7 +187,7 @@ describe('Middleware Module', () => {
     });
 
     it('should use userId from context if available', async () => {
-      const app = new Hono<{ Bindings: Env }>();
+      const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
       // Middleware to set userId
       app.use('*', async (c, next) => {
@@ -218,7 +218,7 @@ describe('Middleware Module', () => {
 
   describe('middleware integration', () => {
     it('should work together in proper order', async () => {
-      const app = new Hono<{ Bindings: Env }>();
+      const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
       app.use('*', requestId);
       app.use('*', securityHeaders);
@@ -239,7 +239,7 @@ describe('Middleware Module', () => {
       });
 
       const res = await app.request('/test');
-      const data = await res.json();
+      const data = (await res.json()) as { requestId: string; message: string };
 
       // Check all middleware effects
       expect(res.status).toBe(200);

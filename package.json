@@ -57,10 +57,12 @@
   "lint-staged": {
     "services/gateway/**/*.{ts,js}": [
       "bash -c 'cd services/gateway && eslint --fix'",
+      "bash -c 'cd services/gateway && npm run typecheck'",
       "prettier --write"
     ],
     "services/daycount/**/*.{ts,js}": [
       "bash -c 'cd services/daycount && eslint --fix'",
+      "bash -c 'cd services/daycount && npm run typecheck'",
       "prettier --write"
     ],
     "*.{json,md,yml,yaml}": [

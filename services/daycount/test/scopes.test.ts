@@ -5,6 +5,7 @@
 
 import { describe, test, expect, beforeAll } from 'vitest';
 import { mintTestToken } from './helpers/jwt';
+import type { DayCountResponse, ErrorResponse } from '../src/types';
 
 // Import the Hono app
 const app = await import('../src/index');
@@ -43,7 +44,7 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(200);
 
-    const body: { results?: unknown[] } = await response.json();
+    const body = (await response.json()) as DayCountResponse;
     expect(body.results).toBeDefined();
     expect(body.results).toHaveLength(1);
   });
@@ -64,9 +65,9 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(403);
 
-    const body = await response.json();
-    expect(body.message).toContain('Insufficient permissions');
-    expect(body.message).toContain('daycount:write');
+    const body = (await response.json()) as ErrorResponse;
+    expect(body.detail).toContain('Insufficient permissions');
+    expect(body.detail).toContain('daycount:write');
   });
 
   test('should reject request with no scopes', async () => {
@@ -85,9 +86,9 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(403);
 
-    const body = await response.json();
-    expect(body.message).toContain('Insufficient permissions');
-    expect(body.message).toContain('daycount:write');
+    const body = (await response.json()) as ErrorResponse;
+    expect(body.detail).toContain('Insufficient permissions');
+    expect(body.detail).toContain('daycount:write');
   });
 
   test('should reject request with invalid token', async () => {
@@ -106,8 +107,8 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(401);
 
-    const body = await response.json();
-    expect(body.message).toContain('Invalid token');
+    const body = (await response.json()) as ErrorResponse;
+    expect(body.detail).toContain('Invalid token');
   });
 
   test('should reject request with expired token', async () => {
@@ -131,8 +132,8 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(401);
 
-    const body = await response.json();
-    expect(body.message).toContain('Token expired');
+    const body = (await response.json()) as ErrorResponse;
+    expect(body.detail).toContain('Token expired');
   });
 
   test('should reject request with wrong audience', async () => {
@@ -156,8 +157,8 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(403);
 
-    const body = await response.json();
-    expect(body.message).toContain('Invalid token audience');
+    const body = (await response.json()) as ErrorResponse;
+    expect(body.detail).toContain('Invalid token audience');
   });
 
   test('should allow health check without authentication', async () => {
@@ -168,7 +169,7 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(200);
 
-    const body = await response.json();
+    const body = (await response.json()) as { status: string; service: string };
     expect(body.status).toBe('healthy');
     expect(body.service).toBe('daycount');
   });
@@ -194,7 +195,7 @@ describe('Scope-Based Authorization', () => {
     expect(response.status).toBe(200);
 
     // Token should have been validated with role
-    const body = await response.json();
+    const body = (await response.json()) as DayCountResponse;
     expect(body.results).toBeDefined();
   });
 });

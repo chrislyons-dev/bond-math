@@ -39,10 +39,10 @@ export async function logger(
  * @endpoint-middleware ALL *
  * @description Generates UUID for request tracing, adds to headers
  */
-export function requestId(
+export async function requestId(
   c: Context<{ Bindings: Env; Variables: Variables }>,
   next: Next
-): Promise<void> | void {
+): Promise<void> {
   // Check if request already has an ID (from upstream)
   let rid = c.req.header('X-Request-ID');
 
@@ -57,7 +57,7 @@ export function requestId(
   // Add to response headers for client tracing
   c.header('X-Request-ID', rid);
 
-  return next();
+  await next();
 }
 
 /**
@@ -143,10 +143,10 @@ export function rateLimiter(options: {
  * @endpoint-middleware ALL *
  * @description Adds comprehensive security-related HTTP headers
  */
-export function securityHeaders(
+export async function securityHeaders(
   c: Context<{ Bindings: Env; Variables: Variables }>,
   next: Next
-): Promise<void> | void {
+): Promise<void> {
   // Prevent MIME sniffing
   c.header('X-Content-Type-Options', 'nosniff');
 
@@ -180,7 +180,7 @@ export function securityHeaders(
   // Prevent Flash/PDF cross-domain policies
   c.header('X-Permitted-Cross-Domain-Policies', 'none');
 
-  return next();
+  await next();
 }
 
 /**

@@ -10,6 +10,7 @@
 
 import type { Context, Next } from 'hono';
 import { HTTPException } from 'hono/http-exception';
+import type { Env, Variables } from './types';
 
 /**
  * Internal JWT payload structure (from Gateway)
@@ -36,21 +37,13 @@ export interface ActorClaim {
 }
 
 /**
- * Environment configuration
- */
-export interface Env {
-  INTERNAL_JWT_SECRET: string;
-  ENVIRONMENT?: string;
-}
-
-/**
  * Middleware to verify internal JWT tokens from Gateway
  *
  * @authentication internal-jwt
  * @description Verifies HMAC-signed JWT from Gateway, validates audience and expiration
  */
 export function verifyInternalJWT(expectedAudience: string) {
-  return async (c: Context<{ Bindings: Env }>, next: Next) => {
+  return async (c: Context<{ Bindings: Env; Variables: Variables }>, next: Next): Promise<void> => {
     // Extract Authorization header
     const authHeader = c.req.header('Authorization');
     if (!authHeader) {

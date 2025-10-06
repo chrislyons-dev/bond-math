@@ -147,3 +147,13 @@ export interface Env {
   /** Environment name (development, preview, production) */
   ENVIRONMENT?: string;
 }
+
+/**
+ * Hono context variables
+ */
+export interface Variables {
+  /** Request ID for tracing */
+  requestId: string;
+  /** Actor claim from validated JWT */
+  actor: ActorClaim;
+}

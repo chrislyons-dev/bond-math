@@ -14,6 +14,9 @@ export interface Env {
   INTERNAL_JWT_SECRET: string;
   INTERNAL_JWT_TTL: string; // seconds, default 90
 
+  // Environment
+  ENVIRONMENT?: string; // production, staging, development
+
   // Service Bindings
   SVC_DAYCOUNT: Fetcher;
   SVC_VALUATION: Fetcher;

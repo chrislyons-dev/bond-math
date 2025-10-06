@@ -24,6 +24,8 @@ import type {
   DayCountConvention,
   DayCountResult,
   DayCountOptions,
+  Env,
+  Variables,
 } from './types';
 import {
   calculateACT360,
@@ -40,12 +42,12 @@ import {
   normalizeConvention,
   type ValidationError,
 } from './validators';
-import { verifyInternalJWT, type Env } from './auth';
+import { verifyInternalJWT } from './auth';
 import { requireScopes } from './scopes';
 
 const VERSION = '2025.10';
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 // Global error handler - converts HTTPException to JSON
 app.onError((err, c) => {
