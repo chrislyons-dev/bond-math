@@ -3,7 +3,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck - Integration tests with dynamic response types
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, beforeAll } from 'vitest';
+import { mintTestToken } from './helpers/jwt';
 
 /**
  * Security and input validation tests
@@ -15,7 +16,14 @@ import { describe, test, expect } from 'vitest';
 // Import the Hono app
 const app = await import('../src/index');
 
+const TEST_SECRET = 'test-secret-for-internal-jwt-verification';
+let validToken: string;
+
 describe('Input Validation Security', () => {
+  beforeAll(async () => {
+    // Mint a valid token for tests that need auth
+    validToken = await mintTestToken(TEST_SECRET);
+  });
   test('should reject requests with too many pairs (DoS prevention)', async () => {
     const largePairs = Array.from({ length: 1001 }, () => ({
       start: '2025-01-01',
@@ -24,14 +32,17 @@ describe('Input Validation Security', () => {
 
     const request = new Request('http://localhost/count', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${validToken}`,
+      },
       body: JSON.stringify({
         pairs: largePairs,
         convention: 'ACT_360',
       }),
     });
 
-    const response = await app.default.fetch(request);
+    const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(400);
 
     const body: ErrorBody = await response.json();
@@ -42,14 +53,17 @@ describe('Input Validation Security', () => {
   test('should reject non-string convention (type confusion attack)', async () => {
     const request = new Request('http://localhost/count', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${validToken}`,
+      },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
         convention: { malicious: 'object' },
       }),
     });
 
-    const response = await app.default.fetch(request);
+    const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(400);
 
     const body = await response.json();
@@ -60,14 +74,17 @@ describe('Input Validation Security', () => {
   test('should reject non-string dates in pairs', async () => {
     const request = new Request('http://localhost/count', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${validToken}`,
+      },
       body: JSON.stringify({
         pairs: [{ start: 12345, end: 67890 }],
         convention: 'ACT_360',
       }),
     });
 
-    const response = await app.default.fetch(request);
+    const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(400);
 
     const body = await response.json();
@@ -79,14 +96,17 @@ describe('Input Validation Security', () => {
   test('should reject invalid date format (injection prevention)', async () => {
     const request = new Request('http://localhost/count', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${validToken}`,
+      },
       body: JSON.stringify({
         pairs: [{ start: "2025-01-01'; DROP TABLE users; --", end: '2025-12-31' }],
         convention: 'ACT_360',
       }),
     });
 
-    const response = await app.default.fetch(request);
+    const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(400);
 
     const body = await response.json();
@@ -98,7 +118,10 @@ describe('Input Validation Security', () => {
   test('should reject options as array', async () => {
     const request = new Request('http://localhost/count', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${validToken}`,
+      },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
         convention: 'ACT_360',
@@ -106,7 +129,7 @@ describe('Input Validation Security', () => {
       }),
     });
 
-    const response = await app.default.fetch(request);
+    const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(400);
 
     const body = await response.json();
@@ -116,7 +139,10 @@ describe('Input Validation Security', () => {
   test('should reject invalid eomRule type', async () => {
     const request = new Request('http://localhost/count', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${validToken}`,
+      },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
         convention: '30_360',
@@ -124,7 +150,7 @@ describe('Input Validation Security', () => {
       }),
     });
 
-    const response = await app.default.fetch(request);
+    const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(400);
 
     const body = await response.json();
@@ -137,7 +163,10 @@ describe('Input Validation Security', () => {
   test('should reject invalid frequency type', async () => {
     const request = new Request('http://localhost/count', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${validToken}`,
+      },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
         convention: 'ACT_ACT_ICMA',
@@ -145,7 +174,7 @@ describe('Input Validation Security', () => {
       }),
     });
 
-    const response = await app.default.fetch(request);
+    const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(400);
 
     const body = await response.json();
@@ -158,7 +187,10 @@ describe('Input Validation Security', () => {
   test('should reject negative frequency', async () => {
     const request = new Request('http://localhost/count', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${validToken}`,
+      },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
         convention: 'ACT_ACT_ICMA',
@@ -166,7 +198,7 @@ describe('Input Validation Security', () => {
       }),
     });
 
-    const response = await app.default.fetch(request);
+    const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(400);
 
     const body = await response.json();
@@ -177,7 +209,10 @@ describe('Input Validation Security', () => {
   test('should accept valid request with all security checks passing', async () => {
     const request = new Request('http://localhost/count', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${validToken}`,
+      },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
         convention: 'ACT_360',
@@ -185,7 +220,7 @@ describe('Input Validation Security', () => {
       }),
     });
 
-    const response = await app.default.fetch(request);
+    const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(200);
 
     const body = await response.json();

@@ -52,9 +52,11 @@ All internal services verify the internal JWT locally — meaning every hop rema
 
 ### 🚧 Trade-offs we accept
 
-- The gateway becomes a **critical path** — if it fails, the API fails (though Cloudflare’s global replication makes this very low risk).
+- The gateway becomes a **critical path** — if it fails, the API fails (though Cloudflare's global replication makes this very low risk).
 - Slightly more moving parts compared to each Worker doing its own verification.
 - We maintain a **shared signing secret** for internal JWTs (rotation policy needed).
+  - **Mitigation:** Cloudflare's encrypted secret storage + simple rotation procedure
+  - See [Authentication Reference](../reference/authentication.md)
 
 These are reasonable trade-offs for the security and maintainability benefits.
 

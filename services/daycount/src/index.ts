@@ -39,10 +39,43 @@ import {
   normalizeConvention,
   type ValidationError,
 } from './validators';
+import { verifyInternalJWT, type Env } from './auth';
+import { requireScopes } from './scopes';
 
 const VERSION = '2025.10';
 
-const app = new Hono();
+const app = new Hono<{ Bindings: Env }>();
+
+// Global error handler - converts HTTPException to JSON
+app.onError((err, c) => {
+  // Check if it's an HTTPException (Hono's error type)
+  if ('status' in err && typeof err.status === 'number') {
+    const httpErr = err as { status: number; message: string };
+    return c.json(
+      {
+        type: 'https://bondmath.chrislyons.dev/errors/authorization-error',
+        title: httpErr.status === 401 ? 'Unauthorized' : 'Forbidden',
+        status: httpErr.status,
+        detail: httpErr.message || 'Authorization failed',
+        message: httpErr.message || 'Authorization failed',
+      },
+      httpErr.status as 401 | 403 | 500
+    );
+  }
+
+  // Fallback for other errors
+  console.error('Unhandled error:', err);
+  return c.json(
+    {
+      type: 'https://bondmath.chrislyons.dev/errors/internal-error',
+      title: 'Internal Server Error',
+      status: 500,
+      detail: err instanceof Error ? err.message : 'An unexpected error occurred',
+      message: err instanceof Error ? err.message : 'An unexpected error occurred',
+    },
+    500
+  );
+});
 
 // CORS middleware (for direct access during development)
 app.use('*', cors({
@@ -50,6 +83,13 @@ app.use('*', cors({
   allowMethods: ['GET', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Authentication middleware - verify internal JWT from Gateway
+// Applied to /count endpoint only (health check is public)
+app.use('/count', verifyInternalJWT('svc-daycount'));
+
+// Authorization middleware - require daycount:write scope
+app.use('/count', requireScopes('daycount:write'));
 
 /**
  * Creates an RFC 7807 Problem Details error response.
@@ -126,7 +166,7 @@ function calculateSingle(
  * @endpoint POST /count
  * @gateway-route POST /api/daycount/v1/count
  * @authentication internal-jwt
- * @scope daycount:read
+ * @scope daycount:write
  * @rate-limit 100/min
  * @cacheable true
  * @cache-ttl 3600

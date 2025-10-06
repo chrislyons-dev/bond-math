@@ -26,5 +26,8 @@ vars = { ENVIRONMENT = "preview" }
 [env.production]
 vars = { ENVIRONMENT = "production" }
 
+# Secrets (set via: wrangler secret put <NAME>)
+# - INTERNAL_JWT_SECRET (MUST match Gateway's secret for JWT verification)
+
 # Routes will be configured via Terraform
 # Internal access via service bindings from gateway, valuation, metrics workers

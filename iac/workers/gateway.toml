@@ -1,0 +1,100 @@
+# Wrangler configuration for Gateway Worker
+# https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "bond-math-gateway"
+main = "../../services/gateway/src/index.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Account and deployment settings
+account_id = "" # Set via environment variable or CLI
+workers_dev = true
+
+# Routes (configure after deploying to production)
+# routes = [
+#   { pattern = "bondmath.chrislyons.dev/api/*", zone_name = "chrislyons.dev" }
+# ]
+
+# Service bindings to internal microservices
+[[services]]
+binding = "SVC_DAYCOUNT"
+service = "bond-math-daycount"
+environment = "production"
+
+[[services]]
+binding = "SVC_VALUATION"
+service = "bond-math-valuation"
+environment = "production"
+
+[[services]]
+binding = "SVC_METRICS"
+service = "bond-math-metrics"
+environment = "production"
+
+[[services]]
+binding = "SVC_PRICING"
+service = "bond-math-pricing"
+environment = "production"
+
+# Environment variables (non-sensitive)
+[vars]
+INTERNAL_JWT_TTL = "90"
+
+# Secrets (set via: wrangler secret put <NAME>)
+# - AUTH0_DOMAIN
+# - AUTH0_AUDIENCE
+# - INTERNAL_JWT_SECRET
+
+# Build configuration
+[build]
+command = ""
+
+# Development environment
+[env.development]
+name = "bond-math-gateway-dev"
+workers_dev = true
+
+[[env.development.services]]
+binding = "SVC_DAYCOUNT"
+service = "bond-math-daycount"
+environment = "development"
+
+[[env.development.services]]
+binding = "SVC_VALUATION"
+service = "bond-math-valuation"
+environment = "development"
+
+[[env.development.services]]
+binding = "SVC_METRICS"
+service = "bond-math-metrics"
+environment = "development"
+
+[[env.development.services]]
+binding = "SVC_PRICING"
+service = "bond-math-pricing"
+environment = "development"
+
+# Preview environment
+[env.preview]
+name = "bond-math-gateway-preview"
+workers_dev = true
+
+[[env.preview.services]]
+binding = "SVC_DAYCOUNT"
+service = "bond-math-daycount"
+environment = "preview"
+
+[[env.preview.services]]
+binding = "SVC_VALUATION"
+service = "bond-math-valuation"
+environment = "preview"
+
+[[env.preview.services]]
+binding = "SVC_METRICS"
+service = "bond-math-metrics"
+environment = "preview"
+
+[[env.preview.services]]
+binding = "SVC_PRICING"
+service = "bond-math-pricing"
+environment = "preview"

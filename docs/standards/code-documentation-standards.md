@@ -63,7 +63,7 @@ This document defines documentation and commenting standards for all code in the
 - Security-critical code (auth, validation, sanitization)
 - Non-obvious performance optimizations
 - Workarounds for bugs or limitations
-- Architecture metadata (see ADR-0010)
+- Architecture metadata (see ADR-0001)
 
 ### **Usually Document:**
 
@@ -372,7 +372,7 @@ public BigDecimal calculatePresentValue(
 
 ## 🏗️ Architecture as Code Annotations
 
-These are **required** for all services and endpoints. See ADR-0010 for complete reference.
+These are **required** for all services and endpoints. See ADR-0001 for complete reference.
 
 ### Service-Level (Required)
 
@@ -661,7 +661,7 @@ function process() {
 - [JSDoc Reference](https://jsdoc.app/)
 - [Google Style Guide - Python Docstrings](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)
 - [Oracle Javadoc Guide](https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html)
-- [Architecture as Code Conventions (ADR-0010)](../adr/0010-architecture-as-code-conventions.md)
+- [Architecture as Code (ADR-0001)](../adr/0001-architecture-as-code.md)
 
 ---
 

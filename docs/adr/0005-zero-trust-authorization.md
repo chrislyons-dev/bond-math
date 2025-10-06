@@ -55,8 +55,10 @@ Each microservice will verify the internal JWT locally, check the `aud` (its own
 ### 🚧 Trade-offs we accept
 
 - We now manage one internal signing secret (needs rotation policy).
+  - **Mitigation:** Cloudflare Workers seamless secret management - use `.dev.vars` locally, `wrangler secret put` for production
+  - See [Authentication Reference](../reference/authentication.md)
 - Services must include simple verification code (~20 lines) and reject expired or wrong-audience tokens.
-- Slightly more complexity in the gateway logic, but it’s isolated and easy to reason about.
+- Slightly more complexity in the gateway logic, but it's isolated and easy to reason about.
 
 All manageable for the simplicity and security we gain.
 

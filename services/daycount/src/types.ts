@@ -118,3 +118,32 @@ export interface DateComponents {
   month: number; // 1-12
   day: number; // 1-31
 }
+
+/**
+ * Actor claim from internal JWT
+ * Represents "Service X acting for User Y"
+ */
+export interface ActorClaim {
+  /** Original issuer (Auth0 domain) */
+  iss: string;
+  /** User ID from Auth0 */
+  sub: string;
+  /** User role (free, professional, admin, service) */
+  role?: string;
+  /** User permissions/scopes */
+  perms: string[];
+  /** Organization ID */
+  org?: string;
+  /** Internal user ID */
+  uid?: string;
+}
+
+/**
+ * Cloudflare Worker environment bindings
+ */
+export interface Env {
+  /** Internal JWT signing/verification secret */
+  INTERNAL_JWT_SECRET: string;
+  /** Environment name (development, preview, production) */
+  ENVIRONMENT?: string;
+}
