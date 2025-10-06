@@ -166,7 +166,7 @@ export async function securityHeaders(
   );
 
   // HSTS (only in production) - enforce HTTPS
-  const env = c.env?.ENVIRONMENT as string | undefined;
+  const env = c.env?.ENVIRONMENT;
   if (env === 'production') {
     c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }

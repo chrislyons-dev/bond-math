@@ -14,7 +14,7 @@ describe('Middleware Module', () => {
       });
 
       const res = await app.request('/test');
-      const data = (await res.json()) as { requestId: string };
+      const data: { requestId: string } = await res.json();
 
       expect(res.status).toBe(200);
       expect(data.requestId).toBeTruthy();
@@ -33,7 +33,7 @@ describe('Middleware Module', () => {
       const res = await app.request('/test', {
         headers: { 'X-Request-ID': existingId },
       });
-      const data = (await res.json()) as { requestId: string };
+      const data: { requestId: string } = await res.json();
 
       expect(res.status).toBe(200);
       expect(data.requestId).toBe(existingId);
@@ -134,7 +134,7 @@ describe('Middleware Module', () => {
       const res = await app.request('/test');
       expect(res.status).toBe(429);
 
-      const data = (await res.json()) as { title: string; status: number };
+      const data: { title: string; status: number } = await res.json();
       expect(data.title).toBe('Too Many Requests');
       expect(data.status).toBe(429);
     });
@@ -239,7 +239,7 @@ describe('Middleware Module', () => {
       });
 
       const res = await app.request('/test');
-      const data = (await res.json()) as { requestId: string; message: string };
+      const data: { requestId: string } = await res.json();
 
       // Check all middleware effects
       expect(res.status).toBe(200);

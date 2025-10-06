@@ -5,7 +5,6 @@
 
 import { describe, test, expect, beforeAll } from 'vitest';
 import { mintTestToken } from './helpers/jwt';
-import type { DayCountResponse, ErrorResponse } from '../src/types';
 
 // Import the Hono app
 const app = await import('../src/index');
@@ -44,7 +43,7 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as DayCountResponse;
+    const body: { results: unknown[] } = await response.json();
     expect(body.results).toBeDefined();
     expect(body.results).toHaveLength(1);
   });
@@ -65,7 +64,7 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(403);
 
-    const body = (await response.json()) as ErrorResponse;
+    const body: { detail: string } = await response.json();
     expect(body.detail).toContain('Insufficient permissions');
     expect(body.detail).toContain('daycount:write');
   });
@@ -86,7 +85,7 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(403);
 
-    const body = (await response.json()) as ErrorResponse;
+    const body: { detail: string } = await response.json();
     expect(body.detail).toContain('Insufficient permissions');
     expect(body.detail).toContain('daycount:write');
   });
@@ -107,7 +106,7 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(401);
 
-    const body = (await response.json()) as ErrorResponse;
+    const body: { detail: string } = await response.json();
     expect(body.detail).toContain('Invalid token');
   });
 
@@ -132,7 +131,7 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(401);
 
-    const body = (await response.json()) as ErrorResponse;
+    const body: { detail: string } = await response.json();
     expect(body.detail).toContain('Token expired');
   });
 
@@ -157,7 +156,7 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(403);
 
-    const body = (await response.json()) as ErrorResponse;
+    const body: { detail: string } = await response.json();
     expect(body.detail).toContain('Invalid token audience');
   });
 
@@ -169,7 +168,7 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(200);
 
-    const body = (await response.json()) as { status: string; service: string };
+    const body: { status: string; service: string } = await response.json();
     expect(body.status).toBe('healthy');
     expect(body.service).toBe('daycount');
   });
@@ -195,7 +194,7 @@ describe('Scope-Based Authorization', () => {
     expect(response.status).toBe(200);
 
     // Token should have been validated with role
-    const body = (await response.json()) as DayCountResponse;
+    const body: { results: unknown[] } = await response.json();
     expect(body.results).toBeDefined();
   });
 });
