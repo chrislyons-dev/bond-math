@@ -2,7 +2,8 @@
 
 **Version:** 2025.10 | **Service ID:** `gateway` | **Type:** Cloudflare Worker
 
-Entry point and security gate for all API traffic in Bond Math.
+Entry point and security gate for all API traffic in Bond Math. Built with
+[Hono](https://hono.dev/).
 
 ---
 
