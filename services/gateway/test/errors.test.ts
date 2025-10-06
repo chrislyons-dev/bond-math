@@ -90,14 +90,14 @@ describe('Errors Module', () => {
       expect(body.detail).toBe('Invalid token audience');
     });
 
-    it('should map issuer error to 403', async () => {
+    it('should map issuer error to 403', () => {
       const error = new Error('Invalid token issuer');
       const response = handleError(error);
 
       expect(response.status).toBe(403);
     });
 
-    it('should handle unknown errors as 500', async () => {
+    it('should handle unknown errors as 500', () => {
       const error = new Error('Something unexpected happened');
       const response = handleError(error);
 

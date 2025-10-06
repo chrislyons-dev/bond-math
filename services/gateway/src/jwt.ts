@@ -157,11 +157,17 @@ export async function verifyInternalToken(
     throw new Error('Invalid token format');
   }
 
-  const [headerB64, payloadB64, signatureB64] = parts;
+  const headerB64 = parts[0];
+  const payloadB64 = parts[1];
+  const signatureB64 = parts[2];
+
+  if (!headerB64 || !payloadB64 || !signatureB64) {
+    throw new Error('Invalid token format');
+  }
 
   // Verify signature
   const data = `${headerB64}.${payloadB64}`;
-  const signature = base64UrlDecodeToArrayBuffer(signatureB64!);
+  const signature = base64UrlDecodeToArrayBuffer(signatureB64);
   const isValid = await verifySignature(data, signature, secret);
 
   if (!isValid) {
@@ -169,7 +175,7 @@ export async function verifyInternalToken(
   }
 
   // Decode and validate payload
-  const payload = JSON.parse(base64UrlDecodeToString(payloadB64!)) as InternalJWT;
+  const payload = JSON.parse(base64UrlDecodeToString(payloadB64)) as InternalJWT;
   validateInternalClaims(payload, expectedAudience);
 
   return payload;
@@ -238,12 +244,14 @@ function generateRequestId(): string {
  * @returns Base64url encoded string
  */
 function base64UrlEncode(data: string | ArrayBuffer): string {
-  const bytes =
-    typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(data);
+  const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(data);
 
   let binary = '';
   for (let i = 0; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]!);
+    const byte = bytes[i];
+    if (byte !== undefined) {
+      binary += String.fromCharCode(byte);
+    }
   }
 
   return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');

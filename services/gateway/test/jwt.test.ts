@@ -19,27 +19,27 @@ describe('JWT Module', () => {
 
   describe('mintInternalToken', () => {
     it('should mint a valid internal JWT', async () => {
-      const token = await mintInternalToken(
-        mockAuth0Claims,
-        'svc-pricing',
-        testSecret,
-        90
-      );
+      const token = await mintInternalToken(mockAuth0Claims, 'svc-pricing', testSecret, 90);
 
       expect(token).toBeTruthy();
       expect(token.split('.')).toHaveLength(3);
     });
 
     it('should include correct claims in minted token', async () => {
-      const token = await mintInternalToken(
-        mockAuth0Claims,
-        'svc-pricing',
-        testSecret,
-        90
-      );
+      const token = await mintInternalToken(mockAuth0Claims, 'svc-pricing', testSecret, 90);
 
-      const [, payloadB64] = token.split('.');
-      const payload = JSON.parse(atob(payloadB64!));
+      const parts = token.split('.');
+      const payloadB64 = parts[1];
+      if (!payloadB64) throw new Error('Invalid token');
+
+      interface PayloadType {
+        iss: string;
+        sub: string;
+        aud: string;
+        act: { sub: string; perms: string[] };
+        rid: string;
+      }
+      const payload = JSON.parse(atob(payloadB64)) as PayloadType;
 
       expect(payload.iss).toBe('https://gateway.bond-math');
       expect(payload.sub).toBe('svc-gateway');
@@ -53,15 +53,16 @@ describe('JWT Module', () => {
       const ttl = 120;
       const beforeMint = Math.floor(Date.now() / 1000);
 
-      const token = await mintInternalToken(
-        mockAuth0Claims,
-        'svc-pricing',
-        testSecret,
-        ttl
-      );
+      const token = await mintInternalToken(mockAuth0Claims, 'svc-pricing', testSecret, ttl);
 
-      const [, payloadB64] = token.split('.');
-      const payload = JSON.parse(atob(payloadB64!));
+      const parts = token.split('.');
+      const payloadB64 = parts[1];
+      if (!payloadB64) throw new Error('Invalid token');
+
+      interface PayloadType {
+        exp: number;
+      }
+      const payload = JSON.parse(atob(payloadB64)) as PayloadType;
 
       expect(payload.exp).toBeGreaterThanOrEqual(beforeMint + ttl);
       expect(payload.exp).toBeLessThanOrEqual(beforeMint + ttl + 2);
@@ -70,12 +71,7 @@ describe('JWT Module', () => {
 
   describe('verifyInternalToken', () => {
     it('should verify a valid token', async () => {
-      const token = await mintInternalToken(
-        mockAuth0Claims,
-        'svc-pricing',
-        testSecret,
-        90
-      );
+      const token = await mintInternalToken(mockAuth0Claims, 'svc-pricing', testSecret, 90);
 
       const payload = await verifyInternalToken(token, testSecret, 'svc-pricing');
 
@@ -84,31 +80,21 @@ describe('JWT Module', () => {
     });
 
     it('should reject token with invalid signature', async () => {
-      const token = await mintInternalToken(
-        mockAuth0Claims,
-        'svc-pricing',
-        testSecret,
-        90
-      );
+      const token = await mintInternalToken(mockAuth0Claims, 'svc-pricing', testSecret, 90);
 
       const wrongSecret = 'wrong-secret-but-still-32-chars-minimum!';
 
-      await expect(
-        verifyInternalToken(token, wrongSecret, 'svc-pricing')
-      ).rejects.toThrow('Invalid token signature');
+      await expect(verifyInternalToken(token, wrongSecret, 'svc-pricing')).rejects.toThrow(
+        'Invalid token signature'
+      );
     });
 
     it('should reject token with wrong audience', async () => {
-      const token = await mintInternalToken(
-        mockAuth0Claims,
-        'svc-pricing',
-        testSecret,
-        90
-      );
+      const token = await mintInternalToken(mockAuth0Claims, 'svc-pricing', testSecret, 90);
 
-      await expect(
-        verifyInternalToken(token, testSecret, 'svc-valuation')
-      ).rejects.toThrow('Invalid token audience');
+      await expect(verifyInternalToken(token, testSecret, 'svc-valuation')).rejects.toThrow(
+        'Invalid token audience'
+      );
     });
 
     it('should reject expired token', async () => {
@@ -119,15 +105,15 @@ describe('JWT Module', () => {
         -10 // Expired 10 seconds ago
       );
 
-      await expect(
-        verifyInternalToken(token, testSecret, 'svc-pricing')
-      ).rejects.toThrow('Token expired');
+      await expect(verifyInternalToken(token, testSecret, 'svc-pricing')).rejects.toThrow(
+        'Token expired'
+      );
     });
 
     it('should reject malformed token', async () => {
-      await expect(
-        verifyInternalToken('invalid.token', testSecret, 'svc-pricing')
-      ).rejects.toThrow('Invalid token format');
+      await expect(verifyInternalToken('invalid.token', testSecret, 'svc-pricing')).rejects.toThrow(
+        'Invalid token format'
+      );
     });
   });
 });

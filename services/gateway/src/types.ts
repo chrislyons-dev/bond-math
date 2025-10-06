@@ -103,3 +103,11 @@ export interface ServiceRoute {
   binding: keyof Env;
   stripPrefix: boolean;
 }
+
+/**
+ * Hono context variables
+ */
+export interface Variables {
+  requestId: string;
+  userId?: string;
+}

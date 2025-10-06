@@ -1,12 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Hono } from 'hono';
-import {
-  logger,
-  requestId,
-  rateLimiter,
-  securityHeaders,
-  timing,
-} from '../src/middleware';
+import { logger, requestId, rateLimiter, securityHeaders, timing } from '../src/middleware';
 import type { Env } from '../src/types';
 
 describe('Middleware Module', () => {
@@ -58,9 +52,7 @@ describe('Middleware Module', () => {
       expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
       expect(res.headers.get('X-Frame-Options')).toBe('DENY');
       expect(res.headers.get('X-XSS-Protection')).toBe('1; mode=block');
-      expect(res.headers.get('Referrer-Policy')).toBe(
-        'strict-origin-when-cross-origin'
-      );
+      expect(res.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin');
     });
   });
 
@@ -89,9 +81,7 @@ describe('Middleware Module', () => {
 
       await app.request('/test');
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringMatching(/\[.*\] --> GET \/test/)
-      );
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringMatching(/\[.*\] --> GET \/test/));
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringMatching(/\[.*\] <-- GET \/test 200 \(\d+ms\)/)
       );

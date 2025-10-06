@@ -55,8 +55,12 @@
   "license": "MIT",
   "author": "Chris Lyons",
   "lint-staged": {
-    "*.{ts,js}": [
-      "eslint --fix",
+    "services/gateway/**/*.{ts,js}": [
+      "bash -c 'cd services/gateway && eslint --fix'",
+      "prettier --write"
+    ],
+    "services/daycount/**/*.{ts,js}": [
+      "bash -c 'cd services/daycount && eslint --fix'",
       "prettier --write"
     ],
     "*.{json,md,yml,yaml}": [

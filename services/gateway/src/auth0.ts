@@ -7,6 +7,12 @@
 
 import type { JWKS, JWK, Auth0Claims } from './types';
 
+interface JWTHeader {
+  alg: string;
+  typ: string;
+  kid: string;
+}
+
 /**
  * Verifies an Auth0 JWT token using JWKS verification
  *
@@ -27,11 +33,16 @@ export async function verifyAuth0Token(
     throw new Error('Invalid token format');
   }
 
-  const [headerB64, payloadB64, signatureB64] = parts;
+  const headerB64 = parts[0];
+  const payloadB64 = parts[1];
+
+  if (!headerB64 || !payloadB64) {
+    throw new Error('Invalid token format');
+  }
 
   // Decode header and payload
-  const header = JSON.parse(atob(headerB64!));
-  const payload = JSON.parse(atob(payloadB64!)) as Auth0Claims;
+  const header = JSON.parse(atob(headerB64)) as JWTHeader;
+  const payload = JSON.parse(atob(payloadB64)) as Auth0Claims;
 
   // Validate basic claims
   validateTokenClaims(payload, domain, audience);
@@ -52,11 +63,7 @@ export async function verifyAuth0Token(
  * @param audience - Expected audience
  * @throws Error if any validation fails
  */
-function validateTokenClaims(
-  claims: Auth0Claims,
-  domain: string,
-  audience: string
-): void {
+function validateTokenClaims(claims: Auth0Claims, domain: string, audience: string): void {
   const expectedIssuer = `https://${domain}/`;
 
   if (claims.iss !== expectedIssuer) {
@@ -103,7 +110,7 @@ async function fetchJWK(domain: string, kid: string): Promise<JWK> {
       throw new Error(`Failed to fetch JWKS: ${response.status} ${response.statusText}`);
     }
 
-    const jwks = (await response.json()) as JWKS;
+    const jwks: JWKS = await response.json();
     const key = jwks.keys.find((k) => k.kid === kid);
 
     if (!key) {
@@ -132,9 +139,17 @@ async function verifySignature(token: string, jwk: JWK): Promise<void> {
   const cryptoKey = await importPublicKey(jwk);
 
   // Split token for verification
-  const [headerB64, payloadB64, signatureB64] = token.split('.');
+  const parts = token.split('.');
+  const headerB64 = parts[0];
+  const payloadB64 = parts[1];
+  const signatureB64 = parts[2];
+
+  if (!headerB64 || !payloadB64 || !signatureB64) {
+    throw new Error('Invalid token format');
+  }
+
   const data = `${headerB64}.${payloadB64}`;
-  const signature = base64UrlDecode(signatureB64!);
+  const signature = base64UrlDecode(signatureB64);
 
   // Verify signature
   const encoder = new TextEncoder();

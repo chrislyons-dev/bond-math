@@ -32,7 +32,7 @@ describe('Scope-Based Authorization', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${validToken}`,
+        Authorization: `Bearer ${validToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
@@ -43,9 +43,9 @@ describe('Scope-Based Authorization', () => {
     const response = await app.default.fetch(request, { INTERNAL_JWT_SECRET: TEST_SECRET });
     expect(response.status).toBe(200);
 
-    const body = await response.json();
+    const body: { results?: unknown[] } = await response.json();
     expect(body.results).toBeDefined();
-    expect(body.results.length).toBe(1);
+    expect(body.results).toHaveLength(1);
   });
 
   test('should reject request with only daycount:read scope', async () => {
@@ -53,7 +53,7 @@ describe('Scope-Based Authorization', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${readOnlyToken}`,
+        Authorization: `Bearer ${readOnlyToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
@@ -74,7 +74,7 @@ describe('Scope-Based Authorization', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${noScopesToken}`,
+        Authorization: `Bearer ${noScopesToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
@@ -95,7 +95,7 @@ describe('Scope-Based Authorization', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer invalid-token',
+        Authorization: 'Bearer invalid-token',
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
@@ -112,17 +112,15 @@ describe('Scope-Based Authorization', () => {
 
   test('should reject request with expired token', async () => {
     // Create a token that expired 10 seconds ago
-    const expiredToken = await mintTestToken(
-      TEST_SECRET,
-      ['daycount:write'],
-      { exp: Math.floor(Date.now() / 1000) - 10 }
-    );
+    const expiredToken = await mintTestToken(TEST_SECRET, ['daycount:write'], {
+      exp: Math.floor(Date.now() / 1000) - 10,
+    });
 
     const request = new Request('http://localhost/count', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${expiredToken}`,
+        Authorization: `Bearer ${expiredToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
@@ -139,17 +137,15 @@ describe('Scope-Based Authorization', () => {
 
   test('should reject request with wrong audience', async () => {
     // Create a token for a different service
-    const wrongAudToken = await mintTestToken(
-      TEST_SECRET,
-      ['daycount:write'],
-      { aud: 'svc-valuation' }
-    );
+    const wrongAudToken = await mintTestToken(TEST_SECRET, ['daycount:write'], {
+      aud: 'svc-valuation',
+    });
 
     const request = new Request('http://localhost/count', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${wrongAudToken}`,
+        Authorization: `Bearer ${wrongAudToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
@@ -178,17 +174,15 @@ describe('Scope-Based Authorization', () => {
   });
 
   test('should include role in actor claim', async () => {
-    const professionalToken = await mintTestToken(
-      TEST_SECRET,
-      ['daycount:write'],
-      { role: 'professional' }
-    );
+    const professionalToken = await mintTestToken(TEST_SECRET, ['daycount:write'], {
+      role: 'professional',
+    });
 
     const request = new Request('http://localhost/count', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${professionalToken}`,
+        Authorization: `Bearer ${professionalToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],

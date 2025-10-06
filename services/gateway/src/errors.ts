@@ -7,7 +7,7 @@
 
 import { HTTPException } from 'hono/http-exception';
 import type { Context } from 'hono';
-import type { ErrorResponse, Env } from './types';
+import type { ErrorResponse, Env, Variables } from './types';
 
 /**
  * Creates an RFC 7807 Problem Details error response
@@ -95,22 +95,14 @@ export function createInternalErrorResponse(detail: string, instance?: string): 
 export function handleError(error: unknown, instance?: string): Response {
   // Handle Hono HTTPException
   if (error instanceof HTTPException) {
-    return createErrorResponse(
-      error.status,
-      error.message,
-      error.message,
-      instance
-    );
+    return createErrorResponse(error.status, error.message, error.message, instance);
   }
 
   if (error instanceof Error) {
     return mapErrorToResponse(error, instance);
   }
 
-  return createInternalErrorResponse(
-    'An unexpected error occurred',
-    instance
-  );
+  return createInternalErrorResponse('An unexpected error occurred', instance);
 }
 
 /**
@@ -121,8 +113,11 @@ export function handleError(error: unknown, instance?: string): Response {
  * @param c - Hono context
  * @returns Error Response
  */
-export function globalErrorHandler(err: Error, c: Context<{ Bindings: Env }>) {
-  const requestId = c.get('requestId') || 'unknown';
+export function globalErrorHandler(
+  err: Error,
+  c: Context<{ Bindings: Env; Variables: Variables }>
+): Response {
+  const requestId = c.get('requestId');
   const path = c.req.path;
 
   // Log error with request ID

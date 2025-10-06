@@ -6,7 +6,7 @@
  */
 
 import type { Context, Next } from 'hono';
-import type { Env } from './types';
+import type { Env, Variables } from './types';
 
 /**
  * Logger middleware - logs request/response with timing
@@ -14,11 +14,14 @@ import type { Env } from './types';
  * @endpoint-middleware ALL *
  * @description Logs incoming requests and responses with timing information
  */
-export async function logger(c: Context<{ Bindings: Env }>, next: Next) {
+export async function logger(
+  c: Context<{ Bindings: Env; Variables: Variables }>,
+  next: Next
+): Promise<void> {
   const start = Date.now();
   const method = c.req.method;
   const path = c.req.path;
-  const requestId = c.get('requestId') || 'unknown';
+  const requestId = c.get('requestId');
 
   console.log(`[${requestId}] --> ${method} ${path}`);
 
@@ -36,7 +39,10 @@ export async function logger(c: Context<{ Bindings: Env }>, next: Next) {
  * @endpoint-middleware ALL *
  * @description Generates UUID for request tracing, adds to headers
  */
-export function requestId(c: Context<{ Bindings: Env }>, next: Next) {
+export function requestId(
+  c: Context<{ Bindings: Env; Variables: Variables }>,
+  next: Next
+): Promise<void> | void {
   // Check if request already has an ID (from upstream)
   let rid = c.req.header('X-Request-ID');
 
@@ -67,11 +73,14 @@ export function requestId(c: Context<{ Bindings: Env }>, next: Next) {
 export function rateLimiter(options: {
   windowMs: number;
   maxRequests: number;
-}) {
+}): (c: Context<{ Bindings: Env; Variables: Variables }>, next: Next) => Promise<Response | void> {
   // Simple in-memory store (resets on worker restart)
   const requests = new Map<string, { count: number; resetTime: number }>();
 
-  return async (c: Context<{ Bindings: Env }>, next: Next) => {
+  return async (
+    c: Context<{ Bindings: Env; Variables: Variables }>,
+    next: Next
+  ): Promise<Response | void> => {
     // Use user ID from context if available (set by auth middleware)
     const userId = c.get('userId');
     const ip = c.req.header('CF-Connecting-IP') || 'unknown';
@@ -121,14 +130,8 @@ export function rateLimiter(options: {
 
     // Add rate limit headers
     c.header('X-RateLimit-Limit', options.maxRequests.toString());
-    c.header(
-      'X-RateLimit-Remaining',
-      (options.maxRequests - record.count).toString()
-    );
-    c.header(
-      'X-RateLimit-Reset',
-      Math.ceil((record.resetTime - now) / 1000).toString()
-    );
+    c.header('X-RateLimit-Remaining', (options.maxRequests - record.count).toString());
+    c.header('X-RateLimit-Reset', Math.ceil((record.resetTime - now) / 1000).toString());
 
     return next();
   };
@@ -140,7 +143,10 @@ export function rateLimiter(options: {
  * @endpoint-middleware ALL *
  * @description Adds comprehensive security-related HTTP headers
  */
-export function securityHeaders(c: Context<{ Bindings: Env }>, next: Next) {
+export function securityHeaders(
+  c: Context<{ Bindings: Env; Variables: Variables }>,
+  next: Next
+): Promise<void> | void {
   // Prevent MIME sniffing
   c.header('X-Content-Type-Options', 'nosniff');
 
@@ -160,12 +166,9 @@ export function securityHeaders(c: Context<{ Bindings: Env }>, next: Next) {
   );
 
   // HSTS (only in production) - enforce HTTPS
-  const env = c.env?.ENVIRONMENT;
+  const env = c.env?.ENVIRONMENT as string | undefined;
   if (env === 'production') {
-    c.header(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains; preload'
-    );
+    c.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
 
   // Permissions Policy (restrict all browser features)
@@ -186,7 +189,10 @@ export function securityHeaders(c: Context<{ Bindings: Env }>, next: Next) {
  * @endpoint-middleware ALL *
  * @description Adds Server-Timing header for performance monitoring
  */
-export async function timing(c: Context<{ Bindings: Env }>, next: Next) {
+export async function timing(
+  c: Context<{ Bindings: Env; Variables: Variables }>,
+  next: Next
+): Promise<void> {
   const start = Date.now();
   await next();
   const total = Date.now() - start;

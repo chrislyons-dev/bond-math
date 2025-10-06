@@ -16,7 +16,7 @@
 
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import type { Env } from './types';
+import type { Env, Variables } from './types';
 import { verifyAuth0Token, extractBearerToken } from './auth0';
 import { mintInternalToken } from './jwt';
 import { findServiceRoute, routeToService, getServiceIdentifier } from './router';
@@ -26,17 +26,11 @@ import {
   handleError,
   globalErrorHandler,
 } from './errors';
-import {
-  logger,
-  requestId,
-  rateLimiter,
-  securityHeaders,
-  timing,
-} from './middleware';
+import { logger, requestId, rateLimiter, securityHeaders, timing } from './middleware';
 
 const VERSION = '2025.10';
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 // Global error handler
 app.onError(globalErrorHandler);
@@ -68,9 +62,8 @@ app.use(
         'https://www.bondmath.chrislyons.dev',
       ];
 
-      // Development: Allow localhost in non-production
-      const env = c.env?.ENVIRONMENT;
-      if (env !== 'production' && /^https?:\/\/localhost(:\d+)?$/.test(origin)) {
+      // Development/Testing: Allow localhost
+      if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) {
         return origin;
       }
 
