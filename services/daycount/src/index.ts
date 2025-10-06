@@ -79,26 +79,28 @@ app.onError((err, c) => {
 });
 
 // CORS middleware (for direct access during development)
-app.use('*', cors({
-  origin: '*',
-  allowMethods: ['GET', 'POST', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
-}));
+app.use(
+  '*',
+  cors({
+    origin: '*',
+    allowMethods: ['GET', 'POST', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
 // Request body size limit - prevent DoS attacks
-app.use('/count', bodyLimit({
-  maxSize: 100 * 1024, // 100KB
-  onError: (c) => {
-    return c.json(
-      createErrorBody(
-        413,
-        'Payload Too Large',
-        'Request body must not exceed 100KB'
-      ),
-      413
-    );
-  }
-}));
+app.use(
+  '/count',
+  bodyLimit({
+    maxSize: 100 * 1024, // 100KB
+    onError: (c) => {
+      return c.json(
+        createErrorBody(413, 'Payload Too Large', 'Request body must not exceed 100KB'),
+        413
+      );
+    },
+  })
+);
 
 // Authentication middleware - verify internal JWT from Gateway
 // Applied to /count endpoint only (health check is public)
@@ -195,10 +197,7 @@ app.post('/count', async (c) => {
     const json: unknown = await c.req.json();
     body = json as DayCountRequest;
   } catch {
-    return c.json(
-      createErrorBody(400, 'Invalid JSON', 'Request body must be valid JSON'),
-      400
-    );
+    return c.json(createErrorBody(400, 'Invalid JSON', 'Request body must be valid JSON'), 400);
   }
 
   // Run request-level validators

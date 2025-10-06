@@ -1,8 +1,10 @@
 # Code Documentation Standards
 
-This document defines documentation and commenting standards for all code in the **Bond Math** project.
+This document defines documentation and commenting standards for all code in the
+**Bond Math** project.
 
 **Contents**
+
 - [Code Documentation Standards](#code-documentation-standards)
   - [📋 Guiding Principles](#-guiding-principles)
   - [🎯 What to Document](#-what-to-document)
@@ -45,9 +47,11 @@ This document defines documentation and commenting standards for all code in the
 
 ## 📋 Guiding Principles
 
-1. **Code should be self-documenting first** – use clear names, small functions, and obvious structure
+1. **Code should be self-documenting first** – use clear names, small functions,
+   and obvious structure
 2. **Comments explain WHY, not WHAT** – the code already shows what it does
-3. **Document all public APIs** – anything another service or developer will call
+3. **Document all public APIs** – anything another service or developer will
+   call
 4. **Keep documentation close to code** – in the same file, not a separate wiki
 5. **Update docs in the same commit** – stale docs are worse than no docs
 
@@ -104,7 +108,7 @@ Use **JSDoc** for all public APIs.
 
 #### Endpoint Documentation
 
-```typescript
+````typescript
 /**
  * Calculates year fractions and accrual days for multiple date pairs.
  *
@@ -136,10 +140,13 @@ Use **JSDoc** for all public APIs.
  * });
  * ```
  */
-export async function handleCount(request: Request, env: Env): Promise<Response> {
+export async function handleCount(
+  request: Request,
+  env: Env
+): Promise<Response> {
   // Implementation
 }
-```
+````
 
 #### Function Documentation
 
@@ -372,7 +379,8 @@ public BigDecimal calculatePresentValue(
 
 ## 🏗️ Architecture as Code Annotations
 
-These are **required** for all services and endpoints. See ADR-0001 for complete reference.
+These are **required** for all services and endpoints. See ADR-0001 for complete
+reference.
 
 ### Service-Level (Required)
 
@@ -505,9 +513,11 @@ interface Env {
 
 ## 🧪 Testing Documentation
 
-Test files should have minimal documentation. Test names should be descriptive enough.
+Test files should have minimal documentation. Test names should be descriptive
+enough.
 
 **Good:**
+
 ```typescript
 describe('ACT/360 year fraction calculation', () => {
   test('returns 0.5 for exactly 180 days', () => {
@@ -525,6 +535,7 @@ describe('ACT/360 year fraction calculation', () => {
 ```
 
 **Bad (over-documented):**
+
 ```typescript
 /**
  * Test suite for ACT/360 calculations.
@@ -548,7 +559,7 @@ describe('ACT/360 year fraction calculation', () => {
 
 Document request/response formats for all APIs:
 
-```typescript
+````typescript
 /**
  * Request body for /api/daycount/v1/count endpoint.
  *
@@ -590,7 +601,7 @@ interface DatePair {
   /** End date in ISO 8601 format (YYYY-MM-DD) */
   end: string;
 }
-```
+````
 
 ---
 
@@ -665,4 +676,5 @@ function process() {
 
 ---
 
-**Remember:** Good documentation is concise, accurate, and maintained. When in doubt, write less but keep it current.
+**Remember:** Good documentation is concise, accurate, and maintained. When in
+doubt, write less but keep it current.

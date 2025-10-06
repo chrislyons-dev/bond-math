@@ -141,10 +141,7 @@ export function calculate30E360(start: DateComponents, end: DateComponents): Day
  * @param end - End date components
  * @returns Calculation result
  */
-export function calculateACTACTISDA(
-  start: DateComponents,
-  end: DateComponents
-): DayCountResult {
+export function calculateACTACTISDA(start: DateComponents, end: DateComponents): DayCountResult {
   const days = actualDaysBetween(start, end);
 
   // If same year, use simple calculation
@@ -166,9 +163,7 @@ export function calculateACTACTISDA(
       currentYear === start.year ? start : { year: currentYear, month: 1, day: 1 };
 
     const yearEnd: DateComponents =
-      currentYear === end.year
-        ? end
-        : { year: currentYear + 1, month: 1, day: 1 };
+      currentYear === end.year ? end : { year: currentYear + 1, month: 1, day: 1 };
 
     const daysInYear = actualDaysBetween(yearStart, yearEnd);
     const basisForYear = isLeapYear(currentYear) ? 366 : 365;

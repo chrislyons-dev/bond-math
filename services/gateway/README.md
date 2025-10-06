@@ -55,6 +55,7 @@ Authorization: Bearer {auth0-token}
 ```
 
 **Routes:**
+
 - `/api/daycount/*` → Day Count Worker
 - `/api/valuation/*` → Valuation Worker
 - `/api/metrics/*` → Metrics Worker
@@ -119,8 +120,10 @@ npm run deploy   # Deploy to production
 
 ## Related Documentation
 
-- [Request Flow](../../docs/design/request-flow.md) - How requests flow through the system
-- [Authentication Reference](../../docs/reference/authentication.md) - Setup and configuration
+- [Request Flow](../../docs/design/request-flow.md) - How requests flow through
+  the system
+- [Authentication Reference](../../docs/reference/authentication.md) - Setup and
+  configuration
 - [ADR-0006: Gateway Worker Design](../../docs/adr/0006-gateway-worker.md)
 - [ADR-0011: Symmetric JWT](../../docs/adr/0011-symmetric-jwt-for-internal-auth.md)
 - [Gateway Reference](../../docs/reference/gateway.md)

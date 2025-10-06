@@ -18,8 +18,8 @@ graph LR
     style C fill:#f0f0f0
 ```
 
-**External:** Auth0 RS256 JWT (public/private keys)
-**Internal:** HMAC-SHA256 JWT (shared secret, 90s TTL)
+**External:** Auth0 RS256 JWT (public/private keys) **Internal:** HMAC-SHA256
+JWT (shared secret, 90s TTL)
 
 ---
 
@@ -36,6 +36,7 @@ Content-Type: application/json
 ### 2. Gateway Processing
 
 **Middleware Chain:**
+
 1. `requestId` - Generate UUID
 2. `securityHeaders` - Add security headers
 3. `timing` - Start timer
@@ -44,25 +45,30 @@ Content-Type: application/json
 6. `rateLimiter` - Check rate limit (100 req/min)
 
 **Authentication:**
+
 - Verify Auth0 JWT (RS256 via JWKS)
 - Extract custom claims (role, permissions)
 
 **Internal JWT Minting:**
+
 - Sign with HMAC-SHA256
 - 90 second TTL
 - Include actor claim (user identity + permissions)
 
 **Routing:**
+
 - Match path prefix to service binding
 - Forward with internal JWT
 
 ### 3. Service Processing
 
 **Middleware:**
+
 - `verifyInternalJWT` - Verify HMAC signature
 - `requireScopes` - Check permissions
 
 **Handler:**
+
 - Access actor from context
 - Execute business logic
 - Return JSON response
@@ -72,6 +78,7 @@ Content-Type: application/json
 **Service** → **Gateway** → **User**
 
 **Added Headers:**
+
 - `X-Request-ID` - Trace ID
 - `X-RateLimit-*` - Rate limit info
 - `Server-Timing` - Duration
@@ -99,6 +106,7 @@ graph TD
 ```
 
 **Deployment Order:**
+
 1. Day Count (no deps)
 2. Valuation (→ Day Count)
 3. Metrics (→ Valuation, Day Count)
@@ -118,6 +126,7 @@ curl -X POST https://bondmath.chrislyons.dev/api/daycount/v1/count \
 ```
 
 **Internal Flow:**
+
 1. Gateway verifies Auth0 token
 2. Gateway → Day Count (internal JWT)
 3. Day Count verifies + processes
@@ -133,6 +142,7 @@ curl -X POST https://bondmath.chrislyons.dev/api/valuation/v1/yield \
 ```
 
 **Internal Flow:**
+
 1. Gateway → Valuation
 2. Valuation → Day Count (accrual calc)
 3. Day Count → Valuation (result)
@@ -155,6 +165,7 @@ curl -X POST https://bondmath.chrislyons.dev/api/valuation/v1/yield \
 ```
 
 **Status Codes:**
+
 - `401` - Missing/invalid auth
 - `403` - Insufficient permissions
 - `404` - Unknown route
@@ -166,6 +177,7 @@ curl -X POST https://bondmath.chrislyons.dev/api/valuation/v1/yield \
 ## Performance
 
 **Latency Budget (p95):**
+
 - Auth0 JWKS verification: < 50ms (cached)
 - Internal JWT mint: < 5ms
 - Service routing: < 10ms
@@ -173,6 +185,7 @@ curl -X POST https://bondmath.chrislyons.dev/api/valuation/v1/yield \
 - **Total:** < 200ms
 
 **Rate Limits:**
+
 - Free: 10 req/min
 - Professional: 100 req/min
 - Admin: 1000 req/min
@@ -183,6 +196,7 @@ curl -X POST https://bondmath.chrislyons.dev/api/valuation/v1/yield \
 ## Security Model
 
 **Zero-Trust:**
+
 1. Every request verified cryptographically
 2. No implicit trust between services
 3. Short-lived credentials (90s)
@@ -190,6 +204,7 @@ curl -X POST https://bondmath.chrislyons.dev/api/valuation/v1/yield \
 5. Actor traceability
 
 **Token Lifecycle:**
+
 ```
 Auth0 Token (1 hour)
   ↓

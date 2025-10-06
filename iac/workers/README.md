@@ -1,6 +1,7 @@
 # Cloudflare Workers Configuration
 
-This directory contains Wrangler configuration files (`.toml`) for all Bond Math Cloudflare Workers.
+This directory contains Wrangler configuration files (`.toml`) for all Bond Math
+Cloudflare Workers.
 
 ## 📁 Structure
 
@@ -34,6 +35,7 @@ openssl rand -base64 32
 ### 2. Configure Auth0 (Gateway Only)
 
 Update `.dev.vars` with your Auth0 credentials:
+
 - `AUTH0_DOMAIN` - Your Auth0 tenant domain
 - `AUTH0_AUDIENCE` - API identifier from Auth0
 
@@ -60,17 +62,20 @@ Wrangler automatically loads secrets from `iac/workers/.dev.vars`
 **Entry Point:** `../../services/gateway/src/index.ts`
 
 **Service Bindings:**
+
 - `SVC_DAYCOUNT` → Day Count Worker
 - `SVC_VALUATION` → Valuation Worker
 - `SVC_METRICS` → Metrics Worker
 - `SVC_PRICING` → Pricing Worker
 
 **Required Secrets:**
+
 - `INTERNAL_JWT_SECRET` - Shared secret for internal JWTs
 - `AUTH0_DOMAIN` - Auth0 tenant domain
 - `AUTH0_AUDIENCE` - API identifier
 
 **Environment Variables:**
+
 - `INTERNAL_JWT_TTL` - Token lifetime (default: 90s)
 
 ### Day Count (`daycount.toml`)
@@ -78,9 +83,11 @@ Wrangler automatically loads secrets from `iac/workers/.dev.vars`
 **Entry Point:** `../../services/daycount/src/index.ts`
 
 **Required Secrets:**
+
 - `INTERNAL_JWT_SECRET` - Must match Gateway's secret
 
 **Environment Variables:**
+
 - `ENVIRONMENT` - Environment name (dev/preview/prod)
 
 ### Valuation (`valuation.toml`)
@@ -88,9 +95,11 @@ Wrangler automatically loads secrets from `iac/workers/.dev.vars`
 **Entry Point:** `../../services/valuation/src/index.py` (Python)
 
 **Required Secrets:**
+
 - `INTERNAL_JWT_SECRET` - Must match Gateway's secret
 
 **Service Bindings:**
+
 - `SVC_DAYCOUNT` → Day Count Worker (for accrual calculations)
 
 ### Metrics (`metrics.toml`)
@@ -98,9 +107,11 @@ Wrangler automatically loads secrets from `iac/workers/.dev.vars`
 **Entry Point:** `../../services/metrics/src/index.py` (Python)
 
 **Required Secrets:**
+
 - `INTERNAL_JWT_SECRET` - Must match Gateway's secret
 
 **Service Bindings:**
+
 - `SVC_VALUATION` → Valuation Worker (for re-pricing)
 - `SVC_DAYCOUNT` → Day Count Worker
 
@@ -109,6 +120,7 @@ Wrangler automatically loads secrets from `iac/workers/.dev.vars`
 **Entry Point:** `../../services/pricing/src/index.java` (Java)
 
 **Required Secrets:**
+
 - `INTERNAL_JWT_SECRET` - Must match Gateway's secret
 
 ## 🔐 Secrets Management
@@ -116,6 +128,7 @@ Wrangler automatically loads secrets from `iac/workers/.dev.vars`
 ### Local Development
 
 **Use `.dev.vars` file:**
+
 ```bash
 # Already gitignored
 # Loaded automatically by Wrangler
@@ -125,6 +138,7 @@ Wrangler automatically loads secrets from `iac/workers/.dev.vars`
 ### Production
 
 **Use Wrangler secrets:**
+
 ```bash
 # Set for each service
 wrangler secret put INTERNAL_JWT_SECRET --config gateway.toml
@@ -143,6 +157,7 @@ wrangler secret put AUTH0_AUDIENCE --config gateway.toml
 ### Multi-Environment
 
 **Different secrets per environment:**
+
 ```bash
 # Preview
 wrangler secret put INTERNAL_JWT_SECRET --env preview --config gateway.toml
@@ -151,23 +166,27 @@ wrangler secret put INTERNAL_JWT_SECRET --env preview --config gateway.toml
 wrangler secret put INTERNAL_JWT_SECRET --config gateway.toml
 ```
 
-See [Authentication Reference](../../docs/reference/authentication.md) for complete documentation.
+See [Authentication Reference](../../docs/reference/authentication.md) for
+complete documentation.
 
 ## 📊 Environments
 
 Each service supports three environments:
 
 ### Development (Local)
+
 - Uses `.dev.vars` for secrets
 - Service bindings point to local instances
 - Run with: `npm run dev`
 
 ### Preview
+
 - Deployed to Cloudflare with `-preview` suffix
 - Separate secrets from production
 - Deploy with: `wrangler deploy --env preview`
 
 ### Production
+
 - Default environment
 - Production secrets from Wrangler
 - Deploy with: `wrangler deploy`
@@ -175,6 +194,7 @@ Each service supports three environments:
 ## 🔄 Common Commands
 
 ### Local Development
+
 ```bash
 # Start service locally
 npm run dev --prefix ../../services/gateway
@@ -184,6 +204,7 @@ curl http://localhost:8787/health
 ```
 
 ### Deployment
+
 ```bash
 # Deploy to production
 npm run deploy --prefix ../../services/gateway
@@ -193,6 +214,7 @@ npm run deploy:preview --prefix ../../services/gateway
 ```
 
 ### Secrets Management
+
 ```bash
 # List secrets (shows names only)
 wrangler secret list --config gateway.toml
@@ -205,6 +227,7 @@ wrangler secret delete INTERNAL_JWT_SECRET --config gateway.toml
 ```
 
 ### Logs
+
 ```bash
 # Tail production logs
 wrangler tail --config gateway.toml
@@ -216,6 +239,7 @@ wrangler tail --env preview --config gateway.toml
 ## 🧪 Testing Configuration
 
 ### Verify Secrets Are Loaded
+
 ```bash
 # Start service
 npm run dev --prefix ../../services/gateway
@@ -227,6 +251,7 @@ curl http://localhost:8787/health
 ```
 
 ### Verify Service Bindings
+
 ```bash
 # Start all required services first
 # Then test gateway routing
@@ -241,6 +266,7 @@ curl -X POST http://localhost:8787/api/daycount/v1/count \
 ### "Secret not configured" error
 
 **Local:**
+
 ```bash
 # Check .dev.vars exists
 cat .dev.vars
@@ -250,6 +276,7 @@ cp .dev.vars.example .dev.vars
 ```
 
 **Production:**
+
 ```bash
 # Verify secret is set
 wrangler secret list --config gateway.toml
@@ -261,6 +288,7 @@ wrangler secret put INTERNAL_JWT_SECRET --config gateway.toml
 ### "Service binding not found"
 
 **Check service names match:**
+
 ```bash
 # In gateway.toml, binding should match deployed service name
 [[services]]
@@ -276,6 +304,7 @@ wrangler deployments list --name bond-math-daycount
 **Cause:** Different secrets between Gateway and services
 
 **Fix:**
+
 ```bash
 # Ensure same secret for all services
 SECRET=$(openssl rand -base64 32)
@@ -288,7 +317,8 @@ done
 
 ## 📚 Documentation
 
-- [Authentication Reference](../../docs/reference/authentication.md) - Complete setup guide
+- [Authentication Reference](../../docs/reference/authentication.md) - Complete
+  setup guide
 - [ADR-0011: Symmetric JWT](../../docs/adr/0011-symmetric-jwt-for-internal-auth.md)
 - [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
 - [Wrangler CLI Docs](https://developers.cloudflare.com/workers/wrangler/)
@@ -305,6 +335,7 @@ done
 ```
 
 **Important:** Deploy services in dependency order:
+
 1. Day Count (no dependencies)
 2. Valuation (depends on Day Count)
 3. Metrics (depends on Valuation, Day Count)
@@ -314,6 +345,7 @@ done
 ## 🛡️ Security Best Practices
 
 ✅ **DO:**
+
 - Use `.dev.vars` for local development
 - Use `wrangler secret put` for production
 - Generate secrets with `openssl rand -base64 32`
@@ -321,6 +353,7 @@ done
 - Rotate secrets every 90 days
 
 ❌ **DON'T:**
+
 - Commit `.dev.vars` to git (already gitignored)
 - Share production secrets via email/Slack
 - Reuse development secrets in production
@@ -338,4 +371,5 @@ done
 
 ---
 
-**Need Help?** See [Authentication Reference](../../docs/reference/authentication.md#troubleshooting)
+**Need Help?** See
+[Authentication Reference](../../docs/reference/authentication.md#troubleshooting)

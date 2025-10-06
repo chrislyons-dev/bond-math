@@ -9,14 +9,18 @@
 ### 🧩 What we were deciding
 
 I needed to decide which platform to host _Bond Math_ on.  
-My professional background is mostly in **AWS**, but this project doesn’t need enterprise-scale complexity or cost.  
-It’s a personal project focused on **Architecture as Code**, not on showing off a full cloud stack.
+My professional background is mostly in **AWS**, but this project doesn’t need
+enterprise-scale complexity or cost.  
+It’s a personal project focused on **Architecture as Code**, not on showing off
+a full cloud stack.
 
 The options were basically:
 
 1. **AWS (Lambda, API Gateway, S3, CloudFront)** – what I know best.
-2. **Cloudflare Pages + Workers** – simpler, cheaper, and already tied to my domain.
-3. **Something else (Vercel, Render, Fly.io)** – all fine options, but didn’t add much value.
+2. **Cloudflare Pages + Workers** – simpler, cheaper, and already tied to my
+   domain.
+3. **Something else (Vercel, Render, Fly.io)** – all fine options, but didn’t
+   add much value.
 
 ---
 
@@ -40,7 +44,8 @@ Use **Cloudflare** for everything:
 - **KV or Durable Objects** only if I need persistence later.
 
 It’s fast, edge-deployed, and dead simple to maintain.  
-For a personal project, the **time-to-deploy and cost efficiency** matter more than deep platform flexibility.
+For a personal project, the **time-to-deploy and cost efficiency** matter more
+than deep platform flexibility.
 
 ---
 
@@ -49,8 +54,10 @@ For a personal project, the **time-to-deploy and cost efficiency** matter more t
 - My domain is already registered on Cloudflare — no DNS gymnastics.
 - Workers fit the lightweight, stateless nature of the services.
 - Pages make the UI deploy process effortless.
-- The platform makes it easy to show **Architecture as Code** with Terraform and Wrangler, without a huge setup.
-- The pricing is essentially free for this scale, which is perfect for experimentation.
+- The platform makes it easy to show **Architecture as Code** with Terraform and
+  Wrangler, without a huge setup.
+- The pricing is essentially free for this scale, which is perfect for
+  experimentation.
 
 ---
 
@@ -60,7 +67,8 @@ For a personal project, the **time-to-deploy and cost efficiency** matter more t
 - Limited long-running tasks (Workers are short-lived by design).
 - Smaller ecosystem of managed data services.
 
-That’s fine. None of that matters for this use case — I just need fast, reliable hosting that doesn’t get in my way.
+That’s fine. None of that matters for this use case — I just need fast, reliable
+hosting that doesn’t get in my way.
 
 ---
 
@@ -71,7 +79,8 @@ Cloudflare is the right fit for _Bond Math_:
 - It’s simple.
 - It’s affordable.
 - It’s integrated with my domain.
-- And it lets me focus on what I actually care about — demonstrating **Architecture as Code**, not wiring up yet another VPC.
+- And it lets me focus on what I actually care about — demonstrating
+  **Architecture as Code**, not wiring up yet another VPC.
 
 If this were a commercial or enterprise system, AWS would make more sense.  
 But for _Bond Math_, Cloudflare wins on **clarity, simplicity, and cost**.

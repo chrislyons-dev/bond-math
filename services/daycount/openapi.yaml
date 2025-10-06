@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: Day-Count Service API
-  version: "2025.10"
+  version: '2025.10'
   description: |
     Authoritative day-count and year-fraction calculations for Bond Math.
 
@@ -49,36 +49,36 @@ paths:
                 summary: ACT/360 calculation
                 value:
                   pairs:
-                    - start: "2025-01-31"
-                      end: "2025-07-31"
-                  convention: "ACT_360"
+                    - start: '2025-01-31'
+                      end: '2025-07-31'
+                  convention: 'ACT_360'
               thirty360WithOptions:
                 summary: 30/360 with EOM rule
                 value:
                   pairs:
-                    - start: "2025-01-31"
-                      end: "2025-07-31"
-                  convention: "30_360"
+                    - start: '2025-01-31'
+                      end: '2025-07-31'
+                  convention: '30_360'
                   options:
                     eomRule: true
               actActIcma:
                 summary: ACT/ACT ICMA with frequency
                 value:
                   pairs:
-                    - start: "2025-01-01"
-                      end: "2025-07-01"
-                  convention: "ACT_ACT_ICMA"
+                    - start: '2025-01-01'
+                      end: '2025-07-01'
+                  convention: 'ACT_ACT_ICMA'
                   options:
                     frequency: 2
               multiplePairs:
                 summary: Multiple date pairs
                 value:
                   pairs:
-                    - start: "2025-01-01"
-                      end: "2025-06-30"
-                    - start: "2025-07-01"
-                      end: "2025-12-31"
-                  convention: "ACT_365F"
+                    - start: '2025-01-01'
+                      end: '2025-06-30'
+                    - start: '2025-07-01'
+                      end: '2025-12-31'
+                  convention: 'ACT_365F'
       responses:
         '200':
           description: Successful calculation
@@ -86,12 +86,12 @@ paths:
             Cache-Control:
               schema:
                 type: string
-                example: "public, max-age=3600"
+                example: 'public, max-age=3600'
               description: Response is cacheable for 1 hour
             X-Service-Version:
               schema:
                 type: string
-                example: "2025.10"
+                example: '2025.10'
               description: Service version
           content:
             application/json:
@@ -105,8 +105,8 @@ paths:
                       - days: 181
                         yearFraction: 0.5027777777777778
                         basis: 360
-                    convention: "ACT_360"
-                    version: "2025.10"
+                    convention: 'ACT_360'
+                    version: '2025.10'
                 multipleResults:
                   summary: Multiple date pairs result
                   value:
@@ -117,8 +117,8 @@ paths:
                       - days: 184
                         yearFraction: 0.5041095890410959
                         basis: 365
-                    convention: "ACT_365F"
-                    version: "2025.10"
+                    convention: 'ACT_365F'
+                    version: '2025.10'
         '400':
           description: Validation error or calculation error
           content:
@@ -129,33 +129,33 @@ paths:
                 invalidConvention:
                   summary: Invalid convention
                   value:
-                    type: "https://bondmath.chrislyons.dev/errors/invalid-convention"
-                    title: "Invalid Convention"
+                    type: 'https://bondmath.chrislyons.dev/errors/invalid-convention'
+                    title: 'Invalid Convention'
                     status: 400
-                    detail: "Unsupported convention: INVALID"
+                    detail: 'Unsupported convention: INVALID'
                     errors:
-                      - field: "convention"
-                        message: "Unsupported convention: INVALID"
+                      - field: 'convention'
+                        message: 'Unsupported convention: INVALID'
                 invalidDateFormat:
                   summary: Invalid date format
                   value:
-                    type: "https://bondmath.chrislyons.dev/errors/calculation-error"
-                    title: "Calculation Error"
+                    type: 'https://bondmath.chrislyons.dev/errors/calculation-error'
+                    title: 'Calculation Error'
                     status: 400
-                    detail: "One or more date pairs could not be calculated"
+                    detail: 'One or more date pairs could not be calculated'
                     errors:
-                      - field: "pairs[0].start"
-                        message: "Invalid date format: 2025/01/01. Expected YYYY-MM-DD"
+                      - field: 'pairs[0].start'
+                        message: 'Invalid date format: 2025/01/01. Expected YYYY-MM-DD'
                 tooManyPairs:
                   summary: DoS prevention
                   value:
-                    type: "https://bondmath.chrislyons.dev/errors/validation-error"
-                    title: "Validation Error"
+                    type: 'https://bondmath.chrislyons.dev/errors/validation-error'
+                    title: 'Validation Error'
                     status: 400
-                    detail: "Maximum 1000 pairs per request"
+                    detail: 'Maximum 1000 pairs per request'
                     errors:
-                      - field: "pairs"
-                        message: "Maximum 1000 pairs per request"
+                      - field: 'pairs'
+                        message: 'Maximum 1000 pairs per request'
 
   /health:
     get:
@@ -172,9 +172,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/HealthResponse'
               example:
-                status: "healthy"
-                service: "daycount"
-                version: "2025.10"
+                status: 'healthy'
+                service: 'daycount'
+                version: '2025.10'
 
 components:
   schemas:
@@ -207,13 +207,13 @@ components:
           format: date
           pattern: '^\d{4}-\d{2}-\d{2}$'
           description: Start date in ISO 8601 format (YYYY-MM-DD)
-          example: "2025-01-31"
+          example: '2025-01-31'
         end:
           type: string
           format: date
           pattern: '^\d{4}-\d{2}-\d{2}$'
           description: End date in ISO 8601 format (YYYY-MM-DD)
-          example: "2025-07-31"
+          example: '2025-07-31'
 
     DayCountConvention:
       type: string
@@ -225,7 +225,7 @@ components:
         - 30E_360
         - ACT_ACT_ISDA
         - ACT_ACT_ICMA
-      example: "ACT_360"
+      example: 'ACT_360'
 
     DayCountOptions:
       type: object
@@ -258,7 +258,7 @@ components:
         version:
           type: string
           description: Service version
-          example: "2025.10"
+          example: '2025.10'
 
     DayCountResult:
       type: object
@@ -292,13 +292,13 @@ components:
           type: string
           enum:
             - healthy
-          example: "healthy"
+          example: 'healthy'
         service:
           type: string
-          example: "daycount"
+          example: 'daycount'
         version:
           type: string
-          example: "2025.10"
+          example: '2025.10'
 
     ErrorResponse:
       type: object
@@ -312,11 +312,11 @@ components:
           type: string
           format: uri
           description: URI reference identifying the problem type (RFC 7807)
-          example: "https://bondmath.chrislyons.dev/errors/validation-error"
+          example: 'https://bondmath.chrislyons.dev/errors/validation-error'
         title:
           type: string
           description: Short, human-readable summary of the problem
-          example: "Validation Error"
+          example: 'Validation Error'
         status:
           type: integer
           description: HTTP status code
@@ -324,7 +324,7 @@ components:
         detail:
           type: string
           description: Human-readable explanation of the problem
-          example: "One or more date pairs could not be calculated"
+          example: 'One or more date pairs could not be calculated'
         errors:
           type: array
           description: Field-level validation errors
@@ -340,8 +340,8 @@ components:
         field:
           type: string
           description: Field path that caused the error
-          example: "pairs[0].start"
+          example: 'pairs[0].start'
         message:
           type: string
           description: Detailed error message
-          example: "Invalid date format: 2025/01/01. Expected YYYY-MM-DD"
+          example: 'Invalid date format: 2025/01/01. Expected YYYY-MM-DD'

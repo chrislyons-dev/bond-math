@@ -10,8 +10,8 @@
 User (SPA) → Auth0 JWT → Gateway → Internal JWT (HMAC-SHA256) → Services
 ```
 
-**External:** Auth0 RS256 tokens (public/private key)
-**Internal:** HMAC-SHA256 tokens (shared secret, 90s TTL)
+**External:** Auth0 RS256 tokens (public/private key) **Internal:** HMAC-SHA256
+tokens (shared secret, 90s TTL)
 
 See: [ADR-0011: Symmetric JWT](../adr/0011-symmetric-jwt-for-internal-auth.md)
 
@@ -104,17 +104,22 @@ exports.onExecutePostLogin = async (event, api) => {
   const namespace = 'https://bondmath.chrislyons.dev';
   const role = event.user.app_metadata?.role || 'free';
 
-  const permissions = {
-    free: ['daycount:read', 'valuation:read', 'metrics:read', 'pricing:read'],
-    professional: [
-      'daycount:read', 'daycount:write',
-      'valuation:read', 'valuation:write',
-      'metrics:read', 'metrics:write',
-      'pricing:read', 'pricing:write',
-      'batch:execute',
-    ],
-    admin: ['*all professional scopes*', 'admin:*'],
-  }[role] || [];
+  const permissions =
+    {
+      free: ['daycount:read', 'valuation:read', 'metrics:read', 'pricing:read'],
+      professional: [
+        'daycount:read',
+        'daycount:write',
+        'valuation:read',
+        'valuation:write',
+        'metrics:read',
+        'metrics:write',
+        'pricing:read',
+        'pricing:write',
+        'batch:execute',
+      ],
+      admin: ['*all professional scopes*', 'admin:*'],
+    }[role] || [];
 
   api.accessToken.setCustomClaim(`${namespace}/role`, role);
   api.accessToken.setCustomClaim(`${namespace}/permissions`, permissions);
@@ -145,7 +150,7 @@ const permissions = claims['https://bondmath.chrislyons.dev/permissions'] || [];
 const role = claims['https://bondmath.chrislyons.dev/role'];
 ```
 
-### Services (services/*/src/scopes.ts)
+### Services (services/\*/src/scopes.ts)
 
 ```typescript
 import { requireScopes } from './scopes';
@@ -179,13 +184,13 @@ wrangler secret put INTERNAL_JWT_SECRET --config gateway.toml
 
 ## Troubleshooting
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `Invalid token signature` | Different secrets | Verify same secret: `wrangler secret list --config <service>.toml` |
-| `Token expired` | Clock skew or TTL too short | Increase `INTERNAL_JWT_TTL` in gateway.toml |
-| `Missing Authorization header` | No token sent | Include `Authorization: Bearer <token>` header |
-| `Insufficient permissions` | Missing scope | Check user's role grants required scope |
-| `Secret not configured` | Missing .dev.vars or wrangler secret | Create .dev.vars from example or set via wrangler |
+| Error                          | Cause                                | Fix                                                                |
+| ------------------------------ | ------------------------------------ | ------------------------------------------------------------------ |
+| `Invalid token signature`      | Different secrets                    | Verify same secret: `wrangler secret list --config <service>.toml` |
+| `Token expired`                | Clock skew or TTL too short          | Increase `INTERNAL_JWT_TTL` in gateway.toml                        |
+| `Missing Authorization header` | No token sent                        | Include `Authorization: Bearer <token>` header                     |
+| `Insufficient permissions`     | Missing scope                        | Check user's role grants required scope                            |
+| `Secret not configured`        | Missing .dev.vars or wrangler secret | Create .dev.vars from example or set via wrangler                  |
 
 ---
 

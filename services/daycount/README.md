@@ -8,14 +8,14 @@ Authoritative day-count and year-fraction calculations for fixed income.
 
 ## Supported Conventions
 
-| Convention | Code | Typical Usage |
-|------------|------|---------------|
-| **ACT/360** | `ACT_360` | U.S. money markets (T-bills, CP) |
-| **ACT/365F** | `ACT_365F` | GBP/CAD money markets |
-| **30/360** | `30_360` | U.S. corporate/municipal bonds |
-| **30E/360** | `30E_360` | Eurobonds |
-| **ACT/ACT ISDA** | `ACT_ACT_ISDA` | U.S. Treasuries |
-| **ACT/ACT ICMA** | `ACT_ACT_ICMA` | Semi-annual government bonds |
+| Convention       | Code           | Typical Usage                    |
+| ---------------- | -------------- | -------------------------------- |
+| **ACT/360**      | `ACT_360`      | U.S. money markets (T-bills, CP) |
+| **ACT/365F**     | `ACT_365F`     | GBP/CAD money markets            |
+| **30/360**       | `30_360`       | U.S. corporate/municipal bonds   |
+| **30E/360**      | `30E_360`      | Eurobonds                        |
+| **ACT/ACT ISDA** | `ACT_ACT_ISDA` | U.S. Treasuries                  |
+| **ACT/ACT ICMA** | `ACT_ACT_ICMA` | Semi-annual government bonds     |
 
 ---
 
@@ -23,15 +23,14 @@ Authoritative day-count and year-fraction calculations for fixed income.
 
 ### `POST /count`
 
-**Gateway Route:** `POST /api/daycount/v1/count`
-**Required Scope:** `daycount:write`
+**Gateway Route:** `POST /api/daycount/v1/count` **Required Scope:**
+`daycount:write`
 
 **Request:**
+
 ```json
 {
-  "pairs": [
-    {"start": "2025-01-31", "end": "2025-07-31"}
-  ],
+  "pairs": [{ "start": "2025-01-31", "end": "2025-07-31" }],
   "convention": "ACT_360",
   "options": {
     "eomRule": true,
@@ -41,6 +40,7 @@ Authoritative day-count and year-fraction calculations for fixed income.
 ```
 
 **Response:**
+
 ```json
 {
   "results": [
@@ -110,6 +110,8 @@ npm run dev           # Start local server
 
 ## Related Documentation
 
-- [Request Flow](../../docs/design/request-flow.md) - How requests flow through the system
+- [Request Flow](../../docs/design/request-flow.md) - How requests flow through
+  the system
 - [Day Count Reference](../../docs/reference/daycount.md) - Convention details
-- [Authorization Model](../../docs/design/authorization-model.md) - Scopes and roles
+- [Authorization Model](../../docs/design/authorization-model.md) - Scopes and
+  roles

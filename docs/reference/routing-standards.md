@@ -2,17 +2,18 @@
 
 **Reference for ADR-0010** | **Version:** 2025.10
 
-Standards and implementation patterns for HTTP routing across all Bond Math services.
+Standards and implementation patterns for HTTP routing across all Bond Math
+services.
 
 ---
 
 ## Framework Choices
 
-| Language   | Framework       | Version | Runtime             |
-|------------|-----------------|---------|---------------------|
-| TypeScript | **Hono**        | v4.x    | Cloudflare Workers  |
-| Python     | **FastAPI**     | v0.109+ | AWS Lambda          |
-| Java       | **Spring Boot** | v3.2+   | AWS Lambda          |
+| Language   | Framework       | Version | Runtime            |
+| ---------- | --------------- | ------- | ------------------ |
+| TypeScript | **Hono**        | v4.x    | Cloudflare Workers |
+| Python     | **FastAPI**     | v0.109+ | AWS Lambda         |
+| Java       | **Spring Boot** | v3.2+   | AWS Lambda         |
 
 ---
 
@@ -81,7 +82,8 @@ export default app;
 
 ### Why Hono?
 
-- **Built for Cloudflare Workers** - Native Service Bindings, KV, Durable Objects
+- **Built for Cloudflare Workers** - Native Service Bindings, KV, Durable
+  Objects
 - **Middleware-first** - Essential for Gateway auth, logging, rate limiting
 - **Lightweight** - ~12KB, optimized for edge
 - **Type-safe** - Full TypeScript with generic contexts
@@ -240,6 +242,7 @@ All frameworks return:
 ### Architecture as Code Annotations
 
 **TypeScript (JSDoc)**:
+
 ```typescript
 /**
  * @endpoint POST /count
@@ -250,6 +253,7 @@ All frameworks return:
 ```
 
 **Python (Docstring)**:
+
 ```python
 """
 @endpoint POST /value
@@ -260,6 +264,7 @@ All frameworks return:
 ```
 
 **Java (Javadoc)**:
+
 ```java
 /**
  * @endpoint POST /price
@@ -272,6 +277,7 @@ All frameworks return:
 ### Request/Response Validation
 
 All frameworks enforce:
+
 - Type-safe request models
 - Automatic validation before handler execution
 - Detailed validation error messages
@@ -295,54 +301,58 @@ All frameworks enforce:
 
 ### TypeScript Alternatives
 
-| Framework       | Pros                            | Cons                                            | Verdict                         |
-|-----------------|--------------------------------|------------------------------------------------|--------------------------------|
-| **itty-router** | Tiny (450 bytes), minimal       | No built-in middleware, manual context passing  | ❌ Too minimal for Gateway      |
-| **Worktop**     | Full-featured, CF-native        | Less active maintenance, smaller community      | ❌ Ecosystem concerns           |
-| **sunder**      | Express-like API                | Heavier, less CF-specific                       | ❌ Not optimized for Workers    |
-| **Custom**      | Zero dependencies, full control | Reinventing middleware, context, error handling | ❌ Maintenance burden           |
+| Framework       | Pros                            | Cons                                            | Verdict                      |
+| --------------- | ------------------------------- | ----------------------------------------------- | ---------------------------- |
+| **itty-router** | Tiny (450 bytes), minimal       | No built-in middleware, manual context passing  | ❌ Too minimal for Gateway   |
+| **Worktop**     | Full-featured, CF-native        | Less active maintenance, smaller community      | ❌ Ecosystem concerns        |
+| **sunder**      | Express-like API                | Heavier, less CF-specific                       | ❌ Not optimized for Workers |
+| **Custom**      | Zero dependencies, full control | Reinventing middleware, context, error handling | ❌ Maintenance burden        |
 
 ### Python Alternatives
 
-| Framework                 | Pros                    | Cons                                           | Verdict                       |
-|--------------------------|------------------------|-----------------------------------------------|------------------------------|
-| **Flask**                | Simple, minimal         | No built-in validation, limited async          | ❌ Too minimal                |
-| **Django REST Framework** | Full-featured, admin UI | Heavy, overkill for microservices              | ❌ Too heavy                  |
-| **Starlette**            | Lightweight, async      | Less built-in validation than FastAPI          | ❌ FastAPI built on Starlette |
-| **Chalice**              | AWS-native, simple      | Limited community, AWS lock-in                 | ❌ Prefer standard frameworks |
+| Framework                 | Pros                    | Cons                                  | Verdict                       |
+| ------------------------- | ----------------------- | ------------------------------------- | ----------------------------- |
+| **Flask**                 | Simple, minimal         | No built-in validation, limited async | ❌ Too minimal                |
+| **Django REST Framework** | Full-featured, admin UI | Heavy, overkill for microservices     | ❌ Too heavy                  |
+| **Starlette**             | Lightweight, async      | Less built-in validation than FastAPI | ❌ FastAPI built on Starlette |
+| **Chalice**               | AWS-native, simple      | Limited community, AWS lock-in        | ❌ Prefer standard frameworks |
 
 ### Java Alternatives
 
 | Framework      | Pros                             | Cons                                     | Verdict                                          |
-|---------------|----------------------------------|------------------------------------------|--------------------------------------------------|
-| **Quarkus**   | Fast startup, native compilation | Less mature, smaller ecosystem           | ✅ Worth considering for cold-start optimization |
-| **Micronaut** | AOT compilation, low memory      | Smaller community than Spring            | ✅ Worth considering for Lambda memory limits    |
-| **Vert.x**    | Reactive, high performance       | Steeper learning curve, less opinionated | ❌ Too low-level for business logic              |
-| **Dropwizard**| Simple, production-ready         | Less active development                  | ❌ Spring has more momentum                      |
+| -------------- | -------------------------------- | ---------------------------------------- | ------------------------------------------------ |
+| **Quarkus**    | Fast startup, native compilation | Less mature, smaller ecosystem           | ✅ Worth considering for cold-start optimization |
+| **Micronaut**  | AOT compilation, low memory      | Smaller community than Spring            | ✅ Worth considering for Lambda memory limits    |
+| **Vert.x**     | Reactive, high performance       | Steeper learning curve, less opinionated | ❌ Too low-level for business logic              |
+| **Dropwizard** | Simple, production-ready         | Less active development                  | ❌ Spring has more momentum                      |
 
 ---
 
 ## Risk Mitigations
 
 ### Framework Breaking Changes
+
 - Pin major versions in package.json/requirements.txt/pom.xml
 - Subscribe to framework release notes
 - Test upgrades in preview environment
 - Use Dependabot for automated update PRs
 
 ### Performance Overhead
+
 - Benchmark each framework under load
 - Monitor cold start times (Lambda)
 - Optimize critical paths (disable unnecessary middleware)
 - Consider Quarkus/Micronaut for Java if cold start is an issue
 
 ### Team Learning Curve
+
 - Create internal guides for each framework
 - Pair programming for first implementation
 - Code reviews to enforce patterns
 - Reference implementations (templates)
 
 ### Inconsistent Error Handling
+
 - Shared RFC 7807 error schema (OpenAPI)
 - Error handler middleware/interceptor in each framework
 - Integration tests verify error format

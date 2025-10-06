@@ -1,6 +1,7 @@
 # Contributing to Bond Math
 
-Thank you for your interest in contributing to **Bond Math**! This document outlines the standards and conventions for contributing to this project.
+Thank you for your interest in contributing to **Bond Math**! This document
+outlines the standards and conventions for contributing to this project.
 
 ---
 
@@ -78,6 +79,7 @@ Must be one of:
 The scope should identify which part of the system is affected:
 
 **Services:**
+
 - `gateway` – Gateway Worker
 - `daycount` – Day-Count service
 - `valuation` – Bond Valuation service
@@ -85,16 +87,19 @@ The scope should identify which part of the system is affected:
 - `pricing` – Pricing Engine
 
 **Infrastructure:**
+
 - `iac` – Infrastructure as Code (Terraform, Wrangler)
 - `deploy` – Deployment scripts and configuration
 
 **Cross-cutting:**
+
 - `auth` – Authentication and authorization
 - `docs` – Documentation
 - `testing` – Test infrastructure
 - `api` – API contracts and schemas
 
 **Examples:**
+
 ```
 feat(daycount): add ACT/ACT ICMA convention support
 fix(gateway): correct internal JWT expiration validation
@@ -127,6 +132,7 @@ ci(deploy): parallelize Worker deployments
 ### Examples
 
 #### Simple feature
+
 ```
 feat(daycount): add 30/360 ISDA convention
 
@@ -137,6 +143,7 @@ ADR: 0007
 ```
 
 #### Bug fix with context
+
 ```
 fix(gateway): prevent token replay attacks
 
@@ -152,6 +159,7 @@ ADR: 0005
 ```
 
 #### Breaking change
+
 ```
 feat(api)!: standardize error response format
 
@@ -178,6 +186,7 @@ Ref #67
 ```
 
 #### Architecture change
+
 ```
 arch(gateway): document service binding flow
 
@@ -201,6 +210,7 @@ Use descriptive branch names with the following format:
 ```
 
 **Types:**
+
 - `feature/` – New features
 - `fix/` – Bug fixes
 - `docs/` – Documentation updates
@@ -209,6 +219,7 @@ Use descriptive branch names with the following format:
 - `chore/` – Maintenance tasks
 
 **Examples:**
+
 ```
 feature/act-act-icma-convention
 fix/gateway-token-validation
@@ -225,6 +236,7 @@ chore/upgrade-wrangler-cli
 ### Before Opening a PR
 
 1. **Ensure all tests pass locally**
+
    ```bash
    make test
    ```
@@ -247,6 +259,7 @@ chore/upgrade-wrangler-cli
 ### PR Title
 
 Use the same format as commit messages:
+
 ```
 feat(daycount): add ACT/ACT ICMA convention
 ```
@@ -255,30 +268,37 @@ feat(daycount): add ACT/ACT ICMA convention
 
 ```markdown
 ## Summary
+
 Brief description of what this PR does.
 
 ## Changes
+
 - Bullet point list of changes
 - Keep it concise
 
 ## Testing
+
 How was this tested?
+
 - [ ] Unit tests added/updated
 - [ ] Integration tests added/updated
 - [ ] Manually tested in local Wrangler dev environment
 - [ ] Deployed to preview environment
 
 ## Architecture Impact
+
 - [ ] No architecture changes
 - [ ] Updated service metadata annotations
 - [ ] Added/updated C4 diagrams
 - [ ] Created new ADR
 
 ## Breaking Changes
+
 - [ ] No breaking changes
 - [ ] Breaking changes documented below
 
 ## Checklist
+
 - [ ] Code follows project conventions
 - [ ] Tests pass locally
 - [ ] Documentation updated
@@ -286,8 +306,8 @@ How was this tested?
 - [ ] Architecture metadata updated (if applicable)
 
 ## Related Issues
-Fixes #123
-Ref ADR-0010
+
+Fixes #123 Ref ADR-0010
 ```
 
 ### Review Process
@@ -304,6 +324,7 @@ Ref ADR-0010
 ### For Reviewers
 
 **Focus on:**
+
 - ✅ Correctness and edge cases
 - ✅ Security implications (especially auth/authz flows)
 - ✅ Adherence to zero-trust model
@@ -313,10 +334,12 @@ Ref ADR-0010
 - ✅ Performance implications (especially for edge Workers)
 
 **Don't bikeshed:**
+
 - ❌ Code style (handled by automated formatters)
 - ❌ Minor naming preferences (unless truly confusing)
 
 **Be kind:**
+
 - Phrase feedback as questions when appropriate
 - Acknowledge good solutions
 - Explain the "why" behind suggestions
@@ -363,6 +386,7 @@ Any change that affects architecture **must** update metadata annotations.
 When making a significant architectural decision:
 
 1. Copy the ADR template:
+
    ```bash
    cp docs/adr/TEMPLATE.md docs/adr/XXXX-your-decision.md
    ```
@@ -384,7 +408,8 @@ When making a significant architectural decision:
 
 ### TypeScript (Gateway, Day-Count)
 
-- Follow [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html)
+- Follow
+  [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html)
 - Use strict TypeScript (`strict: true`)
 - Prefer `const` over `let`
 - Avoid `any` – use `unknown` if type is truly unknown
@@ -400,7 +425,8 @@ When making a significant architectural decision:
 
 ### Java (Pricing Engine)
 
-- Follow [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html)
+- Follow
+  [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html)
 - Use Java 17 features
 - Prefer immutability
 - Document all public APIs with Javadoc
@@ -421,17 +447,19 @@ When making a significant architectural decision:
 Use descriptive test names that read like specifications:
 
 **Good:**
+
 ```typescript
-test('returns 401 when Auth0 token is expired')
-test('mints internal JWT with correct actor claim')
-test('calculates ACT/360 year fraction correctly for leap year')
+test('returns 401 when Auth0 token is expired');
+test('mints internal JWT with correct actor claim');
+test('calculates ACT/360 year fraction correctly for leap year');
 ```
 
 **Bad:**
+
 ```typescript
-test('test1')
-test('auth fails')
-test('calculation')
+test('test1');
+test('auth fails');
+test('calculation');
 ```
 
 ### Test Organization
@@ -456,6 +484,7 @@ tests/
 (To be defined as project matures)
 
 For now:
+
 - Merges to `main` auto-deploy to production via GitHub Actions
 - Use feature flags for incomplete features
 - Maintain backward compatibility or clearly document breaking changes
@@ -472,10 +501,13 @@ For now:
 
 ## 📜 License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the
+MIT License.
 
 ---
 
 **Thank you for contributing to Bond Math!** 🎉
 
-Your work helps demonstrate that clean architecture, strong conventions, and Architecture as Code principles can make distributed systems understandable and maintainable.
+Your work helps demonstrate that clean architecture, strong conventions, and
+Architecture as Code principles can make distributed systems understandable and
+maintainable.

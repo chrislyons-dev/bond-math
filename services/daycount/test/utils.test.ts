@@ -168,6 +168,8 @@ describe('validateDateOrder', () => {
   test('should throw for start after end', () => {
     const start = { year: 2025, month: 12, day: 31 };
     const end = { year: 2025, month: 1, day: 1 };
-    expect(() => validateDateOrder(start, end)).toThrow('Start date must be before or equal to end date');
+    expect(() => validateDateOrder(start, end)).toThrow(
+      'Start date must be before or equal to end date'
+    );
   });
 });

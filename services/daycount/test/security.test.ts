@@ -34,7 +34,7 @@ describe('Input Validation Security', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${validToken}`,
+        Authorization: `Bearer ${validToken}`,
       },
       body: JSON.stringify({
         pairs: largePairs,
@@ -55,7 +55,7 @@ describe('Input Validation Security', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${validToken}`,
+        Authorization: `Bearer ${validToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
@@ -76,7 +76,7 @@ describe('Input Validation Security', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${validToken}`,
+        Authorization: `Bearer ${validToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: 12345, end: 67890 }],
@@ -98,7 +98,7 @@ describe('Input Validation Security', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${validToken}`,
+        Authorization: `Bearer ${validToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: "2025-01-01'; DROP TABLE users; --", end: '2025-12-31' }],
@@ -120,7 +120,7 @@ describe('Input Validation Security', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${validToken}`,
+        Authorization: `Bearer ${validToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
@@ -141,7 +141,7 @@ describe('Input Validation Security', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${validToken}`,
+        Authorization: `Bearer ${validToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
@@ -165,7 +165,7 @@ describe('Input Validation Security', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${validToken}`,
+        Authorization: `Bearer ${validToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
@@ -189,7 +189,7 @@ describe('Input Validation Security', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${validToken}`,
+        Authorization: `Bearer ${validToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],
@@ -211,7 +211,7 @@ describe('Input Validation Security', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${validToken}`,
+        Authorization: `Bearer ${validToken}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-12-31' }],

@@ -82,8 +82,7 @@ async function signData(data: string, secret: string): Promise<ArrayBuffer> {
  * Base64url encodes a string or ArrayBuffer
  */
 function base64UrlEncode(data: string | ArrayBuffer): string {
-  const bytes =
-    typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(data);
+  const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : new Uint8Array(data);
 
   let binary = '';
   for (let i = 0; i < bytes.length; i++) {

@@ -1,22 +1,26 @@
 # ⚙️ Day-Count Microservice
 
-The **Day-Count Worker** is the authoritative source for **accrual-day and year-fraction** calculations across _Bond Math_.  
-It provides a consistent, versioned implementation of the major day-count conventions used in global fixed income markets.
+The **Day-Count Worker** is the authoritative source for **accrual-day and
+year-fraction** calculations across _Bond Math_.  
+It provides a consistent, versioned implementation of the major day-count
+conventions used in global fixed income markets.
 
-The service exists to ensure that **every calculation in every language (Python, Java, TypeScript)** uses the same logic and conventions.  
-Results are deterministic, testable, and versioned — making them safe to cache and compare across services.
+The service exists to ensure that **every calculation in every language (Python,
+Java, TypeScript)** uses the same logic and conventions.  
+Results are deterministic, testable, and versioned — making them safe to cache
+and compare across services.
 
 ---
 
 ## 🔌 Consumption Patterns
 
 1. **Internal (preferred)** – Other Workers call it via **Service Bindings**.
-
    - No public hop.
    - Lowest latency.
    - Traffic stays entirely on Cloudflare’s backbone.
 
-2. **Public (through API Gateway)** – Exposed as a **versioned endpoint** for the Astro UI, partner integrations, and testing.
+2. **Public (through API Gateway)** – Exposed as a **versioned endpoint** for
+   the Astro UI, partner integrations, and testing.
    - Protected by **Auth0 (OIDC)** for user authentication.
    - Enforced rate limits, quotas, and analytics via API Gateway.
    - Returns identical responses as the internal binding.
@@ -40,12 +44,16 @@ Results are deterministic, testable, and versioned — making them safe to cache
 
 - Deterministic: Identical input → identical output.
 - Cacheable: Safe for Cloudflare edge caching; responses are immutable.
-- Versioned: Each deployment includes a semantic version (YYYY.MM) to trace calculations.
+- Versioned: Each deployment includes a semantic version (YYYY.MM) to trace
+  calculations.
 - Secure:
   - Public route: verified with Auth0 (OIDC).
-  - Internal binding: verified with short-lived internal JWT including an act (actor) claim.
-- Extensible: New conventions can be added without breaking existing API contracts.
-- Fallbacks: Clients can include local stubs if the Worker is unreachable (mainly for testing).
+  - Internal binding: verified with short-lived internal JWT including an act
+    (actor) claim.
+- Extensible: New conventions can be added without breaking existing API
+  contracts.
+- Fallbacks: Clients can include local stubs if the Worker is unreachable
+  (mainly for testing).
 
 ---
 

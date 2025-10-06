@@ -270,7 +270,11 @@ describe('calculateACTACTICMA', () => {
     const start = { year: 2025, month: 1, day: 1 };
     const end = { year: 2025, month: 7, day: 1 };
 
-    expect(() => calculateACTACTICMA(start, end, { frequency: 0 })).toThrow('Frequency must be positive');
-    expect(() => calculateACTACTICMA(start, end, { frequency: -1 })).toThrow('Frequency must be positive');
+    expect(() => calculateACTACTICMA(start, end, { frequency: 0 })).toThrow(
+      'Frequency must be positive'
+    );
+    expect(() => calculateACTACTICMA(start, end, { frequency: -1 })).toThrow(
+      'Frequency must be positive'
+    );
   });
 });

@@ -1,19 +1,23 @@
 # ADR 0001 – Architecture as Code
 
-**Status:** Accepted
-**Date:** 2025-10-05
-**Context:** Project uses multiple languages and Cloudflare microservices.
+**Status:** Accepted **Date:** 2025-10-05 **Context:** Project uses multiple
+languages and Cloudflare microservices.
 
 ---
 
 ## 🧩 What we were deciding
 
-How to describe and maintain architecture for a system that's constantly changing across multiple languages (TypeScript, Python, Java) and deployment platforms.
+How to describe and maintain architecture for a system that's constantly
+changing across multiple languages (TypeScript, Python, Java) and deployment
+platforms.
 
 **Options:**
+
 1. **Manual diagrams** – Draw in Lucidchart/Miro, hope they stay current
-2. **Separate modeling tool** – Structurizr/C4 Studio, maintain models apart from code
-3. **Architecture as Code** – Generate diagrams from source code, config, and IaC
+2. **Separate modeling tool** – Structurizr/C4 Studio, maintain models apart
+   from code
+3. **Architecture as Code** – Generate diagrams from source code, config, and
+   IaC
 
 ---
 
@@ -22,6 +26,7 @@ How to describe and maintain architecture for a system that's constantly changin
 Adopt **Architecture as Code** with structured comment-based annotations.
 
 **Approach:**
+
 - Diagrams generated from PlantUML/Structurizr files in repo
 - Metadata extracted from code annotations and IaC
 - GitHub Actions regenerate diagrams on every commit to `main`
@@ -52,12 +57,15 @@ Every service must have a metadata block at entry point:
 ```
 
 **Required Tags:**
+
 - `@service` – unique identifier (kebab-case)
 - `@type` – deployment type (cloudflare-worker | lambda | etc.)
-- `@layer` – architectural layer (ui | api-gateway | business-logic | data-access)
+- `@layer` – architectural layer (ui | api-gateway | business-logic |
+  data-access)
 - `@description` – one-line purpose
 
 **Optional Tags:**
+
 - `@owner`, `@public-routes`, `@internal-routes`, `@dependencies`
 - `@security-model`, `@sla-tier`
 
@@ -90,17 +98,20 @@ Every service must have a metadata block at entry point:
 ## 🔍 Tooling & CI
 
 **Extraction:**
+
 - Custom parser scans services for annotations
 - Outputs `docs/architecture/metadata.json`
 - PlantUML generator creates C4 diagrams
 
 **CI Workflow (on push to `main`):**
+
 1. Extract metadata from all services
 2. Generate C4 diagrams (Context, Container, Component)
 3. Generate dependency graph
 4. Publish to `docs/architecture/`
 
 **Validation (on PRs):**
+
 - Metadata linting: Required tags present
 - Dependency validation: References resolve
 - Diagram generation: PlantUML renders without errors
@@ -110,11 +121,13 @@ Every service must have a metadata block at entry point:
 ## 📐 Diagram Standards
 
 **C4 Model Levels:**
+
 1. **Context** – System + external dependencies (Auth0, Cloudflare)
 2. **Container** – All Workers, Pages, Gateway
 3. **Component** – Internal structure per service
 
 **File Organization:**
+
 ```
 docs/architecture/
 ├── diagrams/
@@ -141,6 +154,7 @@ docs/architecture/
 - Refactoring is safer – dependency changes tracked
 
 **Trade-offs accepted:**
+
 - Takes setup time initially
 - Diagrams not as "pretty" as manual ones
 - Requires discipline to update annotations
@@ -152,6 +166,7 @@ Worth it for **always accurate** documentation.
 ## 📎 Outcome
 
 Open the repo and instantly see:
+
 - What services exist
 - How they connect
 - How Cloudflare routing works

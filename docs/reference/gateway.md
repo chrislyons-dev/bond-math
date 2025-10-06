@@ -1,21 +1,22 @@
 # 🧭 Gateway Worker
 
-**Service:** `gateway`
-**Type:** Cloudflare Worker
-**Purpose:** Entry point and security gate for all API traffic in the _Bond Math_ system.
+**Service:** `gateway` **Type:** Cloudflare Worker **Purpose:** Entry point and
+security gate for all API traffic in the _Bond Math_ system.
 
 ---
 
 ### 🧩 What it is
 
-The **Gateway Worker** is the front door for everything in _Bond Math_.
-It’s the single Cloudflare Worker that receives requests from the UI (Astro SPA) and decides:
+The **Gateway Worker** is the front door for everything in _Bond Math_. It’s the
+single Cloudflare Worker that receives requests from the UI (Astro SPA) and
+decides:
 
 1. **Who’s calling** (Auth0 identity verification).
 2. **What they can do** (permissions).
 3. **Where the request should go** (routing to internal services).
 
-Think of it as a lightweight **API gateway** and **auth proxy**, built entirely with Workers and service bindings — no extra infrastructure.
+Think of it as a lightweight **API gateway** and **auth proxy**, built entirely
+with Workers and service bindings — no extra infrastructure.
 
 ---
 
@@ -24,28 +25,29 @@ Think of it as a lightweight **API gateway** and **auth proxy**, built entirely 
 The Gateway Worker handles three main jobs:
 
 1. **Authentication**
-
-   - It verifies the user’s **Auth0 access token** using Auth0’s JWKS (standard OIDC verification).
+   - It verifies the user’s **Auth0 access token** using Auth0’s JWKS (standard
+     OIDC verification).
    - If the token is invalid or missing, it returns `401 Unauthorized`.
 
 2. **Internal Token Minting**
-
-   - Once the Auth0 token checks out, it mints a **short-lived internal JWT** (≈90 seconds) signed with a shared secret.
+   - Once the Auth0 token checks out, it mints a **short-lived internal JWT**
+     (≈90 seconds) signed with a shared secret.
    - This token includes an **`act` (actor)** claim that says:
 
      > “Service X is acting for User Y.”
 
-   - That token is then attached to any internal service call as a new `Authorization: Bearer <internal-jwt>` header.
+   - That token is then attached to any internal service call as a new
+     `Authorization: Bearer <internal-jwt>` header.
 
 3. **Routing and Forwarding**
-
-   - Based on the URL path, it forwards the request to the correct internal Worker:
-
+   - Based on the URL path, it forwards the request to the correct internal
+     Worker:
      - `/api/pricing/*` → `svc-pricing`
      - `/api/valuation/*` → `svc-bond-valuation`
      - `/api/daycount/*` → `svc-daycount`
 
-   - It uses **Cloudflare service bindings** for these calls, so everything stays on Cloudflare’s edge network (no external HTTP requests).
+   - It uses **Cloudflare service bindings** for these calls, so everything
+     stays on Cloudflare’s edge network (no external HTTP requests).
 
 ---
 
@@ -75,10 +77,9 @@ The Gateway Worker handles three main jobs:
 (4)  Service → Gateway → SPA
 ```
 
-In short:
-**Auth0 handles who the user is.**
-**The Gateway handles who the service is acting for.**
-**Each internal service trusts only signed tokens from the Gateway.**
+In short: **Auth0 handles who the user is.** **The Gateway handles who the
+service is acting for.** **Each internal service trusts only signed tokens from
+the Gateway.**
 
 ---
 
@@ -87,8 +88,10 @@ In short:
 - **Zero-trust** – Every hop verifies a cryptographic token.
 - **Stateless** – No sessions or shared memory required.
 - **Fast** – Tokens are tiny and validated locally.
-- **Isolated** – Only the Gateway talks to Auth0; services never leave Cloudflare’s edge.
-- **Auditable** – Each request carries a `rid` (request ID) and an `act` claim for traceability.
+- **Isolated** – Only the Gateway talks to Auth0; services never leave
+  Cloudflare’s edge.
+- **Auditable** – Each request carries a `rid` (request ID) and an `act` claim
+  for traceability.
 
 ---
 
@@ -121,17 +124,20 @@ In short:
 }
 ```
 
-Each service validates this token locally and uses `act.sub` and `act.perms` to decide what to allow.
+Each service validates this token locally and uses `act.sub` and `act.perms` to
+decide what to allow.
 
 ---
 
 ### 🚧 Trade-offs
 
-- We maintain one internal signing secret shared by all services (rotated as needed).
+- We maintain one internal signing secret shared by all services (rotated as
+  needed).
 - Slightly more complexity at the gateway (minting logic).
 - Services must verify internal tokens, but the code is only ~20 lines.
 
-All of that’s worth it for clear, auditable trust boundaries between every service.
+All of that’s worth it for clear, auditable trust boundaries between every
+service.
 
 ---
 
@@ -139,6 +145,9 @@ All of that’s worth it for clear, auditable trust boundaries between every ser
 
 The **Gateway Worker** is the security and routing backbone of _Bond Math_.
 
-It turns the raw Auth0 user identity into a short-lived, internal trust token that flows safely across services — keeping everything **stateless, secure, and fast** at the edge.
+It turns the raw Auth0 user identity into a short-lived, internal trust token
+that flows safely across services — keeping everything **stateless, secure, and
+fast** at the edge.
 
-It’s the piece that ties the Auth0 OIDC model to the zero-trust microservices design.
+It’s the piece that ties the Auth0 OIDC model to the zero-trust microservices
+design.

@@ -1,6 +1,7 @@
 # Testing Standards
 
-This document defines testing standards, conventions, and best practices for the **Bond Math** project.
+This document defines testing standards, conventions, and best practices for the
+**Bond Math** project.
 
 ---
 
@@ -9,7 +10,8 @@ This document defines testing standards, conventions, and best practices for the
 1. **Tests are documentation** – they show how code should be used
 2. **Tests enable refactoring** – change internals with confidence
 3. **Fast feedback loops** – tests should run quickly and fail clearly
-4. **Test behavior, not implementation** – focus on inputs/outputs, not internals
+4. **Test behavior, not implementation** – focus on inputs/outputs, not
+   internals
 5. **Write tests first for bugs** – reproduce, then fix, then verify
 
 ---
@@ -31,18 +33,21 @@ We follow a balanced test pyramid:
 ```
 
 ### **Unit Tests (60%)**
+
 - Test individual functions and modules in isolation
 - Mock external dependencies
 - Fast (< 1ms per test)
 - No network calls, no real services
 
 ### **Integration Tests (30%)**
+
 - Test service-to-service interactions
 - Use real service bindings (or Wrangler local mode)
 - Test API contracts
 - Verify authentication/authorization flows
 
 ### **End-to-End Tests (10%)**
+
 - Test complete user workflows
 - Use deployed preview environments
 - Test UI → Gateway → Services → back
@@ -83,6 +88,7 @@ tests/
 ```
 
 **Alternative (Co-located):** Unit tests can live alongside source files:
+
 ```
 services/
 ├── gateway/
@@ -100,7 +106,7 @@ services/
 ### **Minimum Coverage Targets**
 
 | Type                  | Target | Enforcement |
-|-----------------------|--------|-------------|
+| --------------------- | ------ | ----------- |
 | Overall Line Coverage | 80%    | CI warning  |
 | Critical Paths        | 100%   | CI failure  |
 | Public APIs           | 100%   | CI failure  |
@@ -126,21 +132,23 @@ Use descriptive names that read like specifications:
 **Pattern:** `test('should [expected behavior] when [condition]')`
 
 **Good:**
+
 ```typescript
 describe('JWT verification', () => {
-  test('should reject token when signature is invalid', () => { });
-  test('should reject token when expiration has passed', () => { });
-  test('should reject token when audience does not match', () => { });
-  test('should accept valid token with correct claims', () => { });
+  test('should reject token when signature is invalid', () => {});
+  test('should reject token when expiration has passed', () => {});
+  test('should reject token when audience does not match', () => {});
+  test('should accept valid token with correct claims', () => {});
 });
 ```
 
 **Bad:**
+
 ```typescript
 describe('JWT', () => {
-  test('test1', () => { });
-  test('invalid token', () => { });
-  test('works', () => { });
+  test('test1', () => {});
+  test('invalid token', () => {});
+  test('works', () => {});
 });
 ```
 
@@ -210,6 +218,7 @@ test('should reject expired token', () => {
 ### **TypeScript (Vitest)**
 
 **Setup:**
+
 ```typescript
 // vitest.config.ts
 import { defineConfig } from 'vitest/config';
@@ -228,6 +237,7 @@ export default defineConfig({
 ```
 
 **Example Test:**
+
 ```typescript
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { verifyInternalToken } from './jwt';
@@ -255,21 +265,23 @@ describe('verifyInternalToken', () => {
       exp: Math.floor(Date.now() / 1000) - 60, // 60 seconds ago
     });
 
-    expect(() => verifyInternalToken(expiredToken, audience, secret))
-      .toThrow(AuthError);
+    expect(() => verifyInternalToken(expiredToken, audience, secret)).toThrow(
+      AuthError
+    );
   });
 });
 ```
 
 **Mocking Service Bindings:**
+
 ```typescript
 import { vi } from 'vitest';
 
 test('should call day-count service via binding', async () => {
   const mockDayCount = {
-    fetch: vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ yearFraction: 0.5 }))
-    ),
+    fetch: vi
+      .fn()
+      .mockResolvedValue(new Response(JSON.stringify({ yearFraction: 0.5 }))),
   };
 
   const env = { SVC_DAYCOUNT: mockDayCount };
@@ -288,6 +300,7 @@ test('should call day-count service via binding', async () => {
 ### **Python (pytest)**
 
 **Setup:**
+
 ```python
 # pyproject.toml or pytest.ini
 [tool.pytest.ini_options]
@@ -305,6 +318,7 @@ addopts = [
 ```
 
 **Example Test:**
+
 ```python
 import pytest
 from decimal import Decimal
@@ -357,6 +371,7 @@ class TestDirtyPriceCalculation:
 ```
 
 **Mocking External Services:**
+
 ```python
 from unittest.mock import Mock, patch
 import pytest
@@ -389,6 +404,7 @@ def test_should_call_daycount_service_for_accrual(mock_daycount_service):
 ### **Java (JUnit 5)**
 
 **Setup:**
+
 ```xml
 <!-- pom.xml -->
 <dependency>
@@ -406,6 +422,7 @@ def test_should_call_daycount_service_for_accrual(mock_daycount_service):
 ```
 
 **Example Test:**
+
 ```java
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
@@ -512,7 +529,7 @@ describe('Gateway → DayCount Integration', () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${createTestToken()}`,
+        Authorization: `Bearer ${createTestToken()}`,
       },
       body: JSON.stringify({
         pairs: [{ start: '2025-01-01', end: '2025-07-01' }],
@@ -536,7 +553,7 @@ test('should reject request with expired Auth0 token', async () => {
   const response = await gateway.fetch('/api/valuation/v1/price', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${expiredToken}`,
+      Authorization: `Bearer ${expiredToken}`,
     },
   });
 
@@ -562,7 +579,8 @@ test('should reject request with expired Auth0 token', async () => {
 ```typescript
 // Stub: Just returns data
 const stubDayCount = {
-  fetch: () => Promise.resolve(new Response(JSON.stringify({ yearFraction: 0.5 }))),
+  fetch: () =>
+    Promise.resolve(new Response(JSON.stringify({ yearFraction: 0.5 }))),
 };
 
 // Mock: Verifies the call happened
@@ -595,13 +613,13 @@ import { check, sleep } from 'k6';
 
 export const options = {
   stages: [
-    { duration: '30s', target: 50 },   // Ramp up
-    { duration: '1m', target: 50 },    // Steady state
-    { duration: '30s', target: 0 },    // Ramp down
+    { duration: '30s', target: 50 }, // Ramp up
+    { duration: '1m', target: 50 }, // Steady state
+    { duration: '30s', target: 0 }, // Ramp down
   ],
   thresholds: {
-    http_req_duration: ['p(95)<500'],  // 95% under 500ms
-    http_req_failed: ['rate<0.01'],    // < 1% errors
+    http_req_duration: ['p(95)<500'], // 95% under 500ms
+    http_req_failed: ['rate<0.01'], // < 1% errors
   },
 };
 
@@ -611,12 +629,16 @@ export default function () {
     convention: 'ACT_360',
   });
 
-  const response = http.post('https://bondmath.chrislyons.dev/api/daycount/v1/count', payload, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${__ENV.TEST_TOKEN}`,
-    },
-  });
+  const response = http.post(
+    'https://bondmath.chrislyons.dev/api/daycount/v1/count',
+    payload,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${__ENV.TEST_TOKEN}`,
+      },
+    }
+  );
 
   check(response, {
     'status is 200': (r) => r.status === 200,
@@ -715,4 +737,5 @@ Before submitting a PR:
 
 ---
 
-**Remember:** Tests are code too. Keep them clean, maintainable, and trustworthy.
+**Remember:** Tests are code too. Keep them clean, maintainable, and
+trustworthy.

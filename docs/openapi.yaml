@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Bond Math API
-  version: "2025.10"
+  version: '2025.10'
   description: |
     Multi-language, serverless microservices system for fixed-income pricing and metrics.
 
@@ -66,14 +66,14 @@ paths:
                 summary: European 30E/360 calculation
                 value:
                   pairs:
-                    - start: "2025-01-31"
-                      end: "2025-07-31"
-                    - start: "2025-07-31"
-                      end: "2026-01-31"
-                  convention: "30E_360"
+                    - start: '2025-01-31'
+                      end: '2025-07-31'
+                    - start: '2025-07-31'
+                      end: '2026-01-31'
+                  convention: '30E_360'
                   options:
                     eomRule: true
-                  version: "2025.10"
+                  version: '2025.10'
       responses:
         '200':
           description: Successful calculation
@@ -81,11 +81,11 @@ paths:
             Cache-Control:
               schema:
                 type: string
-                example: "public, max-age=3600"
+                example: 'public, max-age=3600'
             X-Service-Version:
               schema:
                 type: string
-                example: "2025.10"
+                example: '2025.10'
           content:
             application/json:
               schema:
@@ -123,7 +123,7 @@ paths:
                     example: daycount
                   version:
                     type: string
-                    example: "2025.10"
+                    example: '2025.10'
 
   /valuation/v1/price:
     post:
@@ -251,26 +251,26 @@ paths:
               simpleValuation:
                 summary: Simple bond cashflows with zero curve
                 value:
-                  asOf: "2025-07-01"
+                  asOf: '2025-07-01'
                   cashflows:
-                    - date: "2026-01-01"
+                    - date: '2026-01-01'
                       amount: 25.00
-                      currency: "USD"
-                    - date: "2026-07-01"
+                      currency: 'USD'
+                    - date: '2026-07-01'
                       amount: 25.00
-                      currency: "USD"
-                    - date: "2030-07-01"
+                      currency: 'USD'
+                    - date: '2030-07-01'
                       amount: 1025.00
-                      currency: "USD"
+                      currency: 'USD'
                   discountCurve:
-                    convention: "ACT_365F"
-                    compounding: "Continuous"
+                    convention: 'ACT_365F'
+                    compounding: 'Continuous'
                     nodes:
-                      - date: "2025-07-01"
+                      - date: '2025-07-01'
                         zeroRate: 0.042
-                      - date: "2026-07-01"
+                      - date: '2026-07-01'
                         zeroRate: 0.044
-                      - date: "2030-07-01"
+                      - date: '2030-07-01'
                         zeroRate: 0.047
       responses:
         '200':
@@ -310,10 +310,10 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
           example:
-            type: "https://bondmath.chrislyons.dev/errors/unauthorized"
-            title: "Unauthorized"
+            type: 'https://bondmath.chrislyons.dev/errors/unauthorized'
+            title: 'Unauthorized'
             status: 401
-            detail: "Invalid or missing authentication token"
+            detail: 'Invalid or missing authentication token'
 
   schemas:
     # Day-Count Service Schemas
@@ -337,12 +337,12 @@ components:
                 type: string
                 format: date
                 description: Start date (ISO 8601)
-                example: "2025-01-31"
+                example: '2025-01-31'
               end:
                 type: string
                 format: date
                 description: End date (ISO 8601)
-                example: "2025-07-31"
+                example: '2025-07-31'
         convention:
           $ref: '#/components/schemas/DayCountConvention'
         options:
@@ -360,7 +360,7 @@ components:
         version:
           type: string
           description: API version (optional)
-          example: "2025.10"
+          example: '2025.10'
 
     DayCountResponse:
       type: object
@@ -377,7 +377,7 @@ components:
           $ref: '#/components/schemas/DayCountConvention'
         version:
           type: string
-          example: "2025.10"
+          example: '2025.10'
 
     DayCountResult:
       type: object
@@ -403,12 +403,12 @@ components:
     DayCountConvention:
       type: string
       enum:
-        - "30_360"
-        - "30E_360"
-        - "ACT_360"
-        - "ACT_365F"
-        - "ACT_ACT_ISDA"
-        - "ACT_ACT_ICMA"
+        - '30_360'
+        - '30E_360'
+        - 'ACT_360'
+        - 'ACT_365F'
+        - 'ACT_ACT_ISDA'
+        - 'ACT_ACT_ICMA'
       description: Day-count convention identifier
 
     # Valuation Service Schemas
@@ -426,12 +426,12 @@ components:
           type: string
           format: date
           description: Settlement date
-          example: "2025-07-01"
+          example: '2025-07-01'
         maturityDate:
           type: string
           format: date
           description: Maturity date
-          example: "2030-07-01"
+          example: '2030-07-01'
         couponRate:
           type: number
           format: double
@@ -457,12 +457,12 @@ components:
           type: string
           format: date
           description: First coupon date (optional, for odd first periods)
-          example: "2025-12-31"
+          example: '2025-12-31'
         lastCouponDate:
           type: string
           format: date
           description: Last coupon date (optional, for odd last periods)
-          example: "2030-03-01"
+          example: '2030-03-01'
 
     PriceRequest:
       allOf:
@@ -522,7 +522,7 @@ components:
           type: string
           format: date
           description: Next coupon payment date
-          example: "2025-12-31"
+          example: '2025-12-31'
         cashflows:
           type: array
           description: Optional cashflow schedule
@@ -601,7 +601,7 @@ components:
           type: string
           format: date
           description: Valuation date
-          example: "2025-07-01"
+          example: '2025-07-01'
         cashflows:
           type: array
           description: Dated cashflows to discount
@@ -626,7 +626,7 @@ components:
           type: string
           format: date
           description: Payment date
-          example: "2026-01-01"
+          example: '2026-01-01'
         amount:
           type: number
           format: double
@@ -635,7 +635,7 @@ components:
         currency:
           type: string
           description: Currency code (ISO 4217)
-          example: "USD"
+          example: 'USD'
 
     DiscountCurve:
       type: object
@@ -654,7 +654,7 @@ components:
             - Semiannual
             - Quarterly
           description: Compounding frequency for rates
-          example: "Continuous"
+          example: 'Continuous'
         nodes:
           type: array
           description: Curve data points
@@ -723,11 +723,11 @@ components:
           type: string
           format: uri
           description: Error type URI
-          example: "https://bondmath.chrislyons.dev/errors/validation-error"
+          example: 'https://bondmath.chrislyons.dev/errors/validation-error'
         title:
           type: string
           description: Short error title
-          example: "Validation Error"
+          example: 'Validation Error'
         status:
           type: integer
           description: HTTP status code
@@ -735,7 +735,7 @@ components:
         detail:
           type: string
           description: Detailed error message
-          example: "Request body must be valid JSON"
+          example: 'Request body must be valid JSON'
         errors:
           type: array
           description: Field-level validation errors
@@ -745,8 +745,8 @@ components:
               field:
                 type: string
                 description: Field path
-                example: "pairs[0].start"
+                example: 'pairs[0].start'
               message:
                 type: string
                 description: Error message
-                example: "Invalid date format"
+                example: 'Invalid date format'

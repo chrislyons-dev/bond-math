@@ -14,18 +14,18 @@ export default {
       2,
       'always',
       [
-        'feat',      // New feature
-        'fix',       // Bug fix
-        'docs',      // Documentation only
-        'style',     // Code style (formatting, etc.)
-        'refactor',  // Code refactoring
-        'perf',      // Performance improvement
-        'test',      // Adding/updating tests
-        'build',     // Build system or dependencies
-        'ci',        // CI/CD configuration
-        'chore',     // Other changes
-        'arch',      // Architecture changes (diagrams, ADRs)
-        'revert',    // Revert a previous commit
+        'feat', // New feature
+        'fix', // Bug fix
+        'docs', // Documentation only
+        'style', // Code style (formatting, etc.)
+        'refactor', // Code refactoring
+        'perf', // Performance improvement
+        'test', // Adding/updating tests
+        'build', // Build system or dependencies
+        'ci', // CI/CD configuration
+        'chore', // Other changes
+        'arch', // Architecture changes (diagrams, ADRs)
+        'revert', // Revert a previous commit
       ],
     ],
 

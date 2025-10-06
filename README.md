@@ -10,14 +10,14 @@
 **Content**
 
 - [Bond Math](#bond-math)
-    - [💡 Overview](#-overview)
-    - [🔀 Routes](#-routes)
-    - [🔐 Authentication \& Authorization](#-authentication--authorization)
-    - [🗂️ Project Structure](#️-project-structure)
-    - [🧱 Tech Stack](#-tech-stack)
-    - [🧩 Microservices \& Routes](#-microservices--routes)
-    - [🛠️ Development \& Deployment](#️-development--deployment)
-    - [📚 Documentation](#-documentation)
+  - [💡 Overview](#-overview)
+  - [🔀 Routes](#-routes)
+  - [🔐 Authentication \& Authorization](#-authentication--authorization)
+  - [🗂️ Project Structure](#️-project-structure)
+  - [🧱 Tech Stack](#-tech-stack)
+  - [🧩 Microservices \& Routes](#-microservices--routes)
+  - [🛠️ Development \& Deployment](#️-development--deployment)
+  - [📚 Documentation](#-documentation)
 
 ---
 
