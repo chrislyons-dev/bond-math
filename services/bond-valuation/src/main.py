@@ -16,64 +16,14 @@ This is a stub implementation that returns hardcoded responses to validate
 the microapi framework integration.
 """
 
-import os
-import sys
-from pathlib import Path
-
-# Add microapi library to path
-lib_path = Path(__file__).parent.parent.parent.parent / "libs" / "microapi" / "src"
-sys.path.insert(0, str(lib_path))
-
-from microapi import (
-    App,
-    Field,
-    JsonResponse,
-    JWTMiddleware,
-    Request,
-    require_scopes,
-    validate_body,
-)
-from microapi.errors import HttpError
-from microapi.logging import LoggingMiddleware, StructuredLogger
+from microapi import Field, JsonResponse, Request, create_worker_app, require_scopes, validate_body
 
 # Constants
 SERVICE_NAME = "bond-valuation"
 SERVICE_VERSION = "2025.10"
 
-# Initialize app and logger
-app = App()
-logger = StructuredLogger(SERVICE_NAME)
-
-# Add logging middleware
-app.use(LoggingMiddleware(logger))
-
-# Add JWT authentication middleware
-# Secret comes from Cloudflare Workers environment (env.INTERNAL_JWT_SECRET)
-jwt_secret = os.environ.get("INTERNAL_JWT_SECRET")
-if jwt_secret:
-    app.use(JWTMiddleware(jwt_secret, f"svc-{SERVICE_NAME}"))
-else:
-    logger.warn("INTERNAL_JWT_SECRET not configured - authentication disabled")
-
-
-# Route handlers
-@app.route("/health", methods=["GET"])
-async def health_check(request: Request) -> JsonResponse:
-    """Health check endpoint.
-
-    Args:
-        request: HTTP request
-
-    Returns:
-        Health status response
-    """
-    return JsonResponse(
-        {
-            "status": "healthy",
-            "service": SERVICE_NAME,
-            "version": SERVICE_VERSION,
-        }
-    )
+# Initialize app with standard middleware, health check, and error handling
+app, logger, on_fetch = create_worker_app(SERVICE_NAME, SERVICE_VERSION)
 
 
 @app.route("/price", methods=["POST"])
@@ -203,42 +153,3 @@ async def calculate_yield(request: Request) -> JsonResponse:
             "version": SERVICE_VERSION,
         }
     )
-
-
-@app.error_handler
-async def handle_error(error: Exception) -> JsonResponse:
-    """Global error handler.
-
-    Args:
-        error: Exception that occurred
-
-    Returns:
-        Error response with appropriate status code
-    """
-    if isinstance(error, HttpError):
-        response_data = {"error": error.message}
-        if error.error_code:
-            response_data["code"] = error.error_code
-        return JsonResponse(response_data, status=error.status)
-
-    # Unexpected error - log and return 500
-    logger.error("Unhandled error", error=str(error), error_type=type(error).__name__)
-
-    return JsonResponse(
-        {"error": "Internal Server Error"},
-        status=500,
-    )
-
-
-# Cloudflare Workers entry point
-async def on_fetch(request: object) -> object:
-    """Cloudflare Workers fetch handler.
-
-    Args:
-        request: Raw Cloudflare Workers request
-
-    Returns:
-        Cloudflare Workers response
-    """
-    response = await app.handle(request)
-    return response.to_workers_response()
