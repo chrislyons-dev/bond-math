@@ -30,8 +30,13 @@ Adopt **structured JSON logging** with a unified schema across all services.
 | Service Stack               | Library                                | Rationale                                                 |
 | --------------------------- | -------------------------------------- | --------------------------------------------------------- |
 | **TypeScript / Cloudflare** | `hono-pino` + `pino`                   | Fast, low-overhead JSON logger optimized for Hono/Workers |
-| **Python**                  | `structlog`                            | Industry standard, highly configurable, middleware-based  |
+| **Python / Cloudflare**     | `python-json-logger` (workers-py)      | Lightweight JSON formatter (~2KB) using stdlib logging    |
 | **Java**                    | `logback` + `logstash-logback-encoder` | Enterprise-grade, native JSON output, battle-tested       |
+
+**Note:** Python services running on Cloudflare Workers cannot use heavy
+frameworks like FastAPI or `structlog` due to runtime constraints. The
+`workers-py` microframework uses Python's stdlib `logging` module with
+`python-json-logger` (2KB package) for JSON formatting.
 
 ---
 
@@ -112,21 +117,29 @@ logger.info({ userId: '123' }, 'User authenticated');
 - Low memory overhead for Workers
 - Compatible with Hono middleware chain
 
-### Python Services
+### Python / Cloudflare Workers
 
-**Library:** `structlog`
+**Library:** `python-json-logger` via `workers-py`
 
 ```python
-import structlog
+from workers_py.logging import StructuredLogger
 
-logger = structlog.get_logger()
-logger.info("request_completed", duration=125, status=200)
+logger = StructuredLogger("daycount")
+logger.info("request_completed", request_id=req_id, duration=125, status=200)
+```
+
+**Installation:**
+
+```bash
+pip install workers-py
 ```
 
 **Configuration:**
 
-- Processors: Add `timestamp`, `service`, `requestId` automatically
-- Output: JSON renderer for production, console for development
+- Uses stdlib `logging` module with `python-json-logger` formatter
+- Automatic `timestamp`, `service`, `level` fields
+- Optional `requestId` for request correlation
+- Additional context via kwargs
 
 ### Java Services
 
@@ -243,10 +256,12 @@ All worth it for production observability and debugging capabilities.
 
 - [hono-pino Documentation](https://github.com/maou-shonen/hono-pino)
 - [Pino Documentation](https://getpino.io/)
-- [structlog Documentation](https://www.structlog.org/)
+- [python-json-logger](https://github.com/madzak/python-json-logger)
+- [workers-py Framework](../../libs/workers-py/README.md)
 - [logstash-logback-encoder](https://github.com/logfellow/logstash-logback-encoder)
 - [ADR-0002: Service Languages](./0002-service-languages.md)
 - [Cloudflare Workers Runtime Limits](https://developers.cloudflare.com/workers/platform/limits/)
+- [Cloudflare Python Workers](https://developers.cloudflare.com/workers/languages/python/)
 
 ---
 

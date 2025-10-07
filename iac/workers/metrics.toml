@@ -1,0 +1,36 @@
+name = "bond-math-metrics"
+main = "../../services/metrics/src/main.py"
+compatibility_date = "2025-01-01"
+
+# Service metadata for Architecture as Code
+# @service metrics
+# @type cloudflare-worker-python
+# @layer business-logic
+# @description Duration, convexity, and risk metrics for bonds
+
+[observability]
+enabled = true
+
+# Python-specific configuration
+# Cloudflare Python Workers use pyodide runtime
+# https://developers.cloudflare.com/workers/languages/python/
+
+# Development environment
+[env.dev]
+name = "bond-math-metrics-dev"
+vars = { ENVIRONMENT = "development" }
+
+# Preview environment
+[env.preview]
+name = "bond-math-metrics-preview"
+vars = { ENVIRONMENT = "preview" }
+
+# Production environment (default)
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+# Secrets (set via: wrangler secret put <NAME>)
+# - INTERNAL_JWT_SECRET (MUST match Gateway's secret for JWT verification)
+
+# Routes will be configured via Terraform
+# Internal access via service bindings from gateway worker
