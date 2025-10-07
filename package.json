@@ -65,6 +65,26 @@
       "bash -c 'cd services/daycount && npm run typecheck'",
       "prettier --write"
     ],
+    "services/bond-valuation/**/*.py": [
+      "bash -c 'cd services/bond-valuation && py -3 -m black .'",
+      "bash -c 'cd services/bond-valuation && py -3 -m ruff check --fix .'",
+      "bash -c 'cd services/bond-valuation && py -3 -m mypy src'"
+    ],
+    "services/metrics/**/*.py": [
+      "bash -c 'cd services/metrics && py -3 -m black .'",
+      "bash -c 'cd services/metrics && py -3 -m ruff check --fix .'",
+      "bash -c 'cd services/metrics && py -3 -m mypy src'"
+    ],
+    "services/pricing/**/*.py": [
+      "bash -c 'cd services/pricing && py -3 -m black .'",
+      "bash -c 'cd services/pricing && py -3 -m ruff check --fix .'",
+      "bash -c 'cd services/pricing && py -3 -m mypy src'"
+    ],
+    "libs/microapi/**/*.py": [
+      "bash -c 'cd libs/microapi && py -3 -m black .'",
+      "bash -c 'cd libs/microapi && py -3 -m ruff check --fix .'",
+      "bash -c 'cd libs/microapi && py -3 -m mypy src'"
+    ],
     "*.{json,md,yml,yaml}": [
       "prettier --write"
     ]

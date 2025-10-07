@@ -17,11 +17,11 @@ Lightweight microframework for Cloudflare Python Workers.
 ## Quick Start
 
 ```python
-from workers_py import WorkersApp, Request, JsonResponse, Field, validate_body
+from workers_py import App, Request, JsonResponse, Field, validate_body
 from workers_py.logging import StructuredLogger, LoggingMiddleware
 
 # Initialize app
-app = WorkersApp()
+app = App()
 logger = StructuredLogger("my-service")
 
 # Add logging middleware
@@ -63,7 +63,7 @@ async def on_fetch(request):
 
 | Component             | Purpose                         |
 | --------------------- | ------------------------------- |
-| `WorkersApp`          | Route registration and handling |
+| `App`                 | Route registration and handling |
 | `Router`              | Route matching                  |
 | `Request`             | Request wrapper with validation |
 | `Response`            | Response builder with security  |

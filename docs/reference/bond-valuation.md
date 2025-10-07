@@ -20,8 +20,8 @@ performs bond-math only (no market data or curve interpolation).
      1. Yield → Price (discounts periodic coupons and redemption)
      2. Price → Yield (solves YTM iteratively)
      3. Accrued interest, clean/dirty price, and optional cashflow outputs.
-  4. (Optionally) emits the **cashflows** so the Java engine can discount them
-     on a curve.
+  4. (Optionally) emits the **cashflows** so the pricing engine can discount
+     them on a curve.
 
 - **Outputs**
   - `cleanPrice`, `dirtyPrice`, `yield`, `accruedInterest`, `nextCoupon`,

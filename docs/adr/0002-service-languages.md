@@ -33,14 +33,20 @@ works across multiple runtimes.
 
 ### ✅ Decision
 
-Use **three different languages** intentionally:
+Use **two languages** for business logic services:
 
-| Service                                     | Language                                  | Why                                                                                           |
-| ------------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------- |
-| **Bond Valuation (price ↔ yield)**         | **Python**                                | Python fits financial math — concise, clear, reliable numeric behavior.                       |
-| **Analytics (duration, convexity, curves)** | **Python**                                | Keeps math-heavy logic consistent.                                                            |
-| **Day-Count Microservice**                  | **TypeScript / Node (Cloudflare Worker)** | Perfect for small, fast, stateless logic at the edge.                                         |
-| **Pricing Engine**                          | **Java**                                  | Classic enterprise approach — stable, typed, and great for showing multi-runtime integration. |
+| Service                                | Language                           | Why                                                                                 |
+| -------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------- |
+| **Gateway**                            | **TypeScript (Cloudflare Worker)** | Perfect for API routing, auth verification, and edge deployment.                    |
+| **Day-Count**                          | **TypeScript (Cloudflare Worker)** | Small, fast, stateless calculations ideal for Workers runtime.                      |
+| **Bond Valuation (price ↔ yield)**    | **Python (Cloudflare Worker)**     | Financial math benefits from Python's clarity and numeric reliability.              |
+| **Metrics (duration, convexity)**      | **Python (Cloudflare Worker)**     | Keeps math-heavy logic consistent with valuation service.                           |
+| **Pricing Engine (curve discounting)** | **Python (Cloudflare Worker)**     | Maintains language consistency; adequate performance for typical bond calculations. |
+
+**Note on Java:** Originally considered for the pricing engine to demonstrate
+multi-runtime integration, but Java is **incompatible with Cloudflare Workers**
+(no JVM support). Python provides sufficient performance for bond pricing
+workloads while maintaining stack simplicity.
 
 ---
 
@@ -57,12 +63,33 @@ Use **three different languages** intentionally:
 
 ### 🚧 Trade-offs we accept
 
-- More CI pipelines and dependency management.
-- Slightly slower dev spin-up.
-- A bit of overhead to keep toolchains updated.
+- **Two language stacks** to maintain (TypeScript + Python)
+- Separate CI pipelines and dependency management
+- Slightly slower dev spin-up compared to single-language stacks
+- Python Workers runtime constraints (no heavy frameworks like FastAPI/Django)
 
-All worth it. This project’s purpose is to **teach and demonstrate** AAC — not
+All worth it. This project's purpose is to **teach and demonstrate** AAC — not
 to optimize for delivery speed.
+
+### 🔄 What changed from original plan
+
+Originally planned **Java** for the pricing engine to showcase multi-runtime
+integration. However:
+
+**Why Java doesn't work:**
+
+- Cloudflare Workers only support JavaScript/TypeScript, Python, Rust, C, C++
+  (compiled to WASM)
+- No JVM support in Workers runtime
+- Java would require different infrastructure (Lambda, Cloud Run, etc.)
+
+**Why we chose Python instead:**
+
+- Maintains consistency with other math services (valuation, metrics)
+- Adequate performance for typical bond pricing (not HFT or portfolio-scale)
+- Can leverage NumPy for efficient array operations if needed
+- If extreme performance needed later, can rewrite hot paths in Rust→WASM
+- Keeps deployment simple (all Workers, uniform infrastructure)
 
 ---
 

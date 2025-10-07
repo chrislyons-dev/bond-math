@@ -1,8 +1,8 @@
 """Tests for Router functionality."""
 
 import pytest
+from workers_py import JsonResponse, Request
 from workers_py.router import Router
-from workers_py import Request, JsonResponse
 
 
 async def dummy_handler(request: Request) -> JsonResponse:

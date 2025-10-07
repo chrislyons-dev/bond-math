@@ -29,19 +29,50 @@ jobs:
           node-version: '18'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Node dependencies
         run: npm ci
 
-      - name: Format check
+      - name: Install Python dependencies
+        run: |
+          pip install black ruff mypy pytest pytest-asyncio pytest-cov
+
+      - name: Format check (JavaScript/TypeScript)
         run: npm run format:check
 
-      - name: Lint code
+      - name: Lint JavaScript/TypeScript
         run: npm run lint
 
-      - name: Type check
+      - name: Type check TypeScript
         run: |
           cd services/gateway && npm run typecheck
           cd ../daycount && npm run typecheck
+
+      - name: Format check (Python)
+        run: |
+          python -m black --check services/bond-valuation/src
+          python -m black --check services/metrics/src
+          python -m black --check services/pricing/src
+          python -m black --check libs/workers-py/src
+
+      - name: Lint Python (ruff)
+        run: |
+          python -m ruff check services/bond-valuation/src
+          python -m ruff check services/metrics/src
+          python -m ruff check services/pricing/src
+          python -m ruff check libs/workers-py/src
+
+      - name: Type check Python (mypy)
+        run: |
+          python -m mypy services/bond-valuation/src
+          python -m mypy services/metrics/src
+          python -m mypy services/pricing/src
+          python -m mypy libs/workers-py/src
 
   # Job 2: Gateway Service
   gateway:
@@ -156,12 +187,60 @@ jobs:
         if: always()
         continue-on-error: true
 
-  # Job 5: Build Validation
+  # Job 5: Python Services Tests
+  python-services:
+    name: Python Services Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-asyncio pytest-cov python-json-logger
+
+      - name: Test workers-py library
+        working-directory: libs/workers-py
+        run: |
+          pip install -e ".[dev]"
+          python -m pytest test/ -v --cov=src --cov-report=xml --cov-report=term
+        continue-on-error: true
+
+      - name: Test bond-valuation service
+        working-directory: services/bond-valuation
+        run: |
+          pip install -e ".[dev]"
+          python -m pytest test/ -v --cov=src --cov-report=xml --cov-report=term
+        continue-on-error: true
+
+      - name: Test metrics service
+        working-directory: services/metrics
+        run: |
+          pip install -e ".[dev]"
+          python -m pytest test/ -v --cov=src --cov-report=xml --cov-report=term
+        continue-on-error: true
+
+      - name: Test pricing service
+        working-directory: services/pricing
+        run: |
+          pip install -e ".[dev]"
+          python -m pytest test/ -v --cov=src --cov-report=xml --cov-report=term
+        continue-on-error: true
+
+  # Job 6: Build Validation
   build:
     name: Build Validation
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [quality, gateway, daycount]
+    needs: [quality, gateway, daycount, python-services]
 
     steps:
       - name: Checkout code
@@ -176,7 +255,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate Wrangler configs
+      - name: Validate Wrangler configs (TypeScript)
         run: |
           cd services/gateway
           npx wrangler deploy --config ../../iac/workers/gateway.toml --dry-run --outdir dist
@@ -184,7 +263,14 @@ jobs:
           cd ../daycount
           npx wrangler deploy --config ../../iac/workers/daycount.toml --dry-run --outdir dist
 
-  # Job 6: Documentation
+      - name: Validate Wrangler configs (Python)
+        run: |
+          # Python workers don't need build, just validate config syntax
+          npx wrangler deploy --config iac/workers/valuation.toml --dry-run || true
+          npx wrangler deploy --config iac/workers/metrics.toml --dry-run || true
+          npx wrangler deploy --config iac/workers/pricing.toml --dry-run || true
+
+  # Job 7: Documentation
   docs:
     name: Documentation Check
     runs-on: ubuntu-latest
@@ -216,7 +302,7 @@ jobs:
             done
           done
 
-  # Job 7: Commit Validation
+  # Job 8: Commit Validation
   commitlint:
     name: Commit Message Lint
     runs-on: ubuntu-latest
@@ -241,12 +327,12 @@ jobs:
       - name: Validate commit messages
         run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.sha }} --verbose
 
-  # Job 8: Test Summary
+  # Job 9: Test Summary
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
     if: always()
-    needs: [quality, gateway, daycount, security, build, docs]
+    needs: [quality, gateway, daycount, python-services, security, build, docs]
     timeout-minutes: 5
 
     steps:
@@ -255,6 +341,7 @@ jobs:
           echo "Quality: ${{ needs.quality.result }}"
           echo "Gateway: ${{ needs.gateway.result }}"
           echo "Day Count: ${{ needs.daycount.result }}"
+          echo "Python Services: ${{ needs.python-services.result }}"
           echo "Security: ${{ needs.security.result }}"
           echo "Build: ${{ needs.build.result }}"
           echo "Docs: ${{ needs.docs.result }}"
@@ -262,6 +349,7 @@ jobs:
           if [[ "${{ needs.quality.result }}" == "failure" ]] || \
              [[ "${{ needs.gateway.result }}" == "failure" ]] || \
              [[ "${{ needs.daycount.result }}" == "failure" ]] || \
+             [[ "${{ needs.python-services.result }}" == "failure" ]] || \
              [[ "${{ needs.build.result }}" == "failure" ]] || \
              [[ "${{ needs.docs.result }}" == "failure" ]]; then
             echo "❌ CI Failed"

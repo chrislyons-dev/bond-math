@@ -1,7 +1,7 @@
 """Tests for Response classes."""
 
 import pytest
-from workers_py import Response, JsonResponse
+from workers_py import JsonResponse, Response
 
 
 def test_response_creation():

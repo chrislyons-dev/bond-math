@@ -1,0 +1,175 @@
+{
+  "AAC Service Module (TypeScript)": {
+    "prefix": "svcts",
+    "scope": "typescript,javascript",
+    "description": "Architecture as Code annotations for a service module",
+    "body": [
+      "/**",
+      " * ${1:Service Name} - Cloudflare ${2|Worker,Durable Object|}",
+      " *",
+      " * ${3:Service description}",
+      " *",
+      " * @service ${4:service-name}",
+      " * @type cloudflare-worker-${5|typescript,python,rust|}",
+      " * @layer ${6|gateway,business-logic,data-access|}",
+      " * @description ${7:Brief technical description}",
+      " * @owner ${8:platform-team}",
+      " * @internal-routes ${9:/route1, /route2, /health}",
+      " * @dependencies ${10:svc-dependency1, svc-dependency2}",
+      " * @security-model ${11|internal-jwt,public-oauth2,none|}",
+      " * @sla-tier ${12|critical,high,medium,low|}",
+      " *",
+      " * ${13:Additional implementation notes}",
+      " */"
+    ]
+  },
+  "AAC Service Module (Python)": {
+    "prefix": "svcpy",
+    "scope": "python",
+    "description": "Architecture as Code annotations for a Python service module",
+    "body": [
+      "\"\"\"${1:Service Name} - Cloudflare Python Worker",
+      "",
+      "${2:Service description}",
+      "",
+      "@service ${3:service-name}",
+      "@type cloudflare-worker-python",
+      "@layer ${4|gateway,business-logic,data-access|}",
+      "@description ${5:Brief technical description}",
+      "@owner ${6:platform-team}",
+      "@internal-routes ${7:/route1, /route2, /health}",
+      "@dependencies ${8:svc-dependency1, svc-dependency2}",
+      "@security-model ${9|internal-jwt,public-oauth2,none|}",
+      "@sla-tier ${10|critical,high,medium,low|}",
+      "",
+      "${11:Additional implementation notes}",
+      "\"\"\""
+    ]
+  },
+  "AAC Endpoint (TypeScript)": {
+    "prefix": "epts",
+    "scope": "typescript,javascript",
+    "description": "Architecture as Code annotations for an endpoint",
+    "body": [
+      "/**",
+      " * ${1:Endpoint description}",
+      " *",
+      " * @endpoint ${2|POST,GET,PUT,DELETE,PATCH|} ${3:/path}",
+      " * @gateway-route ${4|POST,GET,PUT,DELETE,PATCH|} /api/${5:service}/v1${6:/path}",
+      " * @authentication ${7|internal-jwt,oauth2,none|}",
+      " * @scope ${8:scope:action}",
+      " *",
+      " * @param {${9:Type}} ${10:paramName} - ${11:Parameter description}",
+      " * @returns {${12:Type}} ${13:Return description}",
+      " */"
+    ]
+  },
+  "AAC Endpoint (Python)": {
+    "prefix": "eppy",
+    "scope": "python",
+    "description": "Architecture as Code annotations for a Python endpoint",
+    "body": [
+      "\"\"\"${1:Endpoint description}",
+      "",
+      "${2:Detailed description}",
+      "",
+      "@endpoint ${3|POST,GET,PUT,DELETE,PATCH|} ${4:/path}",
+      "@gateway-route ${5|POST,GET,PUT,DELETE,PATCH|} /api/${6:service}/v1${7:/path}",
+      "@authentication ${8|internal-jwt,oauth2,none|}",
+      "@scope ${9:scope:action}",
+      "",
+      "Args:",
+      "    ${10:request}: ${11:HTTP request description}",
+      "",
+      "Returns:",
+      "    ${12:Response description}",
+      "\"\"\""
+    ]
+  },
+  "AAC Data Model (TypeScript)": {
+    "prefix": "model",
+    "scope": "typescript,javascript",
+    "description": "Architecture as Code annotations for a data model",
+    "body": [
+      "/**",
+      " * ${1:Model Name}",
+      " *",
+      " * ${2:Model description}",
+      " *",
+      " * @model ${3:ModelName}",
+      " * @persistence ${4|none,kv,durable-object,r2,d1|}",
+      " * @ttl ${5:3600}",
+      " * @schema-version ${6:v1}",
+      " */"
+    ]
+  },
+  "AAC Middleware (TypeScript)": {
+    "prefix": "mw",
+    "scope": "typescript,javascript",
+    "description": "Architecture as Code annotations for middleware",
+    "body": [
+      "/**",
+      " * ${1:Middleware Name}",
+      " *",
+      " * ${2:Middleware description}",
+      " *",
+      " * @middleware ${3:middleware-name}",
+      " * @applies-to ${4|all-routes,protected-routes,public-routes|}",
+      " * @order ${5:10}",
+      " * @error-handling ${6|throw,next,log|}",
+      " */"
+    ]
+  },
+  "AAC Service Binding (TypeScript)": {
+    "prefix": "bind",
+    "scope": "typescript,javascript",
+    "description": "Architecture as Code annotations for service bindings",
+    "body": [
+      "/**",
+      " * ${1:Service Binding Description}",
+      " *",
+      " * @binding ${2:BINDING_NAME}",
+      " * @target-service ${3:svc-target}",
+      " * @type service-binding",
+      " * @timeout ${4:30000}",
+      " */"
+    ]
+  },
+  "AAC Integration Point": {
+    "prefix": "int",
+    "scope": "typescript,javascript,python",
+    "description": "Architecture as Code annotations for external integrations",
+    "body": [
+      "/**",
+      " * ${1:Integration Name}",
+      " *",
+      " * ${2:Integration description}",
+      " *",
+      " * @integration ${3:integration-name}",
+      " * @external-service ${4:service-name}",
+      " * @protocol ${5|https,grpc,websocket|}",
+      " * @authentication ${6|api-key,oauth2,jwt|}",
+      " * @retry-policy ${7|exponential,linear,none|}",
+      " * @timeout ${8:5000}",
+      " */"
+    ]
+  },
+  "AAC Error Handler": {
+    "prefix": "err",
+    "scope": "typescript,javascript,python",
+    "description": "Architecture as Code annotations for error handlers",
+    "body": [
+      "/**",
+      " * ${1:Error Handler Name}",
+      " *",
+      " * ${2:Error handling description}",
+      " *",
+      " * @error-handler ${3:handler-name}",
+      " * @handles ${4:ErrorType1, ErrorType2}",
+      " * @response-format ${5|json,text,html|}",
+      " * @status-code ${6:500}",
+      " * @logging ${7|error,warn,info|}",
+      " */"
+    ]
+  }
+}

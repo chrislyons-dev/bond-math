@@ -1,7 +1,7 @@
 """Tests for validation decorators and Field class."""
 
 import pytest
-from workers_py import Field, validate_body, Request, JsonResponse
+from workers_py import Field, JsonResponse, Request, validate_body
 from workers_py.errors import ValidationError
 
 
@@ -177,11 +177,7 @@ async def test_validate_body_type_error():
 @pytest.mark.asyncio
 async def test_validate_body_enum_validation():
     """Test validate_body validates enum constraints."""
-    schema = {
-        "convention": Field(
-            type=str, required=True, enum=["ACT_360", "ACT_365F", "30_360"]
-        )
-    }
+    schema = {"convention": Field(type=str, required=True, enum=["ACT_360", "ACT_365F", "30_360"])}
 
     @validate_body(schema)
     async def handler(request: Request) -> JsonResponse:
@@ -221,9 +217,7 @@ async def test_validate_body_list_min_length():
 @pytest.mark.asyncio
 async def test_validate_body_numeric_range():
     """Test validate_body validates numeric ranges."""
-    schema = {
-        "couponRate": Field(type=float, required=True, min_value=0, max_value=1)
-    }
+    schema = {"couponRate": Field(type=float, required=True, min_value=0, max_value=1)}
 
     @validate_body(schema)
     async def handler(request: Request) -> JsonResponse:

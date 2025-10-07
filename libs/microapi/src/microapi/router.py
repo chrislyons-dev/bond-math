@@ -1,7 +1,8 @@
 """Route matching and handler registration."""
 
-from typing import Callable, Awaitable, Optional
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
+
 from .request import Request
 from .response import Response
 
@@ -51,7 +52,7 @@ class Router:
         self,
         path: str,
         handler: Callable[[Request], Awaitable[Response]],
-        methods: Optional[list[str]] = None,
+        methods: list[str] | None = None,
     ) -> None:
         """Register a route.
 
@@ -63,14 +64,12 @@ class Router:
         if not path.startswith("/"):
             raise ValueError(f"Path must start with '/': {path}")
 
-        allowed_methods = frozenset(
-            m.upper() for m in (methods if methods else ["GET"])
-        )
+        allowed_methods = frozenset(m.upper() for m in (methods if methods else ["GET"]))
 
         route = Route(path=path, methods=allowed_methods, handler=handler)
         self._routes.append(route)
 
-    def find_route(self, method: str, path: str) -> Optional[Route]:
+    def find_route(self, method: str, path: str) -> Route | None:
         """Find matching route for request.
 
         Args:

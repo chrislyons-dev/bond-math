@@ -2,31 +2,58 @@
 
 Clean/dirty price ↔ yield calculations and cashflow schedule generation.
 
+@service bond-valuation
+@type cloudflare-worker-python
+@layer business-logic
+@description Price ↔ yield calculations and cashflow generation for bullet bonds
+@owner platform-team
+@internal-routes /price, /yield, /health
+@dependencies svc-daycount
+@security-model internal-jwt
+@sla-tier high
+
 This is a stub implementation that returns hardcoded responses to validate
-the workers-py framework integration.
+the microapi framework integration.
 """
 
+import os
 import sys
 from pathlib import Path
 
-# Add workers-py library to path
-lib_path = Path(__file__).parent.parent.parent.parent / "libs" / "workers-py" / "src"
+# Add microapi library to path
+lib_path = Path(__file__).parent.parent.parent.parent / "libs" / "microapi" / "src"
 sys.path.insert(0, str(lib_path))
 
-from workers_py import WorkersApp, Request, JsonResponse, Field, validate_body
-from workers_py.logging import StructuredLogger, LoggingMiddleware
-from workers_py.errors import HttpError, UnauthorizedError
+from microapi import (
+    App,
+    Field,
+    JsonResponse,
+    JWTMiddleware,
+    Request,
+    require_scopes,
+    validate_body,
+)
+from microapi.errors import HttpError
+from microapi.logging import LoggingMiddleware, StructuredLogger
 
 # Constants
 SERVICE_NAME = "bond-valuation"
 SERVICE_VERSION = "2025.10"
 
 # Initialize app and logger
-app = WorkersApp()
+app = App()
 logger = StructuredLogger(SERVICE_NAME)
 
 # Add logging middleware
 app.use(LoggingMiddleware(logger))
+
+# Add JWT authentication middleware
+# Secret comes from Cloudflare Workers environment (env.INTERNAL_JWT_SECRET)
+jwt_secret = os.environ.get("INTERNAL_JWT_SECRET")
+if jwt_secret:
+    app.use(JWTMiddleware(jwt_secret, f"svc-{SERVICE_NAME}"))
+else:
+    logger.warn("INTERNAL_JWT_SECRET not configured - authentication disabled")
 
 
 # Route handlers
@@ -50,6 +77,7 @@ async def health_check(request: Request) -> JsonResponse:
 
 
 @app.route("/price", methods=["POST"])
+@require_scopes("valuation:write")
 @validate_body(
     {
         "settlementDate": Field(type=str, required=True),
@@ -73,18 +101,18 @@ async def calculate_price(request: Request) -> JsonResponse:
 
     This is a stub implementation returning hardcoded values.
 
+    @endpoint POST /price
+    @gateway-route POST /api/valuation/v1/price
+    @authentication internal-jwt
+    @scope valuation:write
+
     Args:
         request: HTTP request with bond parameters and yield
 
     Returns:
         Price calculation results
     """
-    # Verify authorization
-    auth_header = request.header("authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        raise UnauthorizedError("Missing or invalid authorization header")
-
-    # Body is already validated by decorator
+    # Auth and validation handled by middleware/decorators
     body = await request.json()
 
     # Return hardcoded stub response
@@ -119,6 +147,7 @@ async def calculate_price(request: Request) -> JsonResponse:
 
 
 @app.route("/yield", methods=["POST"])
+@require_scopes("valuation:write")
 @validate_body(
     {
         "settlementDate": Field(type=str, required=True),
@@ -142,18 +171,18 @@ async def calculate_yield(request: Request) -> JsonResponse:
 
     This is a stub implementation returning hardcoded values.
 
+    @endpoint POST /yield
+    @gateway-route POST /api/valuation/v1/yield
+    @authentication internal-jwt
+    @scope valuation:write
+
     Args:
         request: HTTP request with bond parameters and price
 
     Returns:
         Yield calculation results
     """
-    # Verify authorization
-    auth_header = request.header("authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        raise UnauthorizedError("Missing or invalid authorization header")
-
-    # Body is already validated by decorator
+    # Auth and validation handled by middleware/decorators
     body = await request.json()
 
     # Return hardcoded stub response
@@ -202,7 +231,7 @@ async def handle_error(error: Exception) -> JsonResponse:
 
 
 # Cloudflare Workers entry point
-async def on_fetch(request):
+async def on_fetch(request: object) -> object:
     """Cloudflare Workers fetch handler.
 
     Args:

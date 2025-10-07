@@ -1,7 +1,7 @@
 """Request wrapper for Cloudflare Workers."""
 
-from typing import Any, Optional
 import json
+from typing import Any
 
 
 class Request:
@@ -14,7 +14,7 @@ class Request:
             raw_request: Raw Cloudflare Workers request object
         """
         self._request = raw_request
-        self._parsed_json: Optional[dict[str, Any]] = None
+        self._parsed_json: dict[str, Any] | None = None
 
     @property
     def method(self) -> str:
@@ -32,7 +32,7 @@ class Request:
         url_obj = self._request.url
         return str(url_obj.split("?")[0].split("#")[0])
 
-    def header(self, name: str, default: Optional[str] = None) -> Optional[str]:
+    def header(self, name: str, default: str | None = None) -> str | None:
         """Get header value with safe defaults.
 
         Args:
@@ -43,7 +43,8 @@ class Request:
             Header value or default
         """
         headers = self._request.headers
-        return headers.get(name.lower(), default)
+        value: Any = headers.get(name.lower(), default)
+        return str(value) if value is not None else default
 
     async def json(self) -> dict[str, Any]:
         """Parse JSON body with validation.
@@ -70,4 +71,5 @@ class Request:
 
     async def text(self) -> str:
         """Get raw request body as text."""
-        return await self._request.text()
+        text: Any = await self._request.text()
+        return str(text)

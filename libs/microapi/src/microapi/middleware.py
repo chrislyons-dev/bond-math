@@ -1,6 +1,7 @@
 """Middleware support for request/response processing."""
 
-from typing import Protocol, Awaitable
+from typing import Protocol
+
 from .request import Request
 from .response import Response
 
@@ -8,9 +9,7 @@ from .response import Response
 class Middleware(Protocol):
     """Protocol for middleware components."""
 
-    async def __call__(
-        self, request: Request, next_handler: "NextHandler"
-    ) -> Response:
+    async def __call__(self, request: Request, next_handler: "NextHandler") -> Response:
         """Process request and optionally call next handler.
 
         Args:

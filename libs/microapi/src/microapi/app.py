@@ -1,14 +1,16 @@
 """Main application class for Cloudflare Python Workers."""
 
-from typing import Callable, Awaitable, Optional, Any
+from collections.abc import Awaitable, Callable
+from typing import Any, cast
+
+from .middleware import Middleware, NextHandler
 from .request import Request
-from .response import Response, JsonResponse
+from .response import JsonResponse, Response
 from .router import Router
-from .middleware import Middleware
 
 
-class WorkersApp:
-    """Decorator-based microframework for Cloudflare Python Workers.
+class App:
+    """Micro API framework for Cloudflare Python Workers.
 
     Follows SOLID principles:
     - Single Responsibility: Routing and middleware coordination
@@ -22,13 +24,9 @@ class WorkersApp:
         """Initialize application."""
         self._router = Router()
         self._middleware: list[Middleware] = []
-        self._error_handler: Optional[
-            Callable[[Exception], Awaitable[Response]]
-        ] = None
+        self._error_handler: Callable[[Exception], Awaitable[Response]] | None = None
 
-    def route(
-        self, path: str, methods: Optional[list[str]] = None
-    ) -> Callable[
+    def route(self, path: str, methods: list[str] | None = None) -> Callable[
         [Callable[[Request], Awaitable[Response]]],
         Callable[[Request], Awaitable[Response]],
     ]:
@@ -48,7 +46,7 @@ class WorkersApp:
         """
 
         def decorator(
-            handler: Callable[[Request], Awaitable[Response]]
+            handler: Callable[[Request], Awaitable[Response]],
         ) -> Callable[[Request], Awaitable[Response]]:
             self._router.add_route(path, handler, methods)
             return handler
@@ -99,9 +97,7 @@ class WorkersApp:
         except Exception as e:
             return await self._handle_error(e)
 
-    def _build_handler(
-        self, request: Request
-    ) -> Callable[[Request], Awaitable[Response]]:
+    def _build_handler(self, request: Request) -> Callable[[Request], Awaitable[Response]]:
         """Build middleware chain with route handler.
 
         Args:
@@ -140,7 +136,7 @@ class WorkersApp:
         """
 
         async def wrapped(request: Request) -> Response:
-            return await middleware(request, next_handler)
+            return await middleware(request, cast(NextHandler, next_handler))
 
         return wrapped
 

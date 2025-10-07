@@ -3,28 +3,30 @@
 Provides schema-based validation without heavy dependencies like pydantic.
 """
 
-from typing import Any, Callable, Awaitable, Optional, Union, get_args
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from .request import Request
-from .response import Response, JsonResponse
+from typing import Any
+
 from .errors import ValidationError
+from .request import Request
+from .response import Response
 
 
 @dataclass
 class Field:
     """Field validation rules.
 
-    Follows single responsibility principle - only validates one field.
+    Validate one field.
     """
 
-    type: type
+    type: type | tuple[type, ...]
     required: bool = True
-    min_length: Optional[int] = None
-    max_length: Optional[int] = None
-    min_value: Optional[Union[int, float]] = None
-    max_value: Optional[Union[int, float]] = None
-    enum: Optional[list[Any]] = None
-    pattern: Optional[str] = None
+    min_length: int | None = None
+    max_length: int | None = None
+    min_value: int | float | None = None
+    max_value: int | float | None = None
+    enum: list[Any] | None = None
+    pattern: str | None = None
 
     def validate(self, field_name: str, value: Any) -> None:
         """Validate field value against rules.
@@ -38,9 +40,9 @@ class Field:
         """
         # Type validation
         if not isinstance(value, self.type):
+            type_name = self.type.__name__ if isinstance(self.type, type) else str(self.type)
             raise ValidationError(
-                f"Field '{field_name}' must be {self.type.__name__}, "
-                f"got {type(value).__name__}"
+                f"Field '{field_name}' must be {type_name}, " f"got {type(value).__name__}"
             )
 
         # Length validation (for strings, lists, dicts)
@@ -48,32 +50,26 @@ class Field:
             if hasattr(value, "__len__"):
                 if len(value) < self.min_length:
                     raise ValidationError(
-                        f"Field '{field_name}' must have at least "
-                        f"{self.min_length} items"
+                        f"Field '{field_name}' must have at least " f"{self.min_length} items"
                     )
 
         if self.max_length is not None:
             if hasattr(value, "__len__"):
                 if len(value) > self.max_length:
                     raise ValidationError(
-                        f"Field '{field_name}' must have at most "
-                        f"{self.max_length} items"
+                        f"Field '{field_name}' must have at most " f"{self.max_length} items"
                     )
 
         # Numeric range validation
         if self.min_value is not None:
             if isinstance(value, (int, float)):
                 if value < self.min_value:
-                    raise ValidationError(
-                        f"Field '{field_name}' must be at least {self.min_value}"
-                    )
+                    raise ValidationError(f"Field '{field_name}' must be at least {self.min_value}")
 
         if self.max_value is not None:
             if isinstance(value, (int, float)):
                 if value > self.max_value:
-                    raise ValidationError(
-                        f"Field '{field_name}' must be at most {self.max_value}"
-                    )
+                    raise ValidationError(f"Field '{field_name}' must be at most {self.max_value}")
 
         # Enum validation
         if self.enum is not None:
@@ -89,14 +85,10 @@ class Field:
                 import re
 
                 if not re.match(self.pattern, value):
-                    raise ValidationError(
-                        f"Field '{field_name}' does not match required pattern"
-                    )
+                    raise ValidationError(f"Field '{field_name}' does not match required pattern")
 
 
-def validate_body(
-    schema: dict[str, Field]
-) -> Callable[
+def validate_body(schema: dict[str, Field]) -> Callable[
     [Callable[[Request], Awaitable[Response]]],
     Callable[[Request], Awaitable[Response]],
 ]:
@@ -123,7 +115,7 @@ def validate_body(
     """
 
     def decorator(
-        handler: Callable[[Request], Awaitable[Response]]
+        handler: Callable[[Request], Awaitable[Response]],
     ) -> Callable[[Request], Awaitable[Response]]:
         async def wrapper(request: Request) -> Response:
             # Parse JSON body
@@ -150,9 +142,7 @@ def validate_body(
     return decorator
 
 
-def validate_query(
-    schema: dict[str, Field]
-) -> Callable[
+def validate_query(schema: dict[str, Field]) -> Callable[
     [Callable[[Request], Awaitable[Response]]],
     Callable[[Request], Awaitable[Response]],
 ]:
@@ -176,7 +166,7 @@ def validate_query(
     """
 
     def decorator(
-        handler: Callable[[Request], Awaitable[Response]]
+        handler: Callable[[Request], Awaitable[Response]],
     ) -> Callable[[Request], Awaitable[Response]]:
         async def wrapper(request: Request) -> Response:
             # Parse query string (implementation depends on Workers API)
@@ -187,14 +177,13 @@ def validate_query(
             for field_name, field_spec in schema.items():
                 if field_name not in query_params:
                     if field_spec.required:
-                        raise ValidationError(
-                            f"Missing required query parameter: {field_name}"
-                        )
+                        raise ValidationError(f"Missing required query parameter: {field_name}")
                     continue
 
                 # Type coercion for query params (always strings)
                 raw_value = query_params[field_name]
                 try:
+                    typed_value: Any
                     if field_spec.type == int:
                         typed_value = int(raw_value)
                     elif field_spec.type == float:

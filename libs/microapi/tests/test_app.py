@@ -1,16 +1,14 @@
-"""Tests for WorkersApp core functionality."""
+"""Tests for App core functionality."""
 
 import pytest
-from workers_py import WorkersApp, Request, JsonResponse
-from workers_py.errors import BadRequestError, NotFoundError
+from workers_py import App, JsonResponse, Request
+from workers_py.errors import BadRequestError
 
 
 class MockRequest:
     """Mock Cloudflare Workers request."""
 
-    def __init__(
-        self, method: str = "GET", url: str = "http://example.com/test", headers=None
-    ):
+    def __init__(self, method: str = "GET", url: str = "http://example.com/test", headers=None):
         self.method = method
         self.url = url
         self.headers = headers or {}
@@ -22,7 +20,7 @@ class MockRequest:
 @pytest.mark.asyncio
 async def test_route_registration():
     """Test basic route registration and handling."""
-    app = WorkersApp()
+    app = App()
 
     @app.route("/test", methods=["GET"])
     async def test_handler(request: Request) -> JsonResponse:
@@ -38,7 +36,7 @@ async def test_route_registration():
 @pytest.mark.asyncio
 async def test_not_found():
     """Test 404 for unknown routes."""
-    app = WorkersApp()
+    app = App()
 
     request = MockRequest(method="GET", url="http://example.com/unknown")
     response = await app.handle(request)
@@ -50,7 +48,7 @@ async def test_not_found():
 @pytest.mark.asyncio
 async def test_method_not_allowed():
     """Test route with specific methods."""
-    app = WorkersApp()
+    app = App()
 
     @app.route("/test", methods=["POST"])
     async def test_handler(request: Request) -> JsonResponse:
@@ -66,7 +64,7 @@ async def test_method_not_allowed():
 @pytest.mark.asyncio
 async def test_error_handling():
     """Test global error handler."""
-    app = WorkersApp()
+    app = App()
 
     @app.route("/error", methods=["GET"])
     async def error_handler(request: Request) -> JsonResponse:
@@ -88,7 +86,7 @@ async def test_error_handling():
 @pytest.mark.asyncio
 async def test_middleware_execution():
     """Test middleware chain execution."""
-    app = WorkersApp()
+    app = App()
     execution_log = []
 
     async def test_middleware(request, next_handler):
@@ -113,7 +111,7 @@ async def test_middleware_execution():
 @pytest.mark.asyncio
 async def test_multiple_middleware():
     """Test multiple middleware in order."""
-    app = WorkersApp()
+    app = App()
     execution_log = []
 
     async def middleware1(request, next_handler):

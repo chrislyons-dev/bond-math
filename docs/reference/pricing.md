@@ -1,4 +1,4 @@
-# ☕ Java: _Pricing Engine_ — “Discounting engine for projected cashflows”
+# 🐍 Python: _Pricing Engine_ — "Discounting engine for projected cashflows"
 
 **Purpose:** Take a **set of dated cashflows** and a **discount curve** and
 return **present value (PV)** results.

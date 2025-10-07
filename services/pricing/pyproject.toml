@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "metrics-service"
+name = "pricing-service"
 version = "2025.10"
-description = "Bond risk metrics: duration, convexity, and sensitivity measures"
+description = "Curve-based cashflow discounting and present value calculations"
 authors = [
     {name = "Chris Lyons", email = "chris@chrislyons.dev"}
 ]

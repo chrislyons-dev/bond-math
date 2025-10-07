@@ -1,17 +1,21 @@
 /**
  * Gateway Worker - Entry point and security gate for Bond Math API
  *
+ * Handles Auth0 OIDC verification, internal JWT minting with actor claims,
+ * and routing to downstream services via Cloudflare service bindings.
+ *
  * @service gateway
- * @type cloudflare-worker
- * @layer api-gateway
+ * @type cloudflare-worker-typescript
+ * @layer gateway
  * @description Entry point for all API traffic - handles Auth0 verification, internal JWT minting, and service routing
  * @owner platform-team
- * @public-routes /api/*
- * @internal-routes none
- * @dependencies SVC_DAYCOUNT, SVC_VALUATION, SVC_METRICS, SVC_PRICING
+ * @internal-routes /health, /api/*
+ * @dependencies svc-daycount, svc-valuation, svc-metrics, svc-pricing
  * @security-model auth0-oidc
  * @sla-tier critical
- * @calls daycount, valuation, metrics, pricing
+ *
+ * Zero-trust architecture: All requests authenticated via Auth0, internal services
+ * receive short-lived JWT tokens (90s TTL) with actor claims for accountability.
  */
 
 import { Hono } from 'hono';
@@ -96,9 +100,14 @@ app.use(
 /**
  * Health check endpoint
  *
+ * Returns gateway service health status and version information.
+ *
  * @endpoint GET /health
+ * @gateway-route GET /health
  * @authentication none
- * @description Returns gateway health status
+ * @scope none
+ *
+ * @returns {Object} Health status with service name and version
  */
 app.get('/health', (c) => {
   return c.json({
@@ -110,12 +119,18 @@ app.get('/health', (c) => {
 
 /**
  * Main API routing handler
- * Follows Single Responsibility - delegates to focused modules
+ *
+ * Verifies Auth0 OIDC tokens, mints internal JWT with actor claims,
+ * and routes requests to downstream services via service bindings.
+ * Scope enforcement is delegated to individual services.
  *
  * @endpoint ALL /api/*
  * @gateway-route ALL /api/*
  * @authentication auth0-oidc
- * @description Verifies Auth0 token, mints internal JWT, routes to service bindings
+ * @scope (varies by downstream service)
+ *
+ * @param {Request} request - Incoming HTTP request with Authorization header
+ * @returns {Response} Response from downstream service or error response
  */
 app.all('/api/*', async (c) => {
   const request = c.req.raw;

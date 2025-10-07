@@ -1,7 +1,7 @@
 """Response builders for Cloudflare Workers."""
 
-from typing import Any, Optional
 import json
+from typing import Any
 
 
 class Response:
@@ -11,7 +11,7 @@ class Response:
         self,
         body: str,
         status: int = 200,
-        headers: Optional[dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         """Initialize response.
 
@@ -61,7 +61,7 @@ class JsonResponse(Response):
         self,
         data: Any,
         status: int = 200,
-        headers: Optional[dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         """Initialize JSON response.
 

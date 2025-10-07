@@ -3,10 +3,13 @@
 Uses python-json-logger for lightweight JSON formatting with stdlib logging.
 """
 
-from typing import Callable, Awaitable, Any, Optional
 import logging
 import time
+from collections.abc import Awaitable, Callable
+from typing import Any
+
 from pythonjsonlogger import jsonlogger
+
 from .request import Request
 from .response import Response
 
@@ -41,7 +44,7 @@ class StructuredLogger:
         self,
         level: int,
         message: str,
-        request_id: Optional[str] = None,
+        request_id: str | None = None,
         **context: Any,
     ) -> None:
         """Output structured log entry.
@@ -52,7 +55,7 @@ class StructuredLogger:
             request_id: Request correlation ID
             **context: Additional context fields
         """
-        extra = {"service": self.service}
+        extra: dict[str, Any] = {"service": self.service}
 
         if request_id:
             extra["requestId"] = request_id
@@ -62,21 +65,15 @@ class StructuredLogger:
 
         self._logger.log(level, message, extra=extra)
 
-    def info(
-        self, message: str, request_id: Optional[str] = None, **context: Any
-    ) -> None:
+    def info(self, message: str, request_id: str | None = None, **context: Any) -> None:
         """Log info message."""
         self._log(logging.INFO, message, request_id, **context)
 
-    def warn(
-        self, message: str, request_id: Optional[str] = None, **context: Any
-    ) -> None:
+    def warn(self, message: str, request_id: str | None = None, **context: Any) -> None:
         """Log warning message."""
         self._log(logging.WARNING, message, request_id, **context)
 
-    def error(
-        self, message: str, request_id: Optional[str] = None, **context: Any
-    ) -> None:
+    def error(self, message: str, request_id: str | None = None, **context: Any) -> None:
         """Log error message."""
         self._log(logging.ERROR, message, request_id, **context)
 

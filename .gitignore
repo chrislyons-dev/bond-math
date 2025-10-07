@@ -19,7 +19,8 @@ pip-delete-this-directory.txt
 .hypothesis
 
 # IDEs and editors
-.vscode/
+# VS Code - ignore personal settings but keep shared snippets
+.vscode/settings.json
 .idea/
 *.swp
 *.swo
@@ -117,5 +118,7 @@ temp/
 # docs/architecture/generated/
 
 # Wrangler
+.claude*
+**/reviews*
 .wrangler/
 wrangler.toml.backup

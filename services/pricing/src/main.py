@@ -1,14 +1,14 @@
-"""Metrics Service - Cloudflare Python Worker
+"""Pricing Service - Cloudflare Python Worker
 
-Duration, modified duration, convexity, and related risk measures for bonds.
+Curve-based cashflow discounting engine for present value calculations.
 
-@service metrics
+@service pricing
 @type cloudflare-worker-python
 @layer business-logic
-@description Bond risk metrics (duration, convexity, PV01, DV01)
+@description Curve-based cashflow discounting and present value calculations
 @owner platform-team
-@internal-routes /duration, /convexity, /risk, /health
-@dependencies svc-bond-valuation
+@internal-routes /value, /scenario, /key-rate, /health
+@dependencies none
 @security-model internal-jwt
 @sla-tier high
 
@@ -33,11 +33,11 @@ from microapi import (
     require_scopes,
     validate_body,
 )
-from microapi.errors import HttpError
+from microapi.errors import HttpError, ValidationError
 from microapi.logging import LoggingMiddleware, StructuredLogger
 
 # Constants
-SERVICE_NAME = "metrics"
+SERVICE_NAME = "pricing"
 SERVICE_VERSION = "2025.10"
 
 # Initialize app and logger
@@ -76,146 +76,152 @@ async def health_check(request: Request) -> JsonResponse:
     )
 
 
-@app.route("/duration", methods=["POST"])
-@require_scopes("metrics:write")
+@app.route("/value", methods=["POST"])
+@require_scopes("pricing:write")
 @validate_body(
     {
-        "settlementDate": Field(type=str, required=True),
-        "maturityDate": Field(type=str, required=True),
-        "couponRate": Field(type=float, required=True, min_value=0, max_value=1),
-        "frequency": Field(type=int, required=True, enum=[1, 2, 4, 12]),
-        "face": Field(type=(int, float), required=True, min_value=0),
-        "yield": Field(type=float, required=True),
-        "dayCount": Field(
-            type=str,
-            required=True,
-            enum=["ACT_360", "ACT_365F", "30_360", "30E_360", "ACT_ACT_ISDA", "ACT_ACT_ICMA"],
-        ),
+        "asOf": Field(type=str, required=True),
+        "cashflows": Field(type=list, required=True, min_length=1),
+        "discountCurve": Field(type=dict, required=True),
+        "currency": Field(type=str, required=False),
     }
 )
-async def calculate_duration(request: Request) -> JsonResponse:
-    """Calculate duration and related metrics.
+async def calculate_present_value(request: Request) -> JsonResponse:
+    """Calculate present value from cashflows and discount curve.
 
     This is a stub implementation returning hardcoded values.
 
-    @endpoint POST /duration
-    @gateway-route POST /api/metrics/v1/duration
+    @endpoint POST /value
+    @gateway-route POST /api/pricing/v1/value
     @authentication internal-jwt
-    @scope metrics:write
+    @scope pricing:write
 
     Args:
-        request: HTTP request with bond parameters
+        request: HTTP request with cashflows and curve
 
     Returns:
-        Duration metrics
+        Present value calculation results
     """
     # Auth and validation handled by middleware/decorators
     body = await request.json()
 
+    # Validate cashflows structure
+    cashflows = body.get("cashflows", [])
+    for idx, cf in enumerate(cashflows):
+        if not isinstance(cf, dict):
+            raise ValidationError(f"Cashflow at index {idx} must be an object")
+        if "date" not in cf:
+            raise ValidationError(f"Cashflow at index {idx} missing 'date' field")
+        if "amount" not in cf:
+            raise ValidationError(f"Cashflow at index {idx} missing 'amount' field")
+
+    # Validate discount curve structure
+    curve = body.get("discountCurve", {})
+    if "nodes" not in curve:
+        raise ValidationError("discountCurve missing 'nodes' field")
+
     # Return hardcoded stub response
     request_id = request.header("x-request-id")
     logger.info(
-        "Duration calculated",
+        "Present value calculated",
         request_id=request_id,
-        yield_value=body.get("yield"),
+        cashflow_count=len(cashflows),
+        curve_nodes=len(curve.get("nodes", [])),
     )
 
     return JsonResponse(
         {
-            "macaulayDuration": 4.523,
-            "modifiedDuration": 4.415,
-            "convexity": 23.456,
-            "pv01": 0.0441,
-            "dv01": 44.15,
+            "pvTotal": 1025.47,
+            "pvByLeg": [{"leg": "fixed", "pv": 1025.47}],
+            "discountFactors": [
+                {"date": "2026-01-01", "df": 0.9801},
+                {"date": "2026-07-01", "df": 0.9608},
+                {"date": "2030-07-01", "df": 0.8187},
+            ],
+            "currency": body.get("currency", "USD"),
+            "asOf": body.get("asOf"),
             "version": SERVICE_VERSION,
         }
     )
 
 
-@app.route("/convexity", methods=["POST"])
-@require_scopes("metrics:write")
+@app.route("/scenario", methods=["POST"])
+@require_scopes("pricing:write")
 @validate_body(
     {
-        "settlementDate": Field(type=str, required=True),
-        "maturityDate": Field(type=str, required=True),
-        "couponRate": Field(type=float, required=True, min_value=0, max_value=1),
-        "frequency": Field(type=int, required=True, enum=[1, 2, 4, 12]),
-        "face": Field(type=(int, float), required=True, min_value=0),
-        "yield": Field(type=float, required=True),
-        "dayCount": Field(
-            type=str,
-            required=True,
-            enum=["ACT_360", "ACT_365F", "30_360", "30E_360", "ACT_ACT_ISDA", "ACT_ACT_ICMA"],
-        ),
+        "asOf": Field(type=str, required=True),
+        "cashflows": Field(type=list, required=True, min_length=1),
+        "discountCurve": Field(type=dict, required=True),
+        "scenarios": Field(type=list, required=True, min_length=1),
     }
 )
-async def calculate_convexity(request: Request) -> JsonResponse:
-    """Calculate convexity metric.
+async def calculate_scenarios(request: Request) -> JsonResponse:
+    """Calculate PV under multiple curve scenarios.
 
     This is a stub implementation returning hardcoded values.
 
-    @endpoint POST /convexity
-    @gateway-route POST /api/metrics/v1/convexity
+    @endpoint POST /scenario
+    @gateway-route POST /api/pricing/v1/scenario
     @authentication internal-jwt
-    @scope metrics:write
+    @scope pricing:write
 
     Args:
-        request: HTTP request with bond parameters
+        request: HTTP request with scenarios
 
     Returns:
-        Convexity metric
+        PV for each scenario
     """
     # Auth and validation handled by middleware/decorators
-    _ = await request.json()
+    body = await request.json()
+
+    scenarios = body.get("scenarios", [])
 
     # Return hardcoded stub response
     request_id = request.header("x-request-id")
     logger.info(
-        "Convexity calculated",
+        "Scenario analysis calculated",
         request_id=request_id,
+        scenario_count=len(scenarios),
     )
 
     return JsonResponse(
         {
-            "convexity": 23.456,
+            "scenarios": [
+                {"name": "base", "pvTotal": 1025.47, "shift": 0},
+                {"name": "up_50bp", "pvTotal": 1015.32, "shift": 50},
+                {"name": "down_50bp", "pvTotal": 1035.89, "shift": -50},
+            ],
+            "asOf": body.get("asOf"),
             "version": SERVICE_VERSION,
         }
     )
 
 
-@app.route("/risk", methods=["POST"])
-@require_scopes("metrics:write")
+@app.route("/key-rate", methods=["POST"])
+@require_scopes("pricing:write")
 @validate_body(
     {
-        "settlementDate": Field(type=str, required=True),
-        "maturityDate": Field(type=str, required=True),
-        "couponRate": Field(type=float, required=True, min_value=0, max_value=1),
-        "frequency": Field(type=int, required=True, enum=[1, 2, 4, 12]),
-        "face": Field(type=(int, float), required=True, min_value=0),
-        "yield": Field(type=float, required=True),
-        "dayCount": Field(
-            type=str,
-            required=True,
-            enum=["ACT_360", "ACT_365F", "30_360", "30E_360", "ACT_ACT_ISDA", "ACT_ACT_ICMA"],
-        ),
+        "asOf": Field(type=str, required=True),
+        "cashflows": Field(type=list, required=True, min_length=1),
+        "discountCurve": Field(type=dict, required=True),
         "bumpBasisPoints": Field(type=(int, float), required=False, min_value=0),
     }
 )
-async def calculate_risk_metrics(request: Request) -> JsonResponse:
-    """Calculate comprehensive risk metrics.
+async def calculate_key_rate_pv01(request: Request) -> JsonResponse:
+    """Calculate key rate PV01 sensitivities.
 
     This is a stub implementation returning hardcoded values.
 
-    @endpoint POST /risk
-    @gateway-route POST /api/metrics/v1/risk
+    @endpoint POST /key-rate
+    @gateway-route POST /api/pricing/v1/key-rate
     @authentication internal-jwt
-    @scope metrics:write
+    @scope pricing:write
 
     Args:
-        request: HTTP request with bond parameters and bump size
+        request: HTTP request with curve and bump size
 
     Returns:
-        Comprehensive risk metrics
+        Key rate sensitivities
     """
     # Auth and validation handled by middleware/decorators
     body = await request.json()
@@ -224,20 +230,21 @@ async def calculate_risk_metrics(request: Request) -> JsonResponse:
     # Return hardcoded stub response
     request_id = request.header("x-request-id")
     logger.info(
-        "Risk metrics calculated",
+        "Key rate PV01 calculated",
         request_id=request_id,
         bump_bp=bump_bp,
     )
 
     return JsonResponse(
         {
-            "macaulayDuration": 4.523,
-            "modifiedDuration": 4.415,
-            "effectiveDuration": 4.420,
-            "convexity": 23.456,
-            "effectiveConvexity": 23.512,
-            "pv01": 0.0441,
-            "dv01": 44.15,
+            "pvTotal": 1025.47,
+            "keyRates": [
+                {"tenor": "1Y", "pv01": 0.15},
+                {"tenor": "2Y", "pv01": 0.28},
+                {"tenor": "5Y", "pv01": 0.52},
+                {"tenor": "10Y", "pv01": 0.31},
+            ],
+            "totalPV01": 1.26,
             "bumpBasisPoints": bump_bp,
             "version": SERVICE_VERSION,
         }

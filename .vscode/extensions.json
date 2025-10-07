@@ -1,0 +1,37 @@
+{
+  "recommendations": [
+    // TypeScript/JavaScript
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+
+    // Python
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.black-formatter",
+    "charliermarsh.ruff",
+    "ms-python.mypy-type-checker",
+
+    // Testing
+    "hbenl.vscode-test-explorer",
+    "ms-vscode.test-adapter-converter",
+
+    // Infrastructure
+    "tamasfe.even-better-toml",
+    "redhat.vscode-yaml",
+
+    // Git
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+
+    // Documentation
+    "yzhang.markdown-all-in-one",
+    "bierner.markdown-mermaid",
+
+    // Code quality
+    "streetsidesoftware.code-spell-checker",
+    "usernamehw.errorlens",
+
+    // Cloudflare
+    "cloudflare.cloudflare"
+  ]
+}

@@ -11,10 +11,14 @@ import type { Context, Next, MiddlewareHandler } from 'hono';
 import type { Env, Variables } from './types';
 
 /**
- * Logger middleware - logs request/response with timing using hono-pino
+ * Logger middleware
  *
- * @endpoint-middleware ALL *
- * @description Logs incoming requests and responses with timing information using structured JSON
+ * Logs incoming requests and responses with timing information using structured JSON.
+ *
+ * @middleware logger
+ * @applies-to all-routes
+ * @order 40
+ * @error-handling next
  */
 export const logger: MiddlewareHandler = pinoLogger({
   pino: pino({
@@ -35,10 +39,15 @@ export const logger: MiddlewareHandler = pinoLogger({
 });
 
 /**
- * Request ID middleware - generates and attaches unique request ID
+ * Request ID middleware
  *
- * @endpoint-middleware ALL *
- * @description Generates UUID for request tracing, adds to headers
+ * Generates and attaches unique request ID for distributed tracing.
+ * Preserves existing X-Request-ID from upstream if present.
+ *
+ * @middleware request-id
+ * @applies-to all-routes
+ * @order 10
+ * @error-handling next
  */
 export async function requestId(
   c: Context<{ Bindings: Env; Variables: Variables }>,
@@ -62,10 +71,14 @@ export async function requestId(
 }
 
 /**
- * Rate limiting middleware - simple in-memory rate limiter
+ * Rate limiting middleware
  *
- * @endpoint-middleware ALL /api/*
- * @description Rate limits requests per user/IP to prevent abuse
+ * Rate limits requests per user/IP to prevent abuse.
+ *
+ * @middleware rate-limiter
+ * @applies-to protected-routes
+ * @order 50
+ * @error-handling throw
  *
  * Note: This is a simple in-memory implementation suitable for single-worker
  * deployments. For production, consider Cloudflare Rate Limiting API or
@@ -141,8 +154,13 @@ export function rateLimiter(options: {
 /**
  * Security headers middleware
  *
- * @endpoint-middleware ALL *
- * @description Adds comprehensive security-related HTTP headers
+ * Adds comprehensive security-related HTTP headers including CSP, HSTS,
+ * X-Frame-Options, and more to protect against common web vulnerabilities.
+ *
+ * @middleware security-headers
+ * @applies-to all-routes
+ * @order 20
+ * @error-handling next
  */
 export async function securityHeaders(
   c: Context<{ Bindings: Env; Variables: Variables }>,
@@ -187,8 +205,12 @@ export async function securityHeaders(
 /**
  * Performance timing middleware
  *
- * @endpoint-middleware ALL *
- * @description Adds Server-Timing header for performance monitoring
+ * Adds Server-Timing header for performance monitoring and observability.
+ *
+ * @middleware timing
+ * @applies-to all-routes
+ * @order 30
+ * @error-handling next
  */
 export async function timing(
   c: Context<{ Bindings: Env; Variables: Variables }>,
