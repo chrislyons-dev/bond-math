@@ -27,6 +27,7 @@ import {
   globalErrorHandler,
 } from './errors';
 import { logger, requestId, rateLimiter, securityHeaders, timing } from './middleware';
+import { logger as pinoLogger } from './logger';
 
 const VERSION = '2025.10';
 
@@ -71,7 +72,8 @@ app.use(
         return origin;
       }
 
-      console.warn(`Blocked CORS request from origin: ${origin}`);
+      // Log blocked CORS request
+      pinoLogger.warn({ origin }, 'Blocked CORS request');
       return null;
     },
     allowMethods: ['GET', 'POST', 'OPTIONS'],

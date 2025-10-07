@@ -5,33 +5,34 @@
  * @module middleware
  */
 
-import type { Context, Next } from 'hono';
+import { pinoLogger } from 'hono-pino';
+import { pino } from 'pino';
+import type { Context, Next, MiddlewareHandler } from 'hono';
 import type { Env, Variables } from './types';
 
 /**
- * Logger middleware - logs request/response with timing
+ * Logger middleware - logs request/response with timing using hono-pino
  *
  * @endpoint-middleware ALL *
- * @description Logs incoming requests and responses with timing information
+ * @description Logs incoming requests and responses with timing information using structured JSON
  */
-export async function logger(
-  c: Context<{ Bindings: Env; Variables: Variables }>,
-  next: Next
-): Promise<void> {
-  const start = Date.now();
-  const method = c.req.method;
-  const path = c.req.path;
-  const requestId = c.get('requestId');
-
-  console.log(`[${requestId}] --> ${method} ${path}`);
-
-  await next();
-
-  const duration = Date.now() - start;
-  const status = c.res.status;
-
-  console.log(`[${requestId}] <-- ${method} ${path} ${status} (${duration}ms)`);
-}
+export const logger: MiddlewareHandler = pinoLogger({
+  pino: pino({
+    level: 'info',
+    base: {
+      service: 'gateway',
+    },
+    formatters: {
+      level: (label) => {
+        return { level: label };
+      },
+    },
+    timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
+  }),
+  http: {
+    reqId: () => crypto.randomUUID(),
+  },
+});
 
 /**
  * Request ID middleware - generates and attaches unique request ID

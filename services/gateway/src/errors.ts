@@ -8,6 +8,7 @@
 import { HTTPException } from 'hono/http-exception';
 import type { Context } from 'hono';
 import type { ErrorResponse, Env, Variables } from './types';
+import { logger } from './logger';
 
 /**
  * Creates an RFC 7807 Problem Details error response
@@ -118,10 +119,21 @@ export function globalErrorHandler(
   c: Context<{ Bindings: Env; Variables: Variables }>
 ): Response {
   const requestId = c.get('requestId');
+  const userId = c.get('userId');
   const path = c.req.path;
 
-  // Log error with request ID
-  console.error(`[${requestId}] Error: ${err.message}`, err);
+  // Structured error log using pino
+  logger.error(
+    {
+      requestId,
+      userId,
+      path,
+      method: c.req.method,
+      error: err.name,
+      stack: err.stack,
+    },
+    err.message
+  );
 
   // Handle different error types
   if (err instanceof HTTPException) {

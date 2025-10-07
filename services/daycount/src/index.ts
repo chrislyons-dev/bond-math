@@ -17,6 +17,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { bodyLimit } from 'hono/body-limit';
+import { logger } from './logger';
 import type {
   DayCountRequest,
   DayCountResponse,
@@ -67,7 +68,21 @@ app.onError((err, c) => {
   }
 
   // Fallback for other errors
-  console.error('Unhandled error:', err);
+  const requestId = c.get('requestId') || 'unknown';
+  const actor = c.get('actor');
+
+  logger.error(
+    {
+      requestId,
+      userId: actor?.sub,
+      path: c.req.path,
+      method: c.req.method,
+      error: err instanceof Error ? err.name : 'UnknownError',
+      stack: err instanceof Error ? err.stack : undefined,
+    },
+    err instanceof Error ? err.message : 'Unhandled error'
+  );
+
   return c.json(
     {
       type: 'https://bondmath.chrislyons.dev/errors/internal-error',

@@ -11,6 +11,7 @@
 import type { Context, Next } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import type { Env, Variables } from './types';
+import { logger } from './logger';
 
 /**
  * Internal JWT payload structure (from Gateway)
@@ -64,7 +65,7 @@ export function verifyInternalJWT(expectedAudience: string) {
     const secret = c.env.INTERNAL_JWT_SECRET;
 
     if (!secret) {
-      console.error('INTERNAL_JWT_SECRET not configured');
+      logger.error('INTERNAL_JWT_SECRET not configured');
       throw new HTTPException(500, {
         message: 'Service configuration error',
       });
@@ -72,7 +73,7 @@ export function verifyInternalJWT(expectedAudience: string) {
 
     // Validate secret strength
     if (secret.length < 32) {
-      console.error('INTERNAL_JWT_SECRET is too short (minimum 32 characters)');
+      logger.error('INTERNAL_JWT_SECRET is too short (minimum 32 characters)');
       throw new HTTPException(500, {
         message: 'Service configuration error',
       });
@@ -80,7 +81,7 @@ export function verifyInternalJWT(expectedAudience: string) {
 
     // Warn about weak secrets in production
     if (c.env.ENVIRONMENT === 'production' && /^(test|dev|secret|password)/i.test(secret)) {
-      console.warn('INTERNAL_JWT_SECRET appears to be a weak or default value');
+      logger.warn('INTERNAL_JWT_SECRET appears to be a weak or default value');
     }
 
     // Verify and decode token
@@ -94,7 +95,9 @@ export function verifyInternalJWT(expectedAudience: string) {
       await next();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Token verification failed';
-      console.error(`JWT verification failed: ${message}`);
+      const requestId = c.get('requestId') || 'unknown';
+
+      logger.error({ requestId, error: message }, 'JWT verification failed');
 
       if (message.includes('expired')) {
         throw new HTTPException(401, { message: 'Token expired' });
@@ -199,7 +202,14 @@ function validateClaims(payload: InternalJWT, expectedAudience: string): void {
 
   // Validate issuer (optional but recommended)
   if (payload.iss !== 'https://gateway.bond-math') {
-    console.warn(`Unexpected token issuer: ${payload.iss}`);
+    logger.warn(
+      {
+        requestId: payload.rid || 'unknown',
+        issuer: payload.iss,
+        expected: 'https://gateway.bond-math',
+      },
+      'Unexpected token issuer'
+    );
   }
 }
 

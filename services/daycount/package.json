@@ -41,6 +41,8 @@
   "author": "Chris Lyons",
   "license": "MIT",
   "dependencies": {
-    "hono": "^4.9.10"
+    "hono": "^4.9.10",
+    "hono-pino": "^0.10.3",
+    "pino": "^10.0.0"
   }
 }
