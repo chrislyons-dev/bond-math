@@ -18,9 +18,32 @@ export interface Env {
   ENVIRONMENT?: string; // production, staging, development
 
   // Service Bindings
+  /**
+   * @service-binding SVC_DAYCOUNT
+   * @target daycount
+   * @purpose Calculate year fractions and accrual days
+   */
   SVC_DAYCOUNT: Fetcher;
+
+  /**
+   * @service-binding SVC_VALUATION
+   * @target bond-valuation
+   * @purpose Calculate bond prices and yields
+   */
   SVC_VALUATION: Fetcher;
+
+  /**
+   * @service-binding SVC_METRICS
+   * @target metrics
+   * @purpose Calculate duration, convexity, and PV01
+   */
   SVC_METRICS: Fetcher;
+
+  /**
+   * @service-binding SVC_PRICING
+   * @target pricing
+   * @purpose Calculate present value of bond cashflows
+   */
   SVC_PRICING: Fetcher;
 }
 

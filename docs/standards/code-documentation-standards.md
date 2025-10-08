@@ -97,11 +97,11 @@ Use **JSDoc** for all public APIs.
 ```typescript
 /**
  * @service daycount
- * @type cloudflare-worker
+ * @type cloudflare-worker-typescript
  * @layer business-logic
  * @description Authoritative day-count and year-fraction calculations for fixed income
  * @owner platform-team
- * @public-routes /api/daycount/v1/*
+ * @internal-routes /count, /health
  * @dependencies none
  * @security-model internal-jwt
  */
@@ -206,14 +206,14 @@ Use **Google-style docstrings** for all public functions and classes.
 Bond Valuation Service
 
 @service bond-valuation
-@type cloudflare-worker
+@type cloudflare-worker-python
 @layer business-logic
 @description Clean/dirty price ↔ yield conversion and bond schedule generation
 @owner platform-team
-@public-routes /api/valuation/v1/*
-@dependencies daycount
-@calls daycount:year-fraction
+@internal-routes /price, /yield, /health
+@dependencies svc-daycount
 @security-model internal-jwt
+@sla-tier high
 """
 ```
 
@@ -332,14 +332,15 @@ Use **Javadoc** for all public APIs.
 /**
  * Pricing Engine Service
  *
- * @service pricing-engine
- * @type cloudflare-worker
+ * @service pricing
+ * @type cloudflare-worker-java
  * @layer business-logic
  * @description Discounting engine for bond cashflow present value calculations
  * @owner platform-team
- * @public-routes /api/pricing/v1/*
+ * @internal-routes /value, /scenario, /key-rate, /health
  * @dependencies none
  * @security-model internal-jwt
+ * @sla-tier high
  */
 public class PricingEngineWorker implements WorkerEntrypoint {
     // Implementation
@@ -409,8 +410,10 @@ diagrams + per-service docs + infrastructure topology → `/docs/architecture`
  * @layer api-gateway
  * @description Auth verification and routing
  * @owner platform-team
- * @dependencies svc-daycount, svc-valuation
+ * @internal-routes /health, /api/*
+ * @dependencies svc-daycount, svc-valuation, svc-metrics, svc-pricing
  * @security-model auth0-oidc
+ * @sla-tier critical
  */
 ```
 
@@ -448,7 +451,7 @@ diagrams + per-service docs + infrastructure topology → `/docs/architecture`
 /**
  * @service-binding SVC_DAYCOUNT
  * @target daycount
- * @purpose Calculate year fractions
+ * @purpose Calculate year fractions and accrual days
  */
 ```
 

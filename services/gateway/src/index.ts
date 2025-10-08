@@ -6,7 +6,7 @@
  *
  * @service gateway
  * @type cloudflare-worker-typescript
- * @layer gateway
+ * @layer api-gateway
  * @description Entry point for all API traffic - handles Auth0 verification, internal JWT minting, and service routing
  * @owner platform-team
  * @internal-routes /health, /api/*

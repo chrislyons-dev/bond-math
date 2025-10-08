@@ -99,7 +99,8 @@ the microapi framework integration.
 
 **@layer:**
 
-- `gateway` - Entry point, routing, auth verification
+- `ui` - User interface (Astro Pages, React/Vue/Svelte)
+- `api-gateway` - Entry point, routing, auth verification
 - `business-logic` - Core domain logic
 - `data-access` - Database/KV/R2 interactions
 
@@ -261,14 +262,11 @@ export interface SessionState {
 
 ```typescript
 /**
- * Day Count Service Binding
- *
- * @binding DAYCOUNT_SERVICE
- * @target-service svc-daycount
- * @type service-binding
- * @timeout 30000
+ * @service-binding SVC_DAYCOUNT
+ * @target daycount
+ * @purpose Calculate year fractions and accrual days
  */
-const daycountService = env.DAYCOUNT_SERVICE;
+const daycountService = env.SVC_DAYCOUNT;
 ```
 
 ---

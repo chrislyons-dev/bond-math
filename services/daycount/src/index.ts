@@ -2,16 +2,14 @@
  * Day-Count Worker - Authoritative day-count and year-fraction calculations
  *
  * @service daycount
- * @type cloudflare-worker
+ * @type cloudflare-worker-typescript
  * @layer business-logic
  * @description Authoritative day-count and year-fraction calculations for fixed income
  * @owner platform-team
- * @public-routes /count, /health
- * @internal-routes /count
+ * @internal-routes /count, /health
  * @dependencies none
  * @security-model internal-jwt
  * @sla-tier high
- * @note API versioning (v1) is handled at Gateway level
  */
 
 import { Hono } from 'hono';

@@ -40,12 +40,12 @@ Every service must have a metadata block at entry point:
 ```typescript
 /**
  * @service gateway
- * @type cloudflare-worker
+ * @type cloudflare-worker-typescript
  * @layer api-gateway
  * @description Entry point for all API requests
  * @owner platform-team
- * @public-routes /api/*
- * @dependencies svc-daycount, svc-valuation
+ * @internal-routes /health, /api/*
+ * @dependencies svc-daycount, svc-valuation, svc-metrics, svc-pricing
  * @security-model auth0-oidc
  * @sla-tier critical
  */

@@ -11,7 +11,7 @@
       " *",
       " * @service ${4:service-name}",
       " * @type cloudflare-worker-${5|typescript,python,rust|}",
-      " * @layer ${6|gateway,business-logic,data-access|}",
+      " * @layer ${6|ui,api-gateway,business-logic,data-access|}",
       " * @description ${7:Brief technical description}",
       " * @owner ${8:platform-team}",
       " * @internal-routes ${9:/route1, /route2, /health}",
@@ -34,7 +34,7 @@
       "",
       "@service ${3:service-name}",
       "@type cloudflare-worker-python",
-      "@layer ${4|gateway,business-logic,data-access|}",
+      "@layer ${4|ui,api-gateway,business-logic,data-access|}",
       "@description ${5:Brief technical description}",
       "@owner ${6:platform-team}",
       "@internal-routes ${7:/route1, /route2, /health}",
@@ -126,12 +126,9 @@
     "description": "Architecture as Code annotations for service bindings",
     "body": [
       "/**",
-      " * ${1:Service Binding Description}",
-      " *",
-      " * @binding ${2:BINDING_NAME}",
-      " * @target-service ${3:svc-target}",
-      " * @type service-binding",
-      " * @timeout ${4:30000}",
+      " * @service-binding ${1:SVC_BINDING_NAME}",
+      " * @target ${2:target-service}",
+      " * @purpose ${3:Purpose description}",
       " */"
     ]
   },
