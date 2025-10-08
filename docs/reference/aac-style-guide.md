@@ -1,7 +1,12 @@
 # Architecture as Code (AAC) Style Guide
 
-**Purpose:** Consistent AAC annotations enable automated diagram generation and
-service discovery.
+**Purpose:** Consistent AAC annotations drive automated C4 diagram generation,
+architecture documentation, and service discovery via Structurizr DSL.
+
+**Pipeline:** Code + IAC → IR (JSON) → Structurizr DSL → PlantUML → PNG/SVG +
+Docs
+
+**Run:** `npm run docs:arch` to generate all artifacts in `/docs/architecture`
 
 ---
 
@@ -268,6 +273,51 @@ const daycountService = env.DAYCOUNT_SERVICE;
 
 ---
 
+## Class Diagram Control
+
+Use `@exclude-from-diagram` to prevent classes from appearing in generated
+component diagrams. This keeps diagrams focused on architectural components
+rather than implementation details.
+
+### TypeScript
+
+```typescript
+/**
+ * Simple DTO for bond details
+ * @exclude-from-diagram
+ */
+class BondDetailsDTO {
+  couponRate: number;
+  maturity: Date;
+}
+```
+
+### Python
+
+```python
+"""Utility helper for date calculations.
+
+@exclude-from-diagram
+"""
+class DateUtils:
+    @staticmethod
+    def add_business_days(start: date, days: int) -> date:
+        # Implementation
+```
+
+### When to Exclude
+
+- DTOs/POJOs with no business logic
+- Simple utility classes
+- Generated code (e.g., from OpenAPI/Protobuf)
+- Framework boilerplate
+- Value objects with only getters/setters
+
+**Default:** All classes are included in diagrams unless explicitly marked
+`@exclude-from-diagram`
+
+---
+
 ## Best Practices
 
 ### ✅ Do
@@ -291,15 +341,34 @@ const daycountService = env.DAYCOUNT_SERVICE;
 
 ## Validation
 
-AAC annotations are validated in CI:
+AAC annotations are validated during the docs generation pipeline:
 
 ```bash
-# Check for missing required tags
-npm run lint:aac
+# Full pipeline (extract → validate → generate → render)
+npm run docs:arch
 
-# Verify service references exist
-npm run validate:deps
+# Just extraction (to IR JSON)
+npm run docs:arch:extract
+
+# Just validation (JSON Schema + dependency rules)
+npm run docs:arch:validate
+
+# Just rendering (PlantUML → PNG/SVG)
+npm run docs:arch:render
 ```
+
+**CI checks:**
+
+- IR conforms to JSON Schema (`schemas/aac-ir.json`)
+- All service references resolve (no broken dependencies)
+- No circular dependencies
+- Structurizr DSL generation succeeds
+- Diagrams are in sync with code (fails if stale)
+
+**Dependency validation:**
+
+- TypeScript: `dependency-cruiser` enforces architectural rules
+- Python: `import-linter` enforces layering
 
 ---
 
@@ -324,18 +393,51 @@ npm run validate:deps
 
 ## Automated Diagram Generation
 
-AAC annotations are parsed to generate architecture diagrams:
+AAC annotations are extracted and processed through a Structurizr DSL pipeline:
 
 ```bash
-# Generate C4 diagrams from AAC annotations
-npm run docs:diagrams
+# Generate all C4 diagrams and documentation
+npm run docs:arch
 ```
 
-Output:
+**What gets generated:**
 
-- `docs/diagrams/system-context.svg` - External systems view
-- `docs/diagrams/container.svg` - Service-level view
-- `docs/diagrams/component.svg` - Internal structure
+**C4 Diagrams:**
+
+- System Context (external dependencies: Auth0, users, Cloudflare)
+- Container (all Workers, Pages)
+- Component (per-service class diagrams)
+- Deployment (per environment: dev/staging/prod with Workers, KV, R2, routes)
+
+**Documentation:**
+
+- Service inventory with tech stacks
+- Per-service documentation (endpoints, config, dependencies, deployment)
+- Infrastructure topology (routes, bindings, custom domains)
+
+**Output structure:**
+
+```
+docs/architecture/
+├── workspace.dsl              # Structurizr DSL
+├── ir.json                    # Validated intermediate representation
+├── diagrams/
+│   ├── system-context.{puml,png,svg}
+│   ├── container.{puml,png,svg}
+│   ├── components/*.{puml,png}
+│   └── deployment/{dev,staging,production}.{puml,png}
+└── docs/
+    ├── index.md               # Architecture overview
+    ├── services.md            # Service inventory
+    └── components/*.md        # Per-service docs
+```
+
+**Extractors:**
+
+- TypeScript: `ts-morph` (JSDoc, imports, decorators)
+- Python: `libcst` (docstrings, decorators, imports)
+- Wrangler: `@iarna/toml` (service bindings, routes, KV/R2)
+- Terraform: `hcl2-parser` (infrastructure, DNS, deployment)
 
 ---
 

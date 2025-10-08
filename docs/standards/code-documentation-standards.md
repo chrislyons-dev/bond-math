@@ -67,7 +67,8 @@ This document defines documentation and commenting standards for all code in the
 - Security-critical code (auth, validation, sanitization)
 - Non-obvious performance optimizations
 - Workarounds for bugs or limitations
-- Architecture metadata (see ADR-0001)
+- Architecture metadata with AAC annotations (see ADR-0001) - drives automatic
+  diagram/doc generation
 
 ### **Usually Document:**
 
@@ -379,8 +380,13 @@ public BigDecimal calculatePresentValue(
 
 ## 🏗️ Architecture as Code Annotations
 
-These are **required** for all services and endpoints. See ADR-0001 for complete
-reference.
+These annotations drive automatic generation of C4 diagrams and architecture
+documentation via Structurizr DSL. See ADR-0001 for complete reference.
+
+**What gets generated:** System context, container, component, and deployment
+diagrams + per-service docs + infrastructure topology → `/docs/architecture`
+
+**Run:** `npm run docs:arch` to extract annotations and generate all artifacts
 
 ### Service-Level (Required)
 
@@ -389,14 +395,43 @@ reference.
 @type <deployment-type>
 @layer <architectural-layer>
 @description <one-line purpose>
+@owner <team>
+@dependencies <comma-separated service IDs or 'none'>
+@security-model <auth-type>
+```
+
+**Example:**
+
+```typescript
+/**
+ * @service gateway
+ * @type cloudflare-worker-typescript
+ * @layer api-gateway
+ * @description Auth verification and routing
+ * @owner platform-team
+ * @dependencies svc-daycount, svc-valuation
+ * @security-model auth0-oidc
+ */
 ```
 
 ### Endpoint-Level (For all public/internal APIs)
 
 ```
 @endpoint <METHOD> <path>
+@gateway-route <METHOD> <full-gateway-path>
 @authentication <auth-type>
 @scope <required-permission>
+```
+
+**Example:**
+
+```typescript
+/**
+ * @endpoint POST /count
+ * @gateway-route POST /api/daycount/v1/count
+ * @authentication internal-jwt
+ * @scope daycount:write
+ */
 ```
 
 ### Service Binding (Where applicable)
@@ -406,6 +441,47 @@ reference.
 @target <target-service>
 @purpose <why this dependency exists>
 ```
+
+**Example:**
+
+```typescript
+/**
+ * @service-binding SVC_DAYCOUNT
+ * @target daycount
+ * @purpose Calculate year fractions
+ */
+```
+
+### Class Diagram Control (Optional)
+
+Use `@exclude-from-diagram` to prevent classes from appearing in generated
+component diagrams. Useful for DTOs, utilities, generated code, and framework
+boilerplate.
+
+**TypeScript:**
+
+```typescript
+/**
+ * Simple DTO for bond details
+ * @exclude-from-diagram
+ */
+class BondDetailsDTO {
+  // ...
+}
+```
+
+**Python:**
+
+```python
+"""Utility helper for date calculations.
+
+@exclude-from-diagram
+"""
+class DateUtils:
+    # ...
+```
+
+**Default behavior:** All classes are included unless explicitly excluded.
 
 ---
 

@@ -30,7 +30,8 @@ custom **Gateway Worker** providing authentication and routing.
 This project is **not meant to be a production-ready bond metrics system**. It’s
 a **teaching and demonstration project** — showing how to use techniques like:
 
-- Architecture as Code (C4 + Structurizr + IaC metadata)
+- Architecture as Code (Structurizr DSL pipeline generating C4 diagrams from
+  code + IAC)
 - Multi-language service boundaries
 - Zero-trust authorization between Workers
 - Automated documentation and CI/CD on Cloudflare
@@ -39,9 +40,11 @@ The focus is **on how it’s built**, not **what it computes**.
 
 Each service is deployed independently as a **Cloudflare Worker** (or
 Worker-based runtime) and communicates internally using **Service Bindings**.
-Documentation under `/docs/architecture` is automatically generated from code
-annotations and IaC metadata, ensuring the diagrams always reflect the current
-implementation.
+Documentation under `/docs/architecture` is automatically generated via
+`npm run docs:arch`, which extracts AAC annotations from code
+(TypeScript/Python) and IAC configuration (Wrangler/Terraform), validates them,
+and generates C4 diagrams and per-service documentation through a Structurizr
+DSL pipeline.
 
 Service split:
 
@@ -135,18 +138,18 @@ demonstrate in code and diagrams.
 
 ### 🧱 Tech Stack
 
-| Layer                      | Technology               | Description                                                                                                  |
-| -------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| **Frontend (UI)**          | Astro (Cloudflare Pages) | Input & visualization                                                                                        |
-| **API Gateway**            | TypeScript (Worker)      | Auth0 verification, internal JWT minting, rate limiting, and service routing                                 |
-| **Workers (per service)**  | Cloudflare Workers       | `/api/valuation`, `/api/metrics`, `/api/daycount`, `/api/pricing`                                            |
-| **Bond Valuation**         | Python                   | Clean/dirty price ↔ yield + schedules (calls Day-Count via binding)                                         |
-| **Metrics**                | Python                   | Duration, convexity, yield-curve metrics (calls Day-Count via binding)                                       |
-| **Day-Count**              | TypeScript (Workers)     | Centralized date/day-count conventions API                                                                   |
-| **Pricing Engine**         | Java                     | Discounting engine for projected cashflows. Calculate the present value of cashflows given a discount curve. |
-| **Infrastructure as Code** | Terraform + Wrangler     | Config & deploy                                                                                              |
-| **Architecture as Code**   | PlantUML + Structurizr   | Auto-generated C4 diagrams                                                                                   |
-| **CI/CD**                  | GitHub Actions           | Build, test, deploy, docs                                                                                    |
+| Layer                      | Technology                 | Description                                                                                                  |
+| -------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Frontend (UI)**          | Astro (Cloudflare Pages)   | Input & visualization                                                                                        |
+| **API Gateway**            | TypeScript (Worker)        | Auth0 verification, internal JWT minting, rate limiting, and service routing                                 |
+| **Workers (per service)**  | Cloudflare Workers         | `/api/valuation`, `/api/metrics`, `/api/daycount`, `/api/pricing`                                            |
+| **Bond Valuation**         | Python                     | Clean/dirty price ↔ yield + schedules (calls Day-Count via binding)                                         |
+| **Metrics**                | Python                     | Duration, convexity, yield-curve metrics (calls Day-Count via binding)                                       |
+| **Day-Count**              | TypeScript (Workers)       | Centralized date/day-count conventions API                                                                   |
+| **Pricing Engine**         | Java                       | Discounting engine for projected cashflows. Calculate the present value of cashflows given a discount curve. |
+| **Infrastructure as Code** | Terraform + Wrangler       | Config & deploy                                                                                              |
+| **Architecture as Code**   | Structurizr DSL + PlantUML | AAC → IR (JSON) → Structurizr DSL → C4 diagrams (PNG/SVG) + docs                                             |
+| **CI/CD**                  | GitHub Actions             | Build, test, deploy, docs                                                                                    |
 
 - Each service runs as a **Cloudflare Worker** and communicates using **Service
   Bindings**.
@@ -182,6 +185,15 @@ make format           # Format code with Prettier
 make lint             # Lint all code
 make test             # Run all tests
 make build            # Build all services
+```
+
+**Architecture documentation:**
+
+```bash
+npm run docs:arch              # Generate all C4 diagrams and docs from AAC annotations
+npm run docs:arch:extract      # Extract annotations to IR (JSON)
+npm run docs:arch:validate     # Validate IR against schema + dependencies
+npm run docs:arch:render       # Render PlantUML to PNG/SVG
 ```
 
 **`iac/Makefile`** – Infrastructure & deployment:
