@@ -1,42 +1,37 @@
 # ADR 0001 – Architecture as Code
 
-**Status:** Accepted **Date:** 2025-10-05 **Context:** Project uses multiple
-languages and Cloudflare microservices.
+**Status:** Accepted **Date:** 2025-10-05 (Updated: 2025-10-08) **Context:**
+Polyglot microservices (TypeScript, Python) on Cloudflare Workers
 
 ---
 
-## 🧩 What we were deciding
+## Problem
 
-How to describe and maintain architecture for a system that's constantly
-changing across multiple languages (TypeScript, Python, Java) and deployment
-platforms.
+We need architecture documentation that actually stays current across multiple
+languages and deployment platforms. Manual diagrams go stale. Separate modeling
+tools drift from reality.
 
-**Options:**
+## Decision
 
-1. **Manual diagrams** – Draw in Lucidchart/Miro, hope they stay current
-2. **Separate modeling tool** – Structurizr/C4 Studio, maintain models apart
-   from code
-3. **Architecture as Code** – Generate diagrams from source code, config, and
-   IaC
+Generate everything from the code itself using **Architecture as Code (AAC)**.
 
----
+**How it works:**
 
-## ✅ Decision
+1. Annotate code with structured comments (JSDoc/docstrings)
+2. Extract IAC configuration (wrangler.toml, Terraform)
+3. Run `npm run docs:arch` to generate:
+   - C4 diagrams (system context, containers, components, deployment)
+   - Per-service documentation
+   - Infrastructure topology
 
-Adopt **Architecture as Code** with structured comment-based annotations.
+**Pipeline:** Code + IAC → IR (JSON) → Structurizr DSL → PlantUML → PNG/SVG +
+Docs
 
-**Approach:**
-
-- Diagrams generated from PlantUML/Structurizr files in repo
-- Metadata extracted from code annotations and IaC
-- GitHub Actions regenerate diagrams on every commit to `main`
-- Generated diagrams live under `/docs/architecture`
-
-**Goal:** Useful, honest documentation that's always accurate.
+**Outputs live in:** `/docs/architecture`
 
 ---
 
-## 📝 Annotation Standards
+## Annotation Standards
 
 ### Service-Level Metadata
 
@@ -93,83 +88,237 @@ Every service must have a metadata block at entry point:
  */
 ```
 
+### Class Diagram Control
+
+**Exclude classes from diagrams** to avoid clutter:
+
+```typescript
+/**
+ * Simple DTO for bond details
+ * @exclude-from-diagram
+ */
+class BondDetailsDTO {
+  // ...
+}
+```
+
+```python
+"""Utility helper for date calculations.
+
+@exclude-from-diagram
+"""
+class DateUtils:
+    # ...
+```
+
+**When to exclude:**
+
+- DTOs/POJOs with no business logic
+- Simple utilities
+- Generated code
+- Framework boilerplate
+
+**Default:** All classes included unless marked `@exclude-from-diagram`
+
 ---
 
-## 🔍 Tooling & CI
+## How It Works
 
-**Extraction:**
+**Extractors:**
 
-- Custom parser scans services for annotations
-- Outputs `docs/architecture/metadata.json`
-- PlantUML generator creates C4 diagrams
+| Source     | Tool          | What We Extract                                    |
+| ---------- | ------------- | -------------------------------------------------- |
+| TypeScript | `ts-morph`    | JSDoc, imports, decorators                         |
+| Python     | `libcst`      | Docstrings, decorators, imports                    |
+| Wrangler   | `@iarna/toml` | Service bindings, routes, KV/R2, env config        |
+| Terraform  | `hcl2-parser` | Infrastructure resources, DNS, deployment topology |
 
-**CI Workflow (on push to `main`):**
+All extractors output to a single **Intermediate Representation (IR)** - a JSON
+file (`schemas/aac-ir.json`) that captures services, relationships, endpoints,
+and deployment nodes. Think of it as a language-agnostic snapshot of your
+architecture.
 
-1. Extract metadata from all services
-2. Generate C4 diagrams (Context, Container, Component)
-3. Generate dependency graph
-4. Publish to `docs/architecture/`
+**Why IR?** Decouples extraction from rendering. Add a new language? Write an
+extractor. Want a different diagram tool? Swap the generator.
 
-**Validation (on PRs):**
+**Extraction Pipeline:**
 
-- Metadata linting: Required tags present
-- Dependency validation: References resolve
-- Diagram generation: PlantUML renders without errors
+```mermaid
+flowchart TD
+    TS[TS Extractor<br/>ts-morph]
+    PY[Python Extractor<br/>libcst]
+    TOML[Wrangler Extractor<br/>TOML Parser]
+    TF[Terraform Extractor<br/>HCL Parser]
+
+    IR[(Intermediate<br/>Representation<br/>JSON)]
+    VAL[Validator<br/>JSON Schema]
+
+    DSL[Structurizr<br/>DSL Generator]
+    CLI[Structurizr CLI]
+    PUML[PlantUML<br/>Renderer]
+
+    OUT[Outputs:<br/>- PNG/SVG Diagrams<br/>- PlantUML Source<br/>- Architecture Docs<br/>- Metadata JSON]
+
+    TS --> IR
+    PY --> IR
+    TOML --> IR
+    TF --> IR
+
+    VAL --> IR
+    IR --> DSL
+    DSL --> CLI
+    CLI --> PUML
+    PUML --> OUT
+```
+
+**Run the pipeline:**
+
+```bash
+npm run docs:arch            # Full pipeline
+npm run docs:arch:extract    # Just extraction
+npm run docs:arch:validate   # Just validation
+npm run docs:arch:render     # Just rendering
+```
+
+**CI validates:**
+
+- IR against JSON Schema
+- Dependencies resolve (no circular deps, no broken references)
+- Structurizr DSL generation succeeds
+- Diagrams are in sync with code (fails if stale)
+
+We use dependency-cruiser (TS) and import-linter (Python) to enforce
+architectural rules at build time.
 
 ---
 
-## 📐 Diagram Standards
+## What You Get
 
-**C4 Model Levels:**
+**C4 diagrams:**
 
-1. **Context** – System + external dependencies (Auth0, Cloudflare)
-2. **Container** – All Workers, Pages, Gateway
-3. **Component** – Internal structure per service
+- System context (external dependencies: Auth0, users, Cloudflare)
+- Container (all Workers, Pages)
+- Component (per-service class diagrams)
+- Deployment (per environment: dev/staging/prod showing Workers, KV, R2, routes)
 
-**File Organization:**
+**Generated docs:**
+
+- Service inventory with tech stacks
+- Per-service details (endpoints, config, dependencies)
+- Infrastructure topology (routes, bindings, custom domains)
+
+**File structure:**
 
 ```
 docs/architecture/
+├── workspace.dsl             # Structurizr DSL
+├── ir.json                   # Validated IR
 ├── diagrams/
-│   ├── c4-context.puml
-│   ├── c4-container.puml
-│   └── components/
-│       ├── gateway.puml
-│       └── daycount.puml
-├── generated/
-│   ├── c4-context.png
-│   ├── metadata.json
-│   └── dependency-graph.dot
-└── README.md
+│   ├── system-context.{puml,png,svg}
+│   ├── container.{puml,png,svg}
+│   ├── components/*.{puml,png}
+│   └── deployment/{dev,staging,production}.{puml,png}
+└── docs/
+    ├── index.md
+    ├── services.md
+    └── components/*.md
 ```
 
----
-
-## 💬 Why this works
-
-- Architecture diagrams **never lie** – generated from real code
-- Developers see metadata while reading/editing
-- CI enforces consistency
-- Onboarding is faster – diagrams are trustworthy
-- Refactoring is safer – dependency changes tracked
-
-**Trade-offs accepted:**
-
-- Takes setup time initially
-- Diagrams not as "pretty" as manual ones
-- Requires discipline to update annotations
-
-Worth it for **always accurate** documentation.
+Diagrams exclude classes marked `@exclude-from-diagram` (DTOs, utilities, etc).
+All outputs are sorted deterministically to prevent diff churn.
 
 ---
 
-## 📎 Outcome
+## Why Structurizr DSL?
 
-Open the repo and instantly see:
+We considered direct C4-PlantUML (no structured model), manual Structurizr
+workspaces (drift from code), and custom generators (maintenance burden).
 
-- What services exist
-- How they connect
-- How Cloudflare routing works
-- Know the diagram came from real code, not memory
+**Structurizr wins because:**
 
-That's the whole point.
+- One DSL generates diagrams AND documentation
+- Workspace exports to JSON for custom docs
+- Industry standard C4 tooling
+- Text-based (version control friendly)
+- PlantUML renders anywhere (CLI, online, IDE)
+
+**Our IR approach:**
+
+- Polyglot-friendly (works across TS/Python/Java)
+- Schema validation catches errors early
+- Deterministic sorting prevents diff noise
+- Fast CI (extract per-service, merge)
+
+---
+
+## Trade-offs
+
+**Costs:**
+
+- Setup time (extractors, pipeline, schema)
+- Discipline needed to maintain annotations
+- Slightly longer builds
+- C4 conventions constrain flexibility
+
+**Wins:**
+
+- Diagrams always match reality (code + IAC)
+- Single source of truth scales across languages
+- Dependency violations caught at build time
+- Deployment config visible per environment
+- Trustworthy onboarding docs
+
+---
+
+## Appendix: IR Schema {#ir-schema}
+
+Full schema: `schemas/aac-ir.json`
+
+**Key structures:**
+
+```typescript
+// Service (Worker, Page, etc)
+{
+  id: string;                    // kebab-case
+  name: string;
+  type: "cloudflare-worker-typescript" | "cloudflare-worker-python" | ...;
+  layer: "ui" | "api-gateway" | "business-logic" | "data-access";
+  description: string;
+  endpoints?: Endpoint[];
+  configuration?: {
+    environment: Array<{ name, required, description }>;
+    bindings: Array<{ name, type, target }>;
+  };
+}
+
+// Relationship (service-to-service)
+{
+  source: string;                // Service ID
+  destination: string;           // Service ID
+  protocol: "service-binding" | "https" | "grpc" | ...;
+  authentication?: "internal-jwt" | "auth0-jwt" | ...;
+  binding?: string;              // For Cloudflare service bindings
+}
+
+// DeploymentNode (per environment)
+{
+  id: string;
+  name: string;
+  type: "infrastructure" | "container";
+  technology?: string;           // "Cloudflare Workers", "KV", "R2"
+  properties?: {
+    workerName, routes, customDomains,
+    kvNamespaces: [{ binding, namespaceId }],
+    r2Buckets: [{ binding, bucketName }],
+    durableObjects: [{ binding, className }]
+  };
+  containerInstances?: string[]; // Service IDs running on this node
+}
+
+// Component (class/module for diagrams)
+{
+  id: string;
+  type: "class" | "interface" | "module" | "function";
+  excludeFromDiagram?: boolean;  // Default: false (opt-out)
+}
+```
