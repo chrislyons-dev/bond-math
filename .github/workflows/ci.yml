@@ -41,6 +41,8 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install black ruff mypy pytest pytest-asyncio pytest-cov
+          # Install microapi so services can import it
+          pip install -e libs/microapi
 
       - name: Format check (JavaScript/TypeScript)
         run: npm run format:check
