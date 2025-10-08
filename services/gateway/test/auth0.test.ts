@@ -1,6 +1,56 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { verifyAuth0Token, extractBearerToken } from '../src/auth0';
-import type { Auth0Claims, JWKS } from '../src/types';
+import type { Auth0Claims } from '../src/types';
+
+// Helper to create typed fetch mock
+const createFetchMock = (returnValue: unknown) =>
+  vi.fn().mockResolvedValue(returnValue) as unknown as typeof fetch;
+
+const createFetchRejectMock = (error: Error) =>
+  vi.fn().mockRejectedValue(error) as unknown as typeof fetch;
+
+// Helper to create a mock JWT token
+const createMockToken = (
+  mockDomain: string,
+  mockAudience: string,
+  claims: Partial<Auth0Claims>
+): string => {
+  const header = { alg: 'RS256', typ: 'JWT', kid: 'test-kid-123' };
+  const defaultClaims: Auth0Claims = {
+    iss: `https://${mockDomain}/`,
+    sub: 'auth0|user123',
+    aud: mockAudience,
+    exp: Math.floor(Date.now() / 1000) + 3600,
+    iat: Math.floor(Date.now() / 1000),
+    permissions: ['pricing:read'],
+    ...claims,
+  };
+
+  const headerB64 = btoa(JSON.stringify(header));
+  const payloadB64 = btoa(JSON.stringify(defaultClaims));
+  const signature = 'mock-signature';
+
+  return `${headerB64}.${payloadB64}.${signature}`;
+};
+
+// Helper to create a valid token for JWKS tests
+const createValidToken = (mockDomain: string, mockAudience: string): string => {
+  const header = { alg: 'RS256', typ: 'JWT', kid: 'test-kid-123' };
+  const claims: Auth0Claims = {
+    iss: `https://${mockDomain}/`,
+    sub: 'auth0|user123',
+    aud: mockAudience,
+    exp: Math.floor(Date.now() / 1000) + 3600,
+    iat: Math.floor(Date.now() / 1000),
+    permissions: ['pricing:read'],
+  };
+
+  const headerB64 = btoa(JSON.stringify(header));
+  const payloadB64 = btoa(JSON.stringify(claims));
+  const signature = 'mock-signature';
+
+  return `${headerB64}.${payloadB64}.${signature}`;
+};
 
 describe('Auth0 Module', () => {
   const mockDomain = 'test.auth0.com';
@@ -77,28 +127,9 @@ describe('Auth0 Module', () => {
     });
 
     describe('Claims Validation', () => {
-      const createMockToken = (claims: Partial<Auth0Claims>): string => {
-        const header = { alg: 'RS256', typ: 'JWT', kid: 'test-kid-123' };
-        const defaultClaims: Auth0Claims = {
-          iss: `https://${mockDomain}/`,
-          sub: 'auth0|user123',
-          aud: mockAudience,
-          exp: Math.floor(Date.now() / 1000) + 3600,
-          iat: Math.floor(Date.now() / 1000),
-          permissions: ['pricing:read'],
-          ...claims,
-        };
-
-        const headerB64 = btoa(JSON.stringify(header));
-        const payloadB64 = btoa(JSON.stringify(defaultClaims));
-        const signature = 'mock-signature';
-
-        return `${headerB64}.${payloadB64}.${signature}`;
-      };
-
       beforeEach(() => {
         // Mock JWKS fetch to prevent actual network calls
-        (global.fetch as any).mockResolvedValue({
+        global.fetch = createFetchMock({
           ok: false,
           status: 500,
           statusText: 'Mock error',
@@ -106,7 +137,7 @@ describe('Auth0 Module', () => {
       });
 
       it('should reject token with invalid issuer', async () => {
-        const token = createMockToken({
+        const token = createMockToken(mockDomain, mockAudience, {
           iss: 'https://wrong-domain.auth0.com/',
         });
 
@@ -116,7 +147,7 @@ describe('Auth0 Module', () => {
       });
 
       it('should reject token with wrong audience', async () => {
-        const token = createMockToken({
+        const token = createMockToken(mockDomain, mockAudience, {
           aud: 'https://wrong-audience.example.com',
         });
 
@@ -126,7 +157,7 @@ describe('Auth0 Module', () => {
       });
 
       it('should reject token with wrong audience in array', async () => {
-        const token = createMockToken({
+        const token = createMockToken(mockDomain, mockAudience, {
           aud: ['https://wrong1.example.com', 'https://wrong2.example.com'],
         });
 
@@ -136,7 +167,7 @@ describe('Auth0 Module', () => {
       });
 
       it('should reject expired token', async () => {
-        const token = createMockToken({
+        const token = createMockToken(mockDomain, mockAudience, {
           exp: Math.floor(Date.now() / 1000) - 3600, // Expired 1 hour ago
         });
 
@@ -146,7 +177,7 @@ describe('Auth0 Module', () => {
       });
 
       it('should reject token expiring exactly now', async () => {
-        const token = createMockToken({
+        const token = createMockToken(mockDomain, mockAudience, {
           exp: Math.floor(Date.now() / 1000) - 1, // Expired 1 second ago to ensure it fails
         });
 
@@ -157,30 +188,12 @@ describe('Auth0 Module', () => {
     });
 
     describe('JWKS Fetching', () => {
-      const createValidToken = (): string => {
-        const header = { alg: 'RS256', typ: 'JWT', kid: 'test-kid-123' };
-        const claims: Auth0Claims = {
-          iss: `https://${mockDomain}/`,
-          sub: 'auth0|user123',
-          aud: mockAudience,
-          exp: Math.floor(Date.now() / 1000) + 3600,
-          iat: Math.floor(Date.now() / 1000),
-          permissions: ['pricing:read'],
-        };
-
-        const headerB64 = btoa(JSON.stringify(header));
-        const payloadB64 = btoa(JSON.stringify(claims));
-        const signature = 'mock-signature';
-
-        return `${headerB64}.${payloadB64}.${signature}`;
-      };
-
       it('should fetch JWKS from correct endpoint', async () => {
-        const token = createValidToken();
+        const token = createValidToken(mockDomain, mockAudience);
 
-        (global.fetch as any).mockResolvedValue({
+        global.fetch = createFetchMock({
           ok: true,
-          json: async () => ({ keys: [] }),
+          json: async () => Promise.resolve({ keys: [] }),
         });
 
         // Will fail at key not found, but we can verify fetch was called
@@ -197,9 +210,9 @@ describe('Auth0 Module', () => {
       });
 
       it('should throw error when JWKS fetch fails', async () => {
-        const token = createValidToken();
+        const token = createValidToken(mockDomain, mockAudience);
 
-        (global.fetch as any).mockResolvedValue({
+        global.fetch = createFetchMock({
           ok: false,
           status: 500,
           statusText: 'Internal Server Error',
@@ -211,12 +224,12 @@ describe('Auth0 Module', () => {
       });
 
       it('should throw error when JWKS fetch times out', async () => {
-        const token = createValidToken();
+        const token = createValidToken(mockDomain, mockAudience);
 
         // Mock an AbortError
-        (global.fetch as any).mockRejectedValue(
-          Object.assign(new Error('Aborted'), { name: 'AbortError' })
-        );
+        const abortError = new Error('Aborted');
+        abortError.name = 'AbortError';
+        global.fetch = createFetchRejectMock(abortError);
 
         await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow(
           'JWKS fetch timeout after 5 seconds'
@@ -224,21 +237,22 @@ describe('Auth0 Module', () => {
       });
 
       it('should throw error when key not found in JWKS', async () => {
-        const token = createValidToken();
+        const token = createValidToken(mockDomain, mockAudience);
 
-        (global.fetch as any).mockResolvedValue({
+        global.fetch = createFetchMock({
           ok: true,
-          json: async () => ({
-            keys: [
-              {
-                kty: 'RSA',
-                kid: 'different-kid',
-                use: 'sig',
-                n: 'mock-modulus',
-                e: 'AQAB',
-              },
-            ],
-          }),
+          json: async () =>
+            Promise.resolve({
+              keys: [
+                {
+                  kty: 'RSA',
+                  kid: 'different-kid',
+                  use: 'sig',
+                  n: 'mock-modulus',
+                  e: 'AQAB',
+                },
+              ],
+            }),
         });
 
         await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow(
@@ -247,9 +261,9 @@ describe('Auth0 Module', () => {
       });
 
       it('should handle network errors during JWKS fetch', async () => {
-        const token = createValidToken();
+        const token = createValidToken(mockDomain, mockAudience);
 
-        (global.fetch as any).mockRejectedValue(new Error('Network error'));
+        global.fetch = createFetchRejectMock(new Error('Network error'));
 
         await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow(
           'Network error'
