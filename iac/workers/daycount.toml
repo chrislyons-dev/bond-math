@@ -1,29 +1,34 @@
-name = "daycount"
+name = "bond-math-daycount"
 main = "../../services/daycount/src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
 # Service metadata for Architecture as Code
 # @service daycount
-# @type cloudflare-worker
+# @type cloudflare-worker-typescript
 # @layer business-logic
 # @description Authoritative day-count and year-fraction calculations for fixed income
 
 [observability]
 enabled = true
 
+# Environment variables (non-sensitive)
+[vars]
+ENVIRONMENT = "production"
+
 # Development environment
 [env.dev]
-name = "daycount-dev"
+name = "bond-math-daycount-dev"
 vars = { ENVIRONMENT = "development" }
 
 # Preview environment
 [env.preview]
-name = "daycount-preview"
+name = "bond-math-daycount-preview"
 vars = { ENVIRONMENT = "preview" }
 
 # Production environment (default)
 [env.production]
+name = "bond-math-daycount"
 vars = { ENVIRONMENT = "production" }
 
 # Secrets (set via: wrangler secret put <NAME>)

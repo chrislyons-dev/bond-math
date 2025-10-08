@@ -1,0 +1,80 @@
+# ============================================================================
+# Bond Math - Terraform Variables Example
+# ============================================================================
+#
+# SETUP INSTRUCTIONS:
+# 1. Copy this file to terraform.tfvars:
+#    cp terraform.tfvars.example terraform.tfvars
+#
+# 2. Fill in your Cloudflare credentials (get from Cloudflare Dashboard)
+#
+# 3. Run Terraform:
+#    terraform init
+#    terraform plan
+#    terraform apply
+#
+# IMPORTANT:
+# - terraform.tfvars is gitignored - never commit it!
+# - Alternatively, set CLOUDFLARE_API_TOKEN environment variable
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Required: Cloudflare Credentials
+# ----------------------------------------------------------------------------
+
+# Your Cloudflare Account ID
+# Find this in: Cloudflare Dashboard → Workers & Pages → Overview (right sidebar)
+cloudflare_account_id = "your-cloudflare-account-id-here"
+
+# Cloudflare API Token (optional - can use CLOUDFLARE_API_TOKEN env var instead)
+# Create token at: Cloudflare Dashboard → My Profile → API Tokens
+# Required permissions: Account.Workers Scripts:Edit
+cloudflare_api_token = "your-cloudflare-api-token-here"
+
+# ----------------------------------------------------------------------------
+# Optional: Custom Domain Configuration
+# ----------------------------------------------------------------------------
+
+# Your Cloudflare Zone ID (only needed if using custom domain)
+# Find this in: Cloudflare Dashboard → [Your Domain] → Overview (right sidebar)
+# Leave empty to use workers.dev subdomain
+cloudflare_zone_id = ""
+
+# Your custom domain (only needed if using custom domain)
+# Example: "bondmath.chrislyons.dev"
+# Leave empty to use workers.dev subdomain
+domain = ""
+
+# ----------------------------------------------------------------------------
+# Environment Configuration
+# ----------------------------------------------------------------------------
+
+# Deployment environment
+# Options: "development", "preview", "production"
+# Default: "production"
+environment = "production"
+
+# ----------------------------------------------------------------------------
+# Examples for Different Setups
+# ----------------------------------------------------------------------------
+
+# Example 1: Using workers.dev subdomain (simplest)
+# cloudflare_account_id = "abc123..."
+# cloudflare_zone_id = ""
+# domain = ""
+# environment = "production"
+# → Workers deployed to: bond-math-gateway.abc123.workers.dev
+
+# Example 2: Using custom domain
+# cloudflare_account_id = "abc123..."
+# cloudflare_zone_id = "xyz789..."
+# domain = "bondmath.chrislyons.dev"
+# environment = "production"
+# → Workers deployed to: bondmath.chrislyons.dev
+
+# Example 3: Preview environment with custom domain
+# cloudflare_account_id = "abc123..."
+# cloudflare_zone_id = "xyz789..."
+# domain = "preview.bondmath.chrislyons.dev"
+# environment = "preview"
+# → Workers deployed to: preview.bondmath.chrislyons.dev
