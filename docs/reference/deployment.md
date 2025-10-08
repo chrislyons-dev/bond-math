@@ -610,7 +610,7 @@ Before production deployment:
 - [IAC Configuration](../../iac/README.md)
 - [Wrangler Configuration](../../iac/workers/README.md)
 - [Terraform Configuration](../../iac/tf/README.md)
-- [ADR-0003: Cloudflare Hosting](../adr/0003-cloudflare-workers-hosting.md)
+- [ADR-0003: Cloudflare Hosting](../adr/0003-cloudflare-hosting.md)
 - [ADR-0011: Internal JWT](../adr/0011-symmetric-jwt-for-internal-auth.md)
 
 ## Support
