@@ -199,13 +199,22 @@ describe('Auth0 Module', () => {
         // Will fail at key not found, but we can verify fetch was called
         await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow();
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+        const userAgentMatcher = expect.stringContaining('BondMath-Gateway');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+        const headerMatcher = expect.objectContaining({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          'User-Agent': userAgentMatcher,
+        });
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+        const requestMatcher = expect.objectContaining({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          headers: headerMatcher,
+        });
+
         expect(global.fetch).toHaveBeenCalledWith(
           `https://${mockDomain}/.well-known/jwks.json`,
-          expect.objectContaining({
-            headers: expect.objectContaining({
-              'User-Agent': expect.stringContaining('BondMath-Gateway'),
-            }),
-          })
+          requestMatcher
         );
       });
 
