@@ -1,0 +1,35 @@
+@startuml
+set separator none
+title Bond Math - Development Deployment
+
+top to bottom direction
+skinparam ranksep 60
+skinparam nodesep 30
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<Development.bondmathgatewaydev.Gateway_1>> {
+  BackgroundColor #3178c6
+  FontColor #ffffff
+  BorderColor #22548a
+  shadowing false
+}
+skinparam rectangle<<Development.bondmathgatewaydev>> {
+  BackgroundColor #ffffff
+  FontColor #000000
+  BorderColor #888888
+  shadowing false
+}
+
+rectangle "bond-math-gateway-dev\n<size:10>[Deployment Node: Cloudflare Workers]</size>" <<Development.bondmathgatewaydev>> as Development.bondmathgatewaydev {
+  rectangle "==Gateway\n<size:10>[Container: Cloudflare Workers (TypeScript)]</size>\n\nEntry point for all API traffic - handles Auth0 verification, internal JWT minting, and service routing" <<Development.bondmathgatewaydev.Gateway_1>> as Development.bondmathgatewaydev.Gateway_1
+}
+
+@enduml

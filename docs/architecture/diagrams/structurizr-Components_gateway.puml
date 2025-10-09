@@ -1,0 +1,92 @@
+@startuml
+set separator none
+title Gateway - Components
+
+top to bottom direction
+skinparam ranksep 60
+skinparam nodesep 30
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<bondmath.Gateway.ActorClaim>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Gateway.Auth0Claims>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Gateway.Env>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Gateway.ErrorResponse>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Gateway.InternalJWT>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Gateway.JWK>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Gateway.JWKS>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Gateway.ServiceRoute>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Gateway.Variables>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Gateway>> {
+  BorderColor #22548a
+  FontColor #22548a
+  shadowing false
+}
+
+rectangle "Gateway\n<size:10>[Container: Cloudflare Workers (TypeScript)]</size>" <<bondmath.Gateway>> {
+  rectangle "==ActorClaim\n<size:10>[Component: TypeScript Interface]</size>\n\nActor claim - represents "Service X acting for User Y"" <<bondmath.Gateway.ActorClaim>> as bondmath.Gateway.ActorClaim
+  rectangle "==Auth0Claims\n<size:10>[Component: TypeScript Interface]</size>\n\nAuth0 JWT claims (after verification)" <<bondmath.Gateway.Auth0Claims>> as bondmath.Gateway.Auth0Claims
+  rectangle "==Env\n<size:10>[Component: TypeScript Interface]</size>\n\nType definitions for Gateway Worker" <<bondmath.Gateway.Env>> as bondmath.Gateway.Env
+  rectangle "==ErrorResponse\n<size:10>[Component: TypeScript Interface]</size>\n\nRFC 7807 Problem Details error response" <<bondmath.Gateway.ErrorResponse>> as bondmath.Gateway.ErrorResponse
+  rectangle "==InternalJWT\n<size:10>[Component: TypeScript Interface]</size>\n\nInternal JWT payload structure" <<bondmath.Gateway.InternalJWT>> as bondmath.Gateway.InternalJWT
+  rectangle "==JWK\n<size:10>[Component: TypeScript Interface]</size>\n\nJSON Web Key structure" <<bondmath.Gateway.JWK>> as bondmath.Gateway.JWK
+  rectangle "==JWKS\n<size:10>[Component: TypeScript Interface]</size>\n\nAuth0 JWKS response structure" <<bondmath.Gateway.JWKS>> as bondmath.Gateway.JWKS
+  rectangle "==ServiceRoute\n<size:10>[Component: TypeScript Interface]</size>\n\nService route mapping" <<bondmath.Gateway.ServiceRoute>> as bondmath.Gateway.ServiceRoute
+  rectangle "==Variables\n<size:10>[Component: TypeScript Interface]</size>\n\nHono context variables" <<bondmath.Gateway.Variables>> as bondmath.Gateway.Variables
+}
+
+bondmath.Gateway.InternalJWT .[#707070,thickness=2].> bondmath.Gateway.ActorClaim : "<color:#707070>Uses"
+bondmath.Gateway.JWKS .[#707070,thickness=2].> bondmath.Gateway.JWK : "<color:#707070>Uses"
+@enduml

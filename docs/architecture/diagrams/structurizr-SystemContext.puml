@@ -1,0 +1,52 @@
+@startuml
+set separator none
+title Bond Math - System Context
+
+top to bottom direction
+skinparam ranksep 60
+skinparam nodesep 30
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<Auth0>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  shadowing false
+}
+skinparam rectangle<<CloudflarePlatform>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+  shadowing false
+}
+skinparam person<<User>> {
+  BackgroundColor #08457e
+  FontColor #ffffff
+  BorderColor #053058
+  shadowing false
+}
+skinparam rectangle<<bondmath>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+
+person "==User\n<size:10>[Person]</size>\n\nEnd user accessing the bond calculation system" <<User>> as User
+rectangle "==Auth0\n<size:10>[Software System]</size>\n\nOAuth2/OIDC identity provider" <<Auth0>> as Auth0
+rectangle "==Cloudflare Platform\n<size:10>[Software System]</size>\n\nEdge computing platform" <<CloudflarePlatform>> as CloudflarePlatform
+rectangle "==bond-math\n<size:10>[Software System]</size>\n\nMulti-language, serverless microservices system for fixed-income pricing and metrics" <<bondmath>> as bondmath
+
+User .[#707070,thickness=2].> bondmath : "<color:#707070>Uses\n<color:#707070><size:8>[HTTPS]</size>"
+User .[#707070,thickness=2].> Auth0 : "<color:#707070>Authenticates with\n<color:#707070><size:8>[OAuth2/OIDC]</size>"
+bondmath .[#707070,thickness=2].> Auth0 : "<color:#707070>Verifies tokens\n<color:#707070><size:8>[HTTPS]</size>"
+CloudflarePlatform .[#707070,thickness=2].> bondmath : "<color:#707070>Hosts\n<color:#707070><size:8>[Cloudflare Workers]</size>"
+@enduml

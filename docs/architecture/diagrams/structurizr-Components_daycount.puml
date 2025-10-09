@@ -1,0 +1,108 @@
+@startuml
+set separator none
+title Daycount - Components
+
+top to bottom direction
+skinparam ranksep 60
+skinparam nodesep 30
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<bondmath.Daycount.ActorClaim>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Daycount.DateComponents>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Daycount.DatePair>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Daycount.DayCountOptions>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Daycount.DayCountRequest>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Daycount.DayCountResponse>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Daycount.DayCountResult>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Daycount.Env>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Daycount.ErrorResponse>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Daycount.ValidationError>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Daycount.Variables>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Daycount>> {
+  BorderColor #22548a
+  FontColor #22548a
+  shadowing false
+}
+
+rectangle "Daycount\n<size:10>[Container: Cloudflare Workers (TypeScript)]</size>" <<bondmath.Daycount>> {
+  rectangle "==DayCountOptions\n<size:10>[Component: TypeScript Interface]</size>\n\nOptions for day-count calculations" <<bondmath.Daycount.DayCountOptions>> as bondmath.Daycount.DayCountOptions
+  rectangle "==DayCountRequest\n<size:10>[Component: TypeScript Interface]</size>\n\nRequest body for /api/daycount/v1/count endpoint" <<bondmath.Daycount.DayCountRequest>> as bondmath.Daycount.DayCountRequest
+  rectangle "==DayCountResponse\n<size:10>[Component: TypeScript Interface]</size>\n\nResponse body for /api/daycount/v1/count endpoint" <<bondmath.Daycount.DayCountResponse>> as bondmath.Daycount.DayCountResponse
+  rectangle "==DayCountResult\n<size:10>[Component: TypeScript Interface]</size>\n\nSingle day-count calculation result" <<bondmath.Daycount.DayCountResult>> as bondmath.Daycount.DayCountResult
+  rectangle "==Env\n<size:10>[Component: TypeScript Interface]</size>\n\nCloudflare Worker environment bindings" <<bondmath.Daycount.Env>> as bondmath.Daycount.Env
+  rectangle "==ErrorResponse\n<size:10>[Component: TypeScript Interface]</size>\n\nStandard error response following RFC 7807 Problem Details" <<bondmath.Daycount.ErrorResponse>> as bondmath.Daycount.ErrorResponse
+  rectangle "==ValidationError\n<size:10>[Component: TypeScript Interface]</size>\n\nValidation error with field context" <<bondmath.Daycount.ValidationError>> as bondmath.Daycount.ValidationError
+  rectangle "==Variables\n<size:10>[Component: TypeScript Interface]</size>\n\nHono context variables" <<bondmath.Daycount.Variables>> as bondmath.Daycount.Variables
+  rectangle "==ActorClaim\n<size:10>[Component: TypeScript Interface]</size>\n\nActor claim from internal JWT Represents "Service X acting for User Y"" <<bondmath.Daycount.ActorClaim>> as bondmath.Daycount.ActorClaim
+  rectangle "==DateComponents\n<size:10>[Component: TypeScript Interface]</size>\n\nParsed date components for calculations" <<bondmath.Daycount.DateComponents>> as bondmath.Daycount.DateComponents
+  rectangle "==DatePair\n<size:10>[Component: TypeScript Interface]</size>\n\nDate pair for year fraction calculation" <<bondmath.Daycount.DatePair>> as bondmath.Daycount.DatePair
+}
+
+bondmath.Daycount.DayCountRequest .[#707070,thickness=2].> bondmath.Daycount.DatePair : "<color:#707070>Uses"
+bondmath.Daycount.DayCountRequest .[#707070,thickness=2].> bondmath.Daycount.DayCountOptions : "<color:#707070>Uses"
+bondmath.Daycount.DayCountResponse .[#707070,thickness=2].> bondmath.Daycount.DayCountResult : "<color:#707070>Uses"
+bondmath.Daycount.Variables .[#707070,thickness=2].> bondmath.Daycount.ActorClaim : "<color:#707070>Uses"
+@enduml

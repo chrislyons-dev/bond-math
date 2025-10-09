@@ -1,0 +1,60 @@
+# Pricing
+
+> **Auto-generated from code** - Last updated: 2025-10-09
+
+## Overview
+
+**Service ID:** `pricing` **Type:** cloudflare-worker-python **Layer:** Business
+Logic
+
+Curve-based cashflow discounting and present value calculations
+
+## Endpoints
+
+### `POST /value`
+
+**Configuration:**
+
+- **Authentication:** internal-jwt
+- **Scope:** pricing:write
+
+### `POST /scenario`
+
+**Configuration:**
+
+- **Authentication:** internal-jwt
+- **Scope:** pricing:write
+
+### `POST /key-rate`
+
+**Configuration:**
+
+- **Authentication:** internal-jwt
+- **Scope:** pricing:write
+
+## Dependencies
+
+### Incoming Dependencies
+
+This service is used by:
+
+- **Gateway**
+
+## Deployment
+
+### Preview Environment
+
+- **bond-math-pricing-preview** (Cloudflare Workers)
+
+![Preview Deployment Diagram](../../diagrams/structurizr-Deployment_preview.png)
+
+### Production Environment
+
+- **bond-math-pricing** (Cloudflare Workers)
+
+![Production Deployment Diagram](../../diagrams/structurizr-Deployment_production.png)
+
+---
+
+[← Back to Service Inventory](../services.md) |
+[Architecture Overview](../index.md)

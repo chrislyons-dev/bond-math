@@ -1,0 +1,89 @@
+# Daycount
+
+> **Auto-generated from code** - Last updated: 2025-10-09
+
+## Overview
+
+**Service ID:** `daycount` **Type:** cloudflare-worker-typescript **Layer:**
+Business Logic
+
+Authoritative day-count and year-fraction calculations for fixed income
+
+## Dependencies
+
+### Incoming Dependencies
+
+This service is used by:
+
+- **Gateway**
+
+## Components
+
+This service contains 11 component(s):
+
+![Daycount Component Diagram](../../diagrams/structurizr-Components_daycount.png)
+
+### Interfaces
+
+#### ActorClaim
+
+Actor claim from internal JWT Represents "Service X acting for User Y"
+
+#### DateComponents
+
+Parsed date components for calculations
+
+#### DatePair
+
+Date pair for year fraction calculation
+
+#### DayCountOptions
+
+Options for day-count calculations
+
+#### DayCountRequest
+
+Request body for /api/daycount/v1/count endpoint
+
+#### DayCountResponse
+
+Response body for /api/daycount/v1/count endpoint
+
+#### DayCountResult
+
+Single day-count calculation result
+
+#### Env
+
+Cloudflare Worker environment bindings
+
+#### ErrorResponse
+
+Standard error response following RFC 7807 Problem Details
+
+#### ValidationError
+
+Validation error with field context
+
+#### Variables
+
+Hono context variables
+
+## Deployment
+
+### Preview Environment
+
+- **bond-math-daycount-preview** (Cloudflare Workers)
+
+![Preview Deployment Diagram](../../diagrams/structurizr-Deployment_preview.png)
+
+### Production Environment
+
+- **bond-math-daycount** (Cloudflare Workers)
+
+![Production Deployment Diagram](../../diagrams/structurizr-Deployment_production.png)
+
+---
+
+[← Back to Service Inventory](../services.md) |
+[Architecture Overview](../index.md)

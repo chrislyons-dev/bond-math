@@ -1,0 +1,498 @@
+{
+  "version": "1.0",
+  "project": {
+    "name": "bond-math",
+    "description": "Multi-language, serverless microservices system for fixed-income pricing and metrics",
+    "repository": "https://github.com/chrislyons-dev/bond-math.git"
+  },
+  "services": [
+    {
+      "id": "bond-valuation",
+      "name": "Bond Valuation",
+      "type": "cloudflare-worker-python",
+      "layer": "business-logic",
+      "description": "Price ↔ yield calculations and cashflow generation for bullet bonds",
+      "owner": "platform-team",
+      "internalRoutes": ["/price", "/yield", "/health"],
+      "dependencies": ["svc-daycount"],
+      "securityModel": "internal-jwt",
+      "slaTier": "high",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/price",
+          "gatewayRoute": "POST /api/valuation/v1/price",
+          "authentication": "internal-jwt",
+          "scope": "valuation:write"
+        },
+        {
+          "method": "POST",
+          "path": "/yield",
+          "gatewayRoute": "POST /api/valuation/v1/yield",
+          "authentication": "internal-jwt",
+          "scope": "valuation:write"
+        }
+      ]
+    },
+    {
+      "id": "daycount",
+      "name": "Daycount",
+      "type": "cloudflare-worker-typescript",
+      "layer": "business-logic",
+      "description": "Authoritative day-count and year-fraction calculations for fixed income",
+      "owner": "platform-team",
+      "sourcePath": "C:\\Users\\chris\\git\\bond-math\\services\\daycount",
+      "internalRoutes": ["/count", "/health"],
+      "dependencies": [],
+      "securityModel": "internal-jwt",
+      "slaTier": "high",
+      "endpoints": []
+    },
+    {
+      "id": "gateway",
+      "name": "Gateway",
+      "type": "cloudflare-worker-typescript",
+      "layer": "api-gateway",
+      "description": "Entry point for all API traffic - handles Auth0 verification, internal JWT minting, and service routing",
+      "owner": "platform-team",
+      "sourcePath": "C:\\Users\\chris\\git\\bond-math\\services\\gateway",
+      "internalRoutes": ["/health", "/api/*"],
+      "dependencies": ["svc-daycount", "svc-valuation", "svc-metrics", "svc-pricing"],
+      "securityModel": "auth0-oidc",
+      "slaTier": "critical",
+      "endpoints": []
+    },
+    {
+      "id": "metrics",
+      "name": "Metrics",
+      "type": "cloudflare-worker-python",
+      "layer": "business-logic",
+      "description": "Bond risk metrics (duration, convexity, PV01, DV01)",
+      "owner": "platform-team",
+      "internalRoutes": ["/duration", "/convexity", "/risk", "/health"],
+      "dependencies": ["svc-bond-valuation"],
+      "securityModel": "internal-jwt",
+      "slaTier": "high",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/duration",
+          "gatewayRoute": "POST /api/metrics/v1/duration",
+          "authentication": "internal-jwt",
+          "scope": "metrics:write"
+        },
+        {
+          "method": "POST",
+          "path": "/convexity",
+          "gatewayRoute": "POST /api/metrics/v1/convexity",
+          "authentication": "internal-jwt",
+          "scope": "metrics:write"
+        },
+        {
+          "method": "POST",
+          "path": "/risk",
+          "gatewayRoute": "POST /api/metrics/v1/risk",
+          "authentication": "internal-jwt",
+          "scope": "metrics:write"
+        }
+      ]
+    },
+    {
+      "id": "pricing",
+      "name": "Pricing",
+      "type": "cloudflare-worker-python",
+      "layer": "business-logic",
+      "description": "Curve-based cashflow discounting and present value calculations",
+      "owner": "platform-team",
+      "internalRoutes": ["/value", "/scenario", "/key-rate", "/health"],
+      "dependencies": [],
+      "securityModel": "internal-jwt",
+      "slaTier": "high",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/value",
+          "gatewayRoute": "POST /api/pricing/v1/value",
+          "authentication": "internal-jwt",
+          "scope": "pricing:write"
+        },
+        {
+          "method": "POST",
+          "path": "/scenario",
+          "gatewayRoute": "POST /api/pricing/v1/scenario",
+          "authentication": "internal-jwt",
+          "scope": "pricing:write"
+        },
+        {
+          "method": "POST",
+          "path": "/key-rate",
+          "gatewayRoute": "POST /api/pricing/v1/key-rate",
+          "authentication": "internal-jwt",
+          "scope": "pricing:write"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "source": "gateway",
+      "destination": "bond-valuation",
+      "protocol": "service-binding",
+      "authentication": "internal-jwt",
+      "binding": "SVC_VALUATION"
+    },
+    {
+      "source": "gateway",
+      "destination": "daycount",
+      "protocol": "service-binding",
+      "authentication": "internal-jwt",
+      "binding": "SVC_DAYCOUNT"
+    },
+    {
+      "source": "gateway",
+      "destination": "metrics",
+      "protocol": "service-binding",
+      "authentication": "internal-jwt",
+      "binding": "SVC_METRICS"
+    },
+    {
+      "source": "gateway",
+      "destination": "pricing",
+      "protocol": "service-binding",
+      "authentication": "internal-jwt",
+      "binding": "SVC_PRICING"
+    }
+  ],
+  "components": [
+    {
+      "id": "daycount.ActorClaim",
+      "name": "ActorClaim",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\nActor claim from internal JWT\nRepresents \"Service X acting for User Y\"",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "daycount.DateComponents",
+      "name": "DateComponents",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\nParsed date components for calculations\n",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "daycount.DatePair",
+      "name": "DatePair",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\nDate pair for year fraction calculation",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "daycount.DayCountOptions",
+      "name": "DayCountOptions",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\nOptions for day-count calculations",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "daycount.DayCountRequest",
+      "name": "DayCountRequest",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\nRequest body for /api/daycount/v1/count endpoint",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "daycount.DayCountResponse",
+      "name": "DayCountResponse",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\nResponse body for /api/daycount/v1/count endpoint",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "daycount.DayCountResult",
+      "name": "DayCountResult",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\nSingle day-count calculation result",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "daycount.Env",
+      "name": "Env",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\nCloudflare Worker environment bindings",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "daycount.ErrorResponse",
+      "name": "ErrorResponse",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\nStandard error response following RFC 7807 Problem Details",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "daycount.ValidationError",
+      "name": "ValidationError",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\r\nValidation error with field context",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "daycount.Variables",
+      "name": "Variables",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\nHono context variables",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "gateway.ActorClaim",
+      "name": "ActorClaim",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\nActor claim - represents \"Service X acting for User Y\"",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "gateway.Auth0Claims",
+      "name": "Auth0Claims",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\nAuth0 JWT claims (after verification)",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "gateway.Env",
+      "name": "Env",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\nType definitions for Gateway Worker",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "gateway.ErrorResponse",
+      "name": "ErrorResponse",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\nRFC 7807 Problem Details error response",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "gateway.InternalJWT",
+      "name": "InternalJWT",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\nInternal JWT payload structure",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "gateway.JWK",
+      "name": "JWK",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\nJSON Web Key structure",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "gateway.JWKS",
+      "name": "JWKS",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\nAuth0 JWKS response structure",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "gateway.ServiceRoute",
+      "name": "ServiceRoute",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\nService route mapping",
+      "excludeFromDiagram": false
+    },
+    {
+      "id": "gateway.Variables",
+      "name": "Variables",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\nHono context variables",
+      "excludeFromDiagram": false
+    }
+  ],
+  "componentRelationships": [
+    {
+      "source": "daycount.DayCountRequest",
+      "destination": "daycount.DatePair",
+      "technology": "Uses"
+    },
+    {
+      "source": "daycount.DayCountRequest",
+      "destination": "daycount.DayCountOptions",
+      "technology": "Uses"
+    },
+    {
+      "source": "daycount.DayCountResponse",
+      "destination": "daycount.DayCountResult",
+      "technology": "Uses"
+    },
+    {
+      "source": "daycount.Variables",
+      "destination": "daycount.ActorClaim",
+      "technology": "Uses"
+    },
+    {
+      "source": "gateway.InternalJWT",
+      "destination": "gateway.ActorClaim",
+      "technology": "Uses"
+    },
+    {
+      "source": "gateway.JWKS",
+      "destination": "gateway.JWK",
+      "technology": "Uses"
+    }
+  ],
+  "deploymentEnvironments": [
+    {
+      "name": "development",
+      "deploymentNodes": [
+        {
+          "id": "gateway-development",
+          "name": "bond-math-gateway-dev",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-gateway-dev",
+            "routes": []
+          },
+          "containerInstances": ["gateway"]
+        }
+      ]
+    },
+    {
+      "name": "preview",
+      "deploymentNodes": [
+        {
+          "id": "gateway-preview",
+          "name": "bond-math-gateway-preview",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-gateway-preview",
+            "routes": []
+          },
+          "containerInstances": ["gateway"]
+        },
+        {
+          "id": "daycount-preview",
+          "name": "bond-math-daycount-preview",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-daycount-preview",
+            "routes": []
+          },
+          "containerInstances": ["daycount"]
+        },
+        {
+          "id": "bond-valuation-preview",
+          "name": "bond-math-valuation-preview",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-valuation-preview",
+            "routes": []
+          },
+          "containerInstances": ["bond-valuation"]
+        },
+        {
+          "id": "metrics-preview",
+          "name": "bond-math-metrics-preview",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-metrics-preview",
+            "routes": []
+          },
+          "containerInstances": ["metrics"]
+        },
+        {
+          "id": "pricing-preview",
+          "name": "bond-math-pricing-preview",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-pricing-preview",
+            "routes": []
+          },
+          "containerInstances": ["pricing"]
+        }
+      ]
+    },
+    {
+      "name": "production",
+      "deploymentNodes": [
+        {
+          "id": "gateway-production",
+          "name": "bond-math-gateway",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-gateway",
+            "routes": []
+          },
+          "containerInstances": ["gateway"]
+        },
+        {
+          "id": "daycount-production",
+          "name": "bond-math-daycount",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-daycount",
+            "routes": []
+          },
+          "containerInstances": ["daycount"]
+        },
+        {
+          "id": "bond-valuation-production",
+          "name": "bond-math-valuation",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-valuation",
+            "routes": []
+          },
+          "containerInstances": ["bond-valuation"]
+        },
+        {
+          "id": "metrics-production",
+          "name": "bond-math-metrics",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-metrics",
+            "routes": []
+          },
+          "containerInstances": ["metrics"]
+        },
+        {
+          "id": "pricing-production",
+          "name": "bond-math-pricing",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-pricing",
+            "routes": []
+          },
+          "containerInstances": ["pricing"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+@startuml
+set separator none
+
+skinparam {
+  shadowing false
+  arrowFontSize 15
+  defaultTextAlignment center
+  wrapWidth 100
+  maxMessageSize 100
+}
+hide stereotype
+
+skinparam rectangle<<_transparent>> {
+  BorderColor transparent
+  BackgroundColor transparent
+  FontColor transparent
+}
+
+skinparam rectangle<<1>> {
+  BackgroundColor #3178c6
+  FontColor #ffffff
+  BorderColor #22548a
+}
+rectangle "==API Gateway, TypeScript" <<1>>
+
+skinparam rectangle<<2>> {
+  BackgroundColor #3776ab
+  FontColor #ffffff
+  BorderColor #265277
+}
+rectangle "==Business Logic, Python" <<2>>
+
+skinparam rectangle<<3>> {
+  BackgroundColor #3178c6
+  FontColor #ffffff
+  BorderColor #22548a
+}
+rectangle "==Business Logic, TypeScript" <<3>>
+
+rectangle "." <<_transparent>> as 4
+4 .[#707070,thickness=2].> 4 : "<color:#707070>Relationship"
+
+
+@enduml

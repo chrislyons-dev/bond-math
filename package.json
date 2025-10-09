@@ -21,7 +21,14 @@
     "dev": "npm run dev --workspaces --if-present",
     "deploy": "npm run deploy --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present && rm -rf node_modules dist .wrangler",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docs:arch": "npm run docs:arch:extract && npm run docs:arch:validate && npm run docs:arch:dsl && npm run docs:arch:render && npm run docs:arch:docs",
+    "docs:arch:extract": "cd scripts/aac && npm run build && cd ../.. && node scripts/aac/dist/cli.js",
+    "docs:arch:validate": "node scripts/aac/dist/validate-cli.js",
+    "docs:arch:dsl": "node scripts/aac/dist/generate-dsl-cli.js",
+    "docs:arch:render": "node scripts/aac/dist/render-diagrams-cli.js",
+    "docs:arch:docs": "node scripts/aac/dist/generate-docs-cli.js",
+    "docs:arch:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-tools.ps1"
   },
   "workspaces": [
     "services/gateway",
