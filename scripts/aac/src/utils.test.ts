@@ -66,9 +66,9 @@ describe('parseAnnotations', () => {
   });
 
   it('should throw on non-string input', () => {
-    expect(() => parseAnnotations(null as any)).toThrow('text must be a string');
-    expect(() => parseAnnotations(123 as any)).toThrow('text must be a string');
-    expect(() => parseAnnotations(undefined as any)).toThrow('text must be a string');
+    expect(() => parseAnnotations(null as unknown as string)).toThrow('text must be a string');
+    expect(() => parseAnnotations(123 as unknown as string)).toThrow('text must be a string');
+    expect(() => parseAnnotations(undefined as unknown as string)).toThrow('text must be a string');
   });
 
   it('should return empty object for text with no annotations', () => {

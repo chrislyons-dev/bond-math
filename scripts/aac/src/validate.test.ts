@@ -97,16 +97,16 @@ describe('validateRelationships', () => {
   });
 
   it('should throw on invalid IR structure (not an object)', () => {
-    expect(() => validateRelationships(null as any)).toThrow('ir must be a valid AACIR object');
-    expect(() => validateRelationships(undefined as any)).toThrow('ir must be a valid AACIR object');
-    expect(() => validateRelationships('string' as any)).toThrow('ir must be a valid AACIR object');
+    expect(() => validateRelationships(null as unknown as AACIR)).toThrow('ir must be a valid AACIR object');
+    expect(() => validateRelationships(undefined as unknown as AACIR)).toThrow('ir must be a valid AACIR object');
+    expect(() => validateRelationships('string' as unknown as AACIR)).toThrow('ir must be a valid AACIR object');
   });
 
   it('should throw on invalid IR structure (missing services array)', () => {
     const ir = {
       relationships: [],
       deploymentEnvironments: [],
-    } as any;
+    } as unknown as AACIR;
 
     expect(() => validateRelationships(ir)).toThrow('ir.services must be an array');
   });
@@ -115,7 +115,7 @@ describe('validateRelationships', () => {
     const ir = {
       services: [],
       deploymentEnvironments: [],
-    } as any;
+    } as unknown as AACIR;
 
     expect(() => validateRelationships(ir)).toThrow('ir.relationships must be an array');
   });

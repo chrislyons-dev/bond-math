@@ -36,7 +36,8 @@
     "services/valuation",
     "services/metrics",
     "services/pricing",
-    "ui"
+    "ui",
+    "scripts/aac"
   ],
   "devDependencies": {
     "@commitlint/cli": "^20.1.0",

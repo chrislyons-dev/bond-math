@@ -6,7 +6,16 @@
 
 import { Project, SyntaxKind } from 'ts-morph';
 import { join } from 'path';
-import type { Service, Component, ComponentRelationship, Endpoint, PartialIR } from '../types.js';
+import type {
+  Service,
+  Component,
+  ComponentRelationship,
+  ComponentProperty,
+  ComponentMethod,
+  ComponentParameter,
+  Endpoint,
+  PartialIR
+} from '../types.js';
 import { parseAnnotations, parseList, log } from '../utils.js';
 
 export interface TypeScriptExtractorOptions {
@@ -44,6 +53,315 @@ const EFFECTFUL_BODY_PATTERNS = [
   'setTimeout',
   'setInterval',
 ] as const;
+
+/**
+ * Extract parameters from a function/method
+ */
+function extractParameters(params: any[]): ComponentParameter[] {
+  return params.map(p => ({
+    name: p.getName(),
+    type: p.getType?.()?.getText() || p.getTypeNode()?.getText() || 'any',
+    isOptional: p.hasQuestionToken(),
+  }));
+}
+
+/**
+ * Extract properties from a class
+ */
+function extractClassProperties(cls: any): ComponentProperty[] {
+  const properties: ComponentProperty[] = [];
+
+  for (const prop of cls.getProperties()) {
+    const propType = prop.getType().getText();
+    properties.push({
+      name: prop.getName(),
+      type: propType,
+      visibility: prop.hasModifier(SyntaxKind.PrivateKeyword) ? 'private' :
+                 prop.hasModifier(SyntaxKind.ProtectedKeyword) ? 'protected' : 'public',
+      isOptional: prop.hasQuestionToken(),
+      isReadonly: prop.isReadonly(),
+    });
+  }
+
+  return properties;
+}
+
+/**
+ * Extract properties from an interface
+ */
+function extractInterfaceProperties(iface: any): ComponentProperty[] {
+  const properties: ComponentProperty[] = [];
+
+  for (const prop of iface.getProperties()) {
+    const propType = prop.getTypeNode()?.getText() || 'any';
+    properties.push({
+      name: prop.getName(),
+      type: propType,
+      isOptional: prop.hasQuestionToken(),
+      isReadonly: prop.isReadonly(),
+    });
+  }
+
+  return properties;
+}
+
+/**
+ * Extract methods from a class
+ */
+function extractClassMethods(cls: any): ComponentMethod[] {
+  const methods: ComponentMethod[] = [];
+
+  for (const method of cls.getMethods()) {
+    const params = extractParameters(method.getParameters());
+
+    methods.push({
+      name: method.getName(),
+      returnType: method.getReturnType().getText(),
+      parameters: params,
+      visibility: method.hasModifier(SyntaxKind.PrivateKeyword) ? 'private' :
+                 method.hasModifier(SyntaxKind.ProtectedKeyword) ? 'protected' : 'public',
+      isAsync: method.isAsync(),
+    });
+  }
+
+  return methods;
+}
+
+/**
+ * Extract methods from an interface
+ */
+function extractInterfaceMethods(iface: any): ComponentMethod[] {
+  const methods: ComponentMethod[] = [];
+
+  for (const method of iface.getMethods()) {
+    const params = extractParameters(method.getParameters());
+
+    methods.push({
+      name: method.getName(),
+      returnType: method.getReturnTypeNode()?.getText() || 'void',
+      parameters: params,
+    });
+  }
+
+  return methods;
+}
+
+/**
+ * Extract service metadata from file annotations
+ */
+function extractServiceMetadata(sourceFile: any, servicePath: string): Service | null {
+  const statements = sourceFile.getStatements();
+
+  for (const statement of statements) {
+    const jsDocComments = statement.getLeadingCommentRanges();
+
+    for (const commentRange of jsDocComments) {
+      const commentText = commentRange.getText();
+      if (!commentText.includes('@service')) continue;
+
+      const annotations = parseAnnotations(commentText);
+
+      if (annotations.service) {
+        const service: Service = {
+          id: annotations.service,
+          name: annotations.service
+            .split('-')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' '),
+          type: annotations.type || 'cloudflare-worker-typescript',
+          layer: annotations.layer || 'business-logic',
+          description: annotations.description || '',
+          owner: annotations.owner,
+          sourcePath: servicePath,
+          internalRoutes: parseList(annotations.internalRoutes),
+          publicRoutes: parseList(annotations.publicRoutes),
+          dependencies: parseList(annotations.dependencies),
+          securityModel: annotations.securityModel,
+          slaTier: annotations.slaTier,
+          endpoints: [],
+        };
+
+        log.success(`Found service: ${service.id}`);
+        return service;
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Extract endpoints from functions and methods
+ */
+function extractEndpoints(sourceFile: any, service: Service): void {
+  const functions = [
+    ...sourceFile.getFunctions(),
+    ...sourceFile.getClasses().flatMap((cls: any) => cls.getMethods()),
+  ];
+
+  for (const func of functions) {
+    const jsDocs = func.getJsDocs();
+    for (const jsDoc of jsDocs) {
+      const commentText = jsDoc.getFullText();
+      if (!commentText.includes('@endpoint')) continue;
+
+      const annotations = parseAnnotations(commentText);
+
+      if (annotations.endpoint) {
+        const [method, path] = annotations.endpoint.split(/\s+/);
+
+        const endpoint: Endpoint = {
+          method: method as Endpoint['method'],
+          path: path,
+          gatewayRoute: annotations.gatewayRoute,
+          authentication: annotations.authentication,
+          scope: annotations.scope,
+          rateLimit: annotations.rateLimit,
+          cacheable: annotations.cacheable === 'true',
+          cacheTtl: annotations.cacheTtl ? parseInt(annotations.cacheTtl, 10) : undefined,
+        };
+
+        service.endpoints!.push(endpoint);
+        log.info(`  Found endpoint: ${method} ${path}`);
+      }
+    }
+  }
+}
+
+/**
+ * Extract class components from source file
+ */
+function extractClassComponents(sourceFile: any, service: Service, components: Component[]): void {
+  const classes = sourceFile.getClasses();
+
+  for (const cls of classes) {
+    const jsDocs = cls.getJsDocs();
+    let excludeFromDiagram = false;
+
+    for (const jsDoc of jsDocs) {
+      const commentText = jsDoc.getFullText();
+      const annotations = parseAnnotations(commentText);
+      if (annotations.excludeFromDiagram) {
+        excludeFromDiagram = true;
+      }
+    }
+
+    const component: Component = {
+      id: `${service.id}.${cls.getName()}`,
+      name: cls.getName(),
+      serviceId: service.id,
+      type: 'class',
+      description: jsDocs[0]?.getDescription() || undefined,
+      excludeFromDiagram,
+      properties: extractClassProperties(cls),
+      methods: extractClassMethods(cls),
+    };
+
+    // Check for extends
+    const extendsExpr = cls.getExtends();
+    if (extendsExpr) {
+      component.extends = extendsExpr.getText();
+    }
+
+    // Check for implements
+    const implementsExprs = cls.getImplements();
+    if (implementsExprs.length > 0) {
+      component.implements = implementsExprs.map((i: any) => i.getText());
+    }
+
+    components.push(component);
+  }
+}
+
+/**
+ * Extract interface components from source file
+ */
+function extractInterfaceComponents(sourceFile: any, service: Service, components: Component[]): void {
+  const interfaces = sourceFile.getInterfaces();
+
+  for (const iface of interfaces) {
+    const jsDocs = iface.getJsDocs();
+    let excludeFromDiagram = false;
+
+    for (const jsDoc of jsDocs) {
+      const commentText = jsDoc.getFullText();
+      const annotations = parseAnnotations(commentText);
+      if (annotations.excludeFromDiagram) {
+        excludeFromDiagram = true;
+      }
+    }
+
+    const component: Component = {
+      id: `${service.id}.${iface.getName()}`,
+      name: iface.getName(),
+      serviceId: service.id,
+      type: 'interface',
+      description: jsDocs[0]?.getDescription() || undefined,
+      excludeFromDiagram,
+      properties: extractInterfaceProperties(iface),
+      methods: extractInterfaceMethods(iface),
+    };
+
+    // Check for extends
+    const extendsExprs = iface.getExtends();
+    if (extendsExprs.length > 0) {
+      component.extends = extendsExprs[0].getText();
+    }
+
+    components.push(component);
+  }
+}
+
+/**
+ * Extract module components (top-level functions)
+ */
+function extractModuleComponents(sourceFile: any, service: Service, components: Component[]): void {
+  const moduleFunctions = sourceFile.getFunctions();
+  if (moduleFunctions.length === 0) return;
+
+  const fileName = sourceFile.getBaseName().replace('.ts', '');
+  const moduleId = `${service.id}.${fileName}`;
+
+  // Check if we already have a module component for this file
+  let moduleComponent = components.find(c => c.id === moduleId && c.type === 'module');
+
+  if (!moduleComponent) {
+    moduleComponent = {
+      id: moduleId,
+      name: fileName,
+      serviceId: service.id,
+      type: 'module',
+      description: `Module: ${fileName}`,
+      excludeFromDiagram: false,
+      functions: [],
+    };
+    components.push(moduleComponent);
+  }
+
+  // Extract each function
+  for (const func of moduleFunctions) {
+    const params = extractParameters(func.getParameters());
+    const returnType = func.getReturnType().getText();
+    const isAsync = func.isAsync();
+    const isExported = func.isExported();
+
+    // Classify as pure vs effectful
+    const stereotype = classifyFunctionPurity(func, returnType, isAsync);
+
+    moduleComponent.functions!.push({
+      name: func.getName() || 'anonymous',
+      returnType,
+      parameters: params,
+      isAsync,
+      isExported,
+      stereotype,
+    });
+  }
+
+  // Set module stereotype based on functions
+  const hasEffectful = moduleComponent.functions!.some(f => f.stereotype === 'effectful');
+  moduleComponent.stereotype = hasEffectful ? 'effectful' : 'pure';
+}
 
 export async function extractTypeScriptService(
   options: TypeScriptExtractorOptions
@@ -105,275 +423,22 @@ export async function extractTypeScriptService(
     log.info(`Processing: ${filePath}`);
 
     try {
-
-    // Check for service-level annotations in file-level JSDoc
-    const fileJsDoc = sourceFile
-      .getStatements()
-      .find((stmt) => stmt.getKindName() === 'JSDocComment');
-
-    // Get all JSDoc comments
-    const statements = sourceFile.getStatements();
-
-    // Look for service metadata in first JSDoc comment
-    for (const statement of statements) {
-      const jsDocComments = statement.getLeadingCommentRanges();
-
-      for (const commentRange of jsDocComments) {
-        const commentText = commentRange.getText();
-        if (!commentText.includes('@service')) continue;
-
-        const annotations = parseAnnotations(commentText);
-
-        if (annotations.service) {
-          // Found service-level metadata
-          currentService = {
-            id: annotations.service,
-            name: annotations.service
-              .split('-')
-              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-              .join(' '),
-            type: annotations.type || 'cloudflare-worker-typescript',
-            layer: annotations.layer || 'business-logic',
-            description: annotations.description || '',
-            owner: annotations.owner,
-            sourcePath: servicePath,
-            internalRoutes: parseList(annotations.internalRoutes),
-            publicRoutes: parseList(annotations.publicRoutes),
-            dependencies: parseList(annotations.dependencies),
-            securityModel: annotations.securityModel,
-            slaTier: annotations.slaTier,
-            endpoints: [],
-          };
-
+      // Extract service metadata if not already found
+      if (!currentService) {
+        const service = extractServiceMetadata(sourceFile, servicePath);
+        if (service) {
+          currentService = service;
           services.push(currentService);
-          log.success(`Found service: ${currentService.id}`);
-        }
-      }
-    }
-
-    // Extract endpoint metadata from function/method JSDoc
-    const functions = [
-      ...sourceFile.getFunctions(),
-      ...sourceFile.getClasses().flatMap((cls) => cls.getMethods()),
-    ];
-
-    for (const func of functions) {
-      const jsDocs = func.getJsDocs();
-      for (const jsDoc of jsDocs) {
-        const commentText = jsDoc.getFullText();
-        if (!commentText.includes('@endpoint')) continue;
-
-        const annotations = parseAnnotations(commentText);
-
-        if (annotations.endpoint && currentService) {
-          // Parse endpoint definition (e.g., "GET /health")
-          const [method, path] = annotations.endpoint.split(/\s+/);
-
-          const endpoint: Endpoint = {
-            method: method as Endpoint['method'],
-            path: path,
-            gatewayRoute: annotations.gatewayRoute,
-            authentication: annotations.authentication,
-            scope: annotations.scope,
-            rateLimit: annotations.rateLimit,
-            cacheable: annotations.cacheable === 'true',
-            cacheTtl: annotations.cacheTtl ? parseInt(annotations.cacheTtl, 10) : undefined,
-          };
-
-          currentService.endpoints!.push(endpoint);
-          log.info(`  Found endpoint: ${method} ${path}`);
-        }
-      }
-    }
-
-    // Extract components (classes, interfaces, functions)
-    const classes = sourceFile.getClasses();
-    for (const cls of classes) {
-      const jsDocs = cls.getJsDocs();
-      let excludeFromDiagram = false;
-
-      for (const jsDoc of jsDocs) {
-        const commentText = jsDoc.getFullText();
-        const annotations = parseAnnotations(commentText);
-        if (annotations.excludeFromDiagram) {
-          excludeFromDiagram = true;
         }
       }
 
+      // Extract endpoints and components only if we have a service
       if (currentService) {
-        const component: Component = {
-          id: `${currentService.id}.${cls.getName()}`,
-          name: cls.getName(),
-          serviceId: currentService.id,
-          type: 'class',
-          description: jsDocs[0]?.getDescription() || undefined,
-          excludeFromDiagram,
-          properties: [],
-          methods: [],
-        };
-
-        // Extract properties
-        for (const prop of cls.getProperties()) {
-          const propType = prop.getType().getText();
-          component.properties!.push({
-            name: prop.getName(),
-            type: propType,
-            visibility: prop.hasModifier(SyntaxKind.PrivateKeyword) ? 'private' :
-                       prop.hasModifier(SyntaxKind.ProtectedKeyword) ? 'protected' : 'public',
-            isOptional: prop.hasQuestionToken(),
-            isReadonly: prop.isReadonly(),
-          });
-        }
-
-        // Extract methods
-        for (const method of cls.getMethods()) {
-          const params = method.getParameters().map(p => ({
-            name: p.getName(),
-            type: p.getType().getText(),
-            isOptional: p.hasQuestionToken(),
-          }));
-
-          component.methods!.push({
-            name: method.getName(),
-            returnType: method.getReturnType().getText(),
-            parameters: params,
-            visibility: method.hasModifier(SyntaxKind.PrivateKeyword) ? 'private' :
-                       method.hasModifier(SyntaxKind.ProtectedKeyword) ? 'protected' : 'public',
-            isAsync: method.isAsync(),
-          });
-        }
-
-        // Check for extends
-        const extendsExpr = cls.getExtends();
-        if (extendsExpr) {
-          component.extends = extendsExpr.getText();
-        }
-
-        // Check for implements
-        const implementsExprs = cls.getImplements();
-        if (implementsExprs.length > 0) {
-          component.implements = implementsExprs.map(i => i.getText());
-        }
-
-        components.push(component);
+        extractEndpoints(sourceFile, currentService);
+        extractClassComponents(sourceFile, currentService, components);
+        extractInterfaceComponents(sourceFile, currentService, components);
+        extractModuleComponents(sourceFile, currentService, components);
       }
-    }
-
-    const interfaces = sourceFile.getInterfaces();
-    for (const iface of interfaces) {
-      const jsDocs = iface.getJsDocs();
-      let excludeFromDiagram = false;
-
-      for (const jsDoc of jsDocs) {
-        const commentText = jsDoc.getFullText();
-        const annotations = parseAnnotations(commentText);
-        if (annotations.excludeFromDiagram) {
-          excludeFromDiagram = true;
-        }
-      }
-
-      if (currentService) {
-        const component: Component = {
-          id: `${currentService.id}.${iface.getName()}`,
-          name: iface.getName(),
-          serviceId: currentService.id,
-          type: 'interface',
-          description: jsDocs[0]?.getDescription() || undefined,
-          excludeFromDiagram,
-          properties: [],
-          methods: [],
-        };
-
-        // Extract properties
-        for (const prop of iface.getProperties()) {
-          const propType = prop.getTypeNode()?.getText() || 'any';
-          component.properties!.push({
-            name: prop.getName(),
-            type: propType,
-            isOptional: prop.hasQuestionToken(),
-            isReadonly: prop.isReadonly(),
-          });
-        }
-
-        // Extract methods
-        for (const method of iface.getMethods()) {
-          const params = method.getParameters().map(p => ({
-            name: p.getName(),
-            type: p.getTypeNode()?.getText() || 'any',
-            isOptional: p.hasQuestionToken(),
-          }));
-
-          component.methods!.push({
-            name: method.getName(),
-            returnType: method.getReturnTypeNode()?.getText() || 'void',
-            parameters: params,
-          });
-        }
-
-        // Check for extends
-        const extendsExprs = iface.getExtends();
-        if (extendsExprs.length > 0) {
-          component.extends = extendsExprs[0].getText();
-        }
-
-        components.push(component);
-      }
-    }
-
-    // Extract top-level functions and group into module components
-    if (currentService) {
-      const moduleFunctions = sourceFile.getFunctions();
-      if (moduleFunctions.length > 0) {
-        const fileName = sourceFile.getBaseName().replace('.ts', '');
-        const moduleId = `${currentService.id}.${fileName}`;
-
-        // Check if we already have a module component for this file
-        let moduleComponent = components.find(c => c.id === moduleId && c.type === 'module');
-
-        if (!moduleComponent) {
-          moduleComponent = {
-            id: moduleId,
-            name: fileName,
-            serviceId: currentService.id,
-            type: 'module',
-            description: `Module: ${fileName}`,
-            excludeFromDiagram: false,
-            functions: [],
-          };
-          components.push(moduleComponent);
-        }
-
-        // Extract each function
-        for (const func of moduleFunctions) {
-          const params = func.getParameters().map(p => ({
-            name: p.getName(),
-            type: p.getType().getText(),
-            isOptional: p.hasQuestionToken(),
-          }));
-
-          const returnType = func.getReturnType().getText();
-          const isAsync = func.isAsync();
-          const isExported = func.isExported();
-
-          // Classify as pure vs effectful
-          const stereotype = classifyFunctionPurity(func, returnType, isAsync);
-
-          moduleComponent.functions!.push({
-            name: func.getName() || 'anonymous',
-            returnType,
-            parameters: params,
-            isAsync,
-            isExported,
-            stereotype,
-          });
-        }
-
-        // Set module stereotype based on functions
-        const hasEffectful = moduleComponent.functions!.some(f => f.stereotype === 'effectful');
-        moduleComponent.stereotype = hasEffectful ? 'effectful' : 'pure';
-      }
-    }
-
     } catch (error: any) {
       log.error(`Failed to process ${filePath}: ${error.message}`);
       // Continue processing other files
@@ -444,6 +509,132 @@ function classifyFunctionPurity(
 }
 
 /**
+ * Add a relationship if the destination component exists and is not excluded
+ */
+function addRelationship(
+  sourceComponent: Component,
+  destTypeName: string,
+  technology: string,
+  componentMap: Map<string | undefined, Component>,
+  relationships: ComponentRelationship[]
+): void {
+  const destComponent = componentMap.get(destTypeName);
+  if (
+    destComponent &&
+    !destComponent.excludeFromDiagram &&
+    destComponent.id !== sourceComponent.id
+  ) {
+    relationships.push({
+      source: sourceComponent.id,
+      destination: destComponent.id,
+      technology,
+    });
+  }
+}
+
+/**
+ * Extract type name from type node (strips generics and array notation)
+ */
+function extractTypeName(typeNode: any): string {
+  return typeNode.getText().split('<')[0].split('[')[0].trim();
+}
+
+/**
+ * Analyze class relationships (extends, implements, properties, methods)
+ */
+function analyzeClassRelationships(
+  sourceFile: any,
+  componentMap: Map<string | undefined, Component>,
+  relationships: ComponentRelationship[]
+): void {
+  for (const cls of sourceFile.getClasses()) {
+    const sourceComponent = componentMap.get(cls.getName());
+    if (!sourceComponent || sourceComponent.excludeFromDiagram) continue;
+
+    // Check extends clause
+    const extendsClause = cls.getExtends();
+    if (extendsClause) {
+      addRelationship(sourceComponent, extendsClause.getText(), 'Extends', componentMap, relationships);
+    }
+
+    // Check implements clause
+    for (const impl of cls.getImplements()) {
+      addRelationship(sourceComponent, impl.getText(), 'Implements', componentMap, relationships);
+    }
+
+    // Check property types
+    for (const prop of cls.getProperties()) {
+      const typeNode = prop.getTypeNode();
+      if (typeNode) {
+        const typeName = extractTypeName(typeNode);
+        addRelationship(sourceComponent, typeName, 'Uses', componentMap, relationships);
+      }
+    }
+
+    // Check method parameters and return types
+    for (const method of cls.getMethods()) {
+      const returnType = method.getReturnTypeNode();
+      if (returnType) {
+        const typeName = extractTypeName(returnType);
+        addRelationship(sourceComponent, typeName, 'Uses', componentMap, relationships);
+      }
+
+      for (const param of method.getParameters()) {
+        const typeNode = param.getTypeNode();
+        if (typeNode) {
+          const typeName = extractTypeName(typeNode);
+          addRelationship(sourceComponent, typeName, 'Uses', componentMap, relationships);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Analyze interface relationships (extends, properties)
+ */
+function analyzeInterfaceRelationships(
+  sourceFile: any,
+  componentMap: Map<string | undefined, Component>,
+  relationships: ComponentRelationship[]
+): void {
+  for (const iface of sourceFile.getInterfaces()) {
+    const sourceComponent = componentMap.get(iface.getName());
+    if (!sourceComponent || sourceComponent.excludeFromDiagram) continue;
+
+    // Check extends clause
+    for (const ext of iface.getExtends()) {
+      addRelationship(sourceComponent, ext.getText(), 'Extends', componentMap, relationships);
+    }
+
+    // Check property types
+    for (const prop of iface.getProperties()) {
+      const typeNode = prop.getTypeNode();
+      if (typeNode) {
+        const typeName = extractTypeName(typeNode);
+        addRelationship(sourceComponent, typeName, 'Uses', componentMap, relationships);
+      }
+    }
+  }
+}
+
+/**
+ * Deduplicate relationships
+ */
+function deduplicateRelationships(relationships: ComponentRelationship[]): void {
+  const seen = new Set<string>();
+  const deduplicated = relationships.filter((rel) => {
+    const key = `${rel.source}->${rel.destination}:${rel.technology}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  relationships.length = 0;
+  relationships.push(...deduplicated);
+}
+
+/**
  * Extract relationships between components within a service
  */
 function extractComponentRelationships(
@@ -455,151 +646,11 @@ function extractComponentRelationships(
   const componentMap = new Map(components.map((c) => [c.name, c]));
 
   for (const sourceFile of project.getSourceFiles()) {
-    // Analyze classes
-    for (const cls of sourceFile.getClasses()) {
-      const sourceComponent = componentMap.get(cls.getName());
-      if (!sourceComponent || sourceComponent.excludeFromDiagram) continue;
-
-      // Check extends clause
-      const extendsClause = cls.getExtends();
-      if (extendsClause) {
-        const baseClassName = extendsClause.getText();
-        const destComponent = componentMap.get(baseClassName);
-        if (destComponent && !destComponent.excludeFromDiagram) {
-          relationships.push({
-            source: sourceComponent.id,
-            destination: destComponent.id,
-            technology: 'Extends',
-          });
-        }
-      }
-
-      // Check implements clause
-      for (const impl of cls.getImplements()) {
-        const interfaceName = impl.getText();
-        const destComponent = componentMap.get(interfaceName);
-        if (destComponent && !destComponent.excludeFromDiagram) {
-          relationships.push({
-            source: sourceComponent.id,
-            destination: destComponent.id,
-            technology: 'Implements',
-          });
-        }
-      }
-
-      // Check properties
-      for (const prop of cls.getProperties()) {
-        const typeNode = prop.getTypeNode();
-        if (typeNode) {
-          const typeName = typeNode.getText().split('<')[0].split('[')[0].trim();
-          const destComponent = componentMap.get(typeName);
-          if (
-            destComponent &&
-            !destComponent.excludeFromDiagram &&
-            destComponent.id !== sourceComponent.id
-          ) {
-            relationships.push({
-              source: sourceComponent.id,
-              destination: destComponent.id,
-              technology: 'Uses',
-            });
-          }
-        }
-      }
-
-      // Check method parameters and return types
-      for (const method of cls.getMethods()) {
-        // Check return type
-        const returnType = method.getReturnTypeNode();
-        if (returnType) {
-          const typeName = returnType.getText().split('<')[0].split('[')[0].trim();
-          const destComponent = componentMap.get(typeName);
-          if (
-            destComponent &&
-            !destComponent.excludeFromDiagram &&
-            destComponent.id !== sourceComponent.id
-          ) {
-            relationships.push({
-              source: sourceComponent.id,
-              destination: destComponent.id,
-              technology: 'Uses',
-            });
-          }
-        }
-
-        // Check parameters
-        for (const param of method.getParameters()) {
-          const typeNode = param.getTypeNode();
-          if (typeNode) {
-            const typeName = typeNode.getText().split('<')[0].split('[')[0].trim();
-            const destComponent = componentMap.get(typeName);
-            if (
-              destComponent &&
-              !destComponent.excludeFromDiagram &&
-              destComponent.id !== sourceComponent.id
-            ) {
-              relationships.push({
-                source: sourceComponent.id,
-                destination: destComponent.id,
-                technology: 'Uses',
-              });
-            }
-          }
-        }
-      }
-    }
-
-    // Analyze interfaces
-    for (const iface of sourceFile.getInterfaces()) {
-      const sourceComponent = componentMap.get(iface.getName());
-      if (!sourceComponent || sourceComponent.excludeFromDiagram) continue;
-
-      // Check extends clause
-      for (const ext of iface.getExtends()) {
-        const baseInterfaceName = ext.getText();
-        const destComponent = componentMap.get(baseInterfaceName);
-        if (destComponent && !destComponent.excludeFromDiagram) {
-          relationships.push({
-            source: sourceComponent.id,
-            destination: destComponent.id,
-            technology: 'Extends',
-          });
-        }
-      }
-
-      // Check properties
-      for (const prop of iface.getProperties()) {
-        const typeNode = prop.getTypeNode();
-        if (typeNode) {
-          const typeName = typeNode.getText().split('<')[0].split('[')[0].trim();
-          const destComponent = componentMap.get(typeName);
-          if (
-            destComponent &&
-            !destComponent.excludeFromDiagram &&
-            destComponent.id !== sourceComponent.id
-          ) {
-            relationships.push({
-              source: sourceComponent.id,
-              destination: destComponent.id,
-              technology: 'Uses',
-            });
-          }
-        }
-      }
-    }
+    analyzeClassRelationships(sourceFile, componentMap, relationships);
+    analyzeInterfaceRelationships(sourceFile, componentMap, relationships);
   }
 
-  // Deduplicate relationships
-  const seen = new Set<string>();
-  const deduplicated = relationships.filter((rel) => {
-    const key = `${rel.source}->${rel.destination}:${rel.technology}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-
-  relationships.length = 0;
-  relationships.push(...deduplicated);
+  deduplicateRelationships(relationships);
 }
 
 /**

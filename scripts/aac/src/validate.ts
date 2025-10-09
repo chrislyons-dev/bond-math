@@ -44,8 +44,8 @@ export async function validateIR(irPath: string, schemaPath: string): Promise<bo
     verbose: true,
   });
 
-  // Compile schema
-  const validate = ajv.compile(schema as any);
+  // Compile schema (AJV expects unknown schema type)
+  const validate = ajv.compile(schema as object);
 
   // Validate IR
   const valid = validate(ir);
@@ -152,7 +152,7 @@ export function validateRelationships(ir: AACIR): boolean {
 /**
  * CLI entry point
  */
-export async function main() {
+export async function main(): Promise<void> {
   const rootPath = process.cwd();
   const irPath = join(rootPath, 'docs/architecture/ir.json');
   const schemaPath = join(rootPath, 'schemas/aac-ir.json');
@@ -172,13 +172,14 @@ export async function main() {
       log.error('Validation failed');
       process.exit(1);
     }
-  } catch (error: any) {
-    log.error(`Validation error: ${error.message}`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    log.error(`Validation error: ${message}`);
     process.exit(1);
   }
 }
 
 // Run if called directly
 if (process.argv[1] === new URL(import.meta.url).pathname) {
-  main();
+  void main();
 }

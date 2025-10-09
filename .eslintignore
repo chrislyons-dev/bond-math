@@ -2,7 +2,6 @@ node_modules/
 dist/
 build/
 coverage/
-scripts/
 .wrangler/
 *.min.js
 *.bundle.js
