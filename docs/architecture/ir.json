@@ -170,7 +170,46 @@
       "serviceId": "daycount",
       "type": "interface",
       "description": "\nActor claim from internal JWT\nRepresents \"Service X acting for User Y\"",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "iss",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "sub",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "perms",
+          "type": "string[]",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "uid",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "daycount.DateComponents",
@@ -178,7 +217,28 @@
       "serviceId": "daycount",
       "type": "interface",
       "description": "\nParsed date components for calculations\n",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "year",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "month",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "day",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "daycount.DatePair",
@@ -186,7 +246,22 @@
       "serviceId": "daycount",
       "type": "interface",
       "description": "\nDate pair for year fraction calculation",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "start",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "end",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "daycount.DayCountOptions",
@@ -194,7 +269,22 @@
       "serviceId": "daycount",
       "type": "interface",
       "description": "\nOptions for day-count calculations",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "eomRule",
+          "type": "boolean",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "frequency",
+          "type": "number",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "daycount.DayCountRequest",
@@ -202,7 +292,34 @@
       "serviceId": "daycount",
       "type": "interface",
       "description": "\nRequest body for /api/daycount/v1/count endpoint",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "pairs",
+          "type": "DatePair[]",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "convention",
+          "type": "DayCountConvention",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "options",
+          "type": "DayCountOptions",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "daycount.DayCountResponse",
@@ -210,7 +327,28 @@
       "serviceId": "daycount",
       "type": "interface",
       "description": "\nResponse body for /api/daycount/v1/count endpoint",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "results",
+          "type": "DayCountResult[]",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "convention",
+          "type": "DayCountConvention",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "daycount.DayCountResult",
@@ -218,7 +356,28 @@
       "serviceId": "daycount",
       "type": "interface",
       "description": "\nSingle day-count calculation result",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "days",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "yearFraction",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "basis",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "daycount.Env",
@@ -226,7 +385,22 @@
       "serviceId": "daycount",
       "type": "interface",
       "description": "\nCloudflare Worker environment bindings",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "INTERNAL_JWT_SECRET",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "ENVIRONMENT",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "daycount.ErrorResponse",
@@ -234,15 +408,69 @@
       "serviceId": "daycount",
       "type": "interface",
       "description": "\nStandard error response following RFC 7807 Problem Details",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "type",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "status",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "detail",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "instance",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "errors",
+          "type": "Array<{\n    field?: string;\n    message: string;\n  }>",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "daycount.ValidationError",
       "name": "ValidationError",
       "serviceId": "daycount",
       "type": "interface",
-      "description": "\r\nValidation error with field context",
-      "excludeFromDiagram": false
+      "description": "\nValidation error with field context",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "field",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "daycount.Variables",
@@ -250,7 +478,22 @@
       "serviceId": "daycount",
       "type": "interface",
       "description": "\nHono context variables",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "requestId",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "actor",
+          "type": "ActorClaim",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "gateway.ActorClaim",
@@ -258,7 +501,46 @@
       "serviceId": "gateway",
       "type": "interface",
       "description": "\nActor claim - represents \"Service X acting for User Y\"",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "iss",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "sub",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "perms",
+          "type": "string[]",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "uid",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "gateway.Auth0Claims",
@@ -266,7 +548,76 @@
       "serviceId": "gateway",
       "type": "interface",
       "description": "\nAuth0 JWT claims (after verification)",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "iss",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "sub",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "aud",
+          "type": "string | string[]",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "exp",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "iat",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "permissions",
+          "type": "string[]",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "'https://bondmath.chrislyons.dev/role'",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "'https://bondmath.chrislyons.dev/permissions'",
+          "type": "string[]",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "'https://bondmath.chrislyons.dev/user_id'",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "'https://bondmath.chrislyons.dev/org_id'",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "gateway.Env",
@@ -274,7 +625,64 @@
       "serviceId": "gateway",
       "type": "interface",
       "description": "\nType definitions for Gateway Worker",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "AUTH0_DOMAIN",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "AUTH0_AUDIENCE",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "INTERNAL_JWT_SECRET",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "INTERNAL_JWT_TTL",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "ENVIRONMENT",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "SVC_DAYCOUNT",
+          "type": "Fetcher",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "SVC_VALUATION",
+          "type": "Fetcher",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "SVC_METRICS",
+          "type": "Fetcher",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "SVC_PRICING",
+          "type": "Fetcher",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "gateway.ErrorResponse",
@@ -282,7 +690,40 @@
       "serviceId": "gateway",
       "type": "interface",
       "description": "\nRFC 7807 Problem Details error response",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "type",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "status",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "detail",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "instance",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "gateway.InternalJWT",
@@ -290,7 +731,46 @@
       "serviceId": "gateway",
       "type": "interface",
       "description": "\nInternal JWT payload structure",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "iss",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "sub",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "aud",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "exp",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "rid",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "act",
+          "type": "ActorClaim",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "gateway.JWK",
@@ -298,7 +778,58 @@
       "serviceId": "gateway",
       "type": "interface",
       "description": "\nJSON Web Key structure",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "kty",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "use",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "kid",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "n",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "e",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "alg",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "x5c",
+          "type": "string[]",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "x5t",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "gateway.JWKS",
@@ -306,7 +837,16 @@
       "serviceId": "gateway",
       "type": "interface",
       "description": "\nAuth0 JWKS response structure",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "keys",
+          "type": "JWK[]",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "gateway.ServiceRoute",
@@ -314,7 +854,28 @@
       "serviceId": "gateway",
       "type": "interface",
       "description": "\nService route mapping",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "prefix",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "binding",
+          "type": "keyof Env",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "stripPrefix",
+          "type": "boolean",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     },
     {
       "id": "gateway.Variables",
@@ -322,7 +883,22 @@
       "serviceId": "gateway",
       "type": "interface",
       "description": "\nHono context variables",
-      "excludeFromDiagram": false
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "requestId",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
     }
   ],
   "componentRelationships": [

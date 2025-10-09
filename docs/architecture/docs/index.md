@@ -83,6 +83,18 @@ Internal structure of services:
 
 ![Gateway Component Diagram](../diagrams/structurizr-Components_gateway.png)
 
+### Class Diagrams
+
+Detailed UML diagrams showing properties, methods, and relationships:
+
+#### Daycount Classes
+
+![Daycount Class Diagram](../diagrams/class-diagram-daycount.png)
+
+#### Gateway Classes
+
+![Gateway Class Diagram](../diagrams/class-diagram-gateway.png)
+
 ### Deployment Diagrams
 
 Infrastructure topology:

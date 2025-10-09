@@ -123,6 +123,19 @@ All microservices and their relationships
         content += `![${service.name} Component Diagram](../diagrams/structurizr-Components_${service.id}.png)\n\n`;
       }
     }
+
+    // Add class diagrams for TypeScript services
+    const servicesWithClasses = ir.services
+      .filter((s) => s.type.includes('typescript') && serviceComponentCounts.get(s.id) && serviceComponentCounts.get(s.id)! > 0)
+      .sort((a, b) => a.id.localeCompare(b.id));
+
+    if (servicesWithClasses.length > 0) {
+      content += `### Class Diagrams\n\nDetailed UML diagrams showing properties, methods, and relationships:\n\n`;
+      for (const service of servicesWithClasses) {
+        content += `#### ${service.name} Classes\n\n`;
+        content += `![${service.name} Class Diagram](../diagrams/class-diagram-${service.id}.png)\n\n`;
+      }
+    }
   }
 
   if (ir.deploymentEnvironments) {
@@ -401,7 +414,16 @@ ${service.description}
       if (visibleComponents.length > 0) {
         content += `## Components\n\n`;
         content += `This service contains ${visibleComponents.length} component(s):\n\n`;
+        content += `### Component Diagram\n\n`;
+        content += `High-level component relationships:\n\n`;
         content += `![${service.name} Component Diagram](../../diagrams/structurizr-Components_${service.id}.png)\n\n`;
+
+        // Add class diagram for TypeScript services
+        if (service.type.includes('typescript')) {
+          content += `### Class Diagram\n\n`;
+          content += `Detailed UML class diagram showing properties, methods, and relationships:\n\n`;
+          content += `![${service.name} Class Diagram](../../diagrams/class-diagram-${service.id}.png)\n\n`;
+        }
 
         // Group by type
         const componentsByType = new Map<string, Component[]>();

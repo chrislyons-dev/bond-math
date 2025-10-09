@@ -37,7 +37,17 @@ This service depends on:
 
 This service contains 9 component(s):
 
+### Component Diagram
+
+High-level component relationships:
+
 ![Gateway Component Diagram](../../diagrams/structurizr-Components_gateway.png)
+
+### Class Diagram
+
+Detailed UML class diagram showing properties, methods, and relationships:
+
+![Gateway Class Diagram](../../diagrams/class-diagram-gateway.png)
 
 ### Interfaces
 

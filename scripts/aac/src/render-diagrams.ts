@@ -8,7 +8,9 @@ import { spawn } from 'child_process';
 import { join, dirname, basename } from 'path';
 import { readdir, mkdir, access } from 'fs/promises';
 import { existsSync } from 'fs';
-import { log } from './utils.js';
+import { log, loadJSON } from './utils.js';
+import { generateClassDiagrams } from './generate-class-diagrams.js';
+import type { AACIR } from './types.js';
 
 const STRUCTURIZR_CLI_VERSION = '2024.11.03';
 const STRUCTURIZR_CLI_URL = `https://github.com/structurizr/cli/releases/download/v${STRUCTURIZR_CLI_VERSION}/structurizr-cli.zip`;
@@ -228,16 +230,27 @@ export async function renderDiagrams(options: RenderOptions): Promise<void> {
 export async function main() {
   const rootPath = process.cwd();
   const dslPath = join(rootPath, 'docs/architecture/workspace.dsl');
+  const irPath = join(rootPath, 'docs/architecture/ir.json');
   const outputDir = join(rootPath, 'docs/architecture/diagrams');
   const format = (process.env.DIAGRAM_FORMAT as any) || 'both';
 
   try {
     log.info('Starting diagram rendering pipeline');
     log.info(`  DSL: ${dslPath}`);
+    log.info(`  IR: ${irPath}`);
     log.info(`  Output: ${outputDir}`);
     log.info(`  Format: ${format}`);
 
+    // Render Structurizr diagrams (C4 model)
     await renderDiagrams({ rootPath, dslPath, outputDir, format });
+
+    // Generate and render class diagrams
+    log.info('Generating class diagrams...');
+    const ir = await loadJSON<AACIR>(irPath);
+    await generateClassDiagrams(ir, outputDir);
+
+    // Render all PlantUML files (including class diagrams)
+    await renderPlantUML(outputDir, format);
 
     log.success('Diagram rendering complete!');
   } catch (error: any) {

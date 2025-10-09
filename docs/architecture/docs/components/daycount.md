@@ -21,7 +21,17 @@ This service is used by:
 
 This service contains 11 component(s):
 
+### Component Diagram
+
+High-level component relationships:
+
 ![Daycount Component Diagram](../../diagrams/structurizr-Components_daycount.png)
+
+### Class Diagram
+
+Detailed UML class diagram showing properties, methods, and relationships:
+
+![Daycount Class Diagram](../../diagrams/class-diagram-daycount.png)
 
 ### Interfaces
 

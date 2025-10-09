@@ -135,14 +135,61 @@ export async function extractTypeScriptService(
       }
 
       if (currentService) {
-        components.push({
+        const component: Component = {
           id: `${currentService.id}.${cls.getName()}`,
           name: cls.getName(),
           serviceId: currentService.id,
           type: 'class',
           description: jsDocs[0]?.getDescription() || undefined,
           excludeFromDiagram,
-        });
+          properties: [],
+          methods: [],
+        };
+
+        // Extract properties
+        for (const prop of cls.getProperties()) {
+          const propType = prop.getType().getText();
+          component.properties!.push({
+            name: prop.getName(),
+            type: propType,
+            visibility: prop.hasModifier(SyntaxKind.PrivateKeyword) ? 'private' :
+                       prop.hasModifier(SyntaxKind.ProtectedKeyword) ? 'protected' : 'public',
+            isOptional: prop.hasQuestionToken(),
+            isReadonly: prop.isReadonly(),
+          });
+        }
+
+        // Extract methods
+        for (const method of cls.getMethods()) {
+          const params = method.getParameters().map(p => ({
+            name: p.getName(),
+            type: p.getType().getText(),
+            isOptional: p.hasQuestionToken(),
+          }));
+
+          component.methods!.push({
+            name: method.getName(),
+            returnType: method.getReturnType().getText(),
+            parameters: params,
+            visibility: method.hasModifier(SyntaxKind.PrivateKeyword) ? 'private' :
+                       method.hasModifier(SyntaxKind.ProtectedKeyword) ? 'protected' : 'public',
+            isAsync: method.isAsync(),
+          });
+        }
+
+        // Check for extends
+        const extendsExpr = cls.getExtends();
+        if (extendsExpr) {
+          component.extends = extendsExpr.getText();
+        }
+
+        // Check for implements
+        const implementsExprs = cls.getImplements();
+        if (implementsExprs.length > 0) {
+          component.implements = implementsExprs.map(i => i.getText());
+        }
+
+        components.push(component);
       }
     }
 
@@ -160,14 +207,50 @@ export async function extractTypeScriptService(
       }
 
       if (currentService) {
-        components.push({
+        const component: Component = {
           id: `${currentService.id}.${iface.getName()}`,
           name: iface.getName(),
           serviceId: currentService.id,
           type: 'interface',
           description: jsDocs[0]?.getDescription() || undefined,
           excludeFromDiagram,
-        });
+          properties: [],
+          methods: [],
+        };
+
+        // Extract properties
+        for (const prop of iface.getProperties()) {
+          const propType = prop.getTypeNode()?.getText() || 'any';
+          component.properties!.push({
+            name: prop.getName(),
+            type: propType,
+            isOptional: prop.hasQuestionToken(),
+            isReadonly: prop.isReadonly(),
+          });
+        }
+
+        // Extract methods
+        for (const method of iface.getMethods()) {
+          const params = method.getParameters().map(p => ({
+            name: p.getName(),
+            type: p.getTypeNode()?.getText() || 'any',
+            isOptional: p.hasQuestionToken(),
+          }));
+
+          component.methods!.push({
+            name: method.getName(),
+            returnType: method.getReturnTypeNode()?.getText() || 'void',
+            parameters: params,
+          });
+        }
+
+        // Check for extends
+        const extendsExprs = iface.getExtends();
+        if (extendsExprs.length > 0) {
+          component.extends = extendsExprs[0].getText();
+        }
+
+        components.push(component);
       }
     }
   }
