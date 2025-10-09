@@ -33,9 +33,12 @@ Docs
 
 ## Annotation Standards
 
-### Service-Level Metadata
+**For complete AAC annotation syntax, see:**
+[AAC Style Guide](../reference/aac-style-guide.md)
 
-Every service must have a metadata block at entry point:
+### Quick Examples
+
+Service metadata block:
 
 ```typescript
 /**
@@ -43,103 +46,33 @@ Every service must have a metadata block at entry point:
  * @type cloudflare-worker-typescript
  * @layer api-gateway
  * @description Entry point for all API requests
- * @owner platform-team
- * @internal-routes /health, /api/*
- * @dependencies svc-daycount, svc-valuation, svc-metrics, svc-pricing
- * @security-model auth0-oidc
- * @sla-tier critical
  */
 ```
 
-**Required Tags:**
-
-- `@service` – unique identifier (kebab-case)
-- `@type` – deployment type (cloudflare-worker | lambda | etc.)
-- `@layer` – architectural layer (ui | api-gateway | business-logic |
-  data-access)
-- `@description` – one-line purpose
-
-**Optional Tags:**
-
-- `@owner`, `@public-routes`, `@internal-routes`, `@dependencies`
-- `@security-model`, `@sla-tier`
-
-### Endpoint Metadata
+Endpoint annotations:
 
 ```typescript
 /**
  * @endpoint POST /count
- * @gateway-route POST /api/daycount/v1/count
  * @authentication internal-jwt
  * @scope daycount:write
- * @rate-limit 100/min
- * @cacheable true
- * @cache-ttl 3600
  */
 ```
 
-### Service Bindings
-
-```typescript
-/**
- * @service-binding SVC_DAYCOUNT
- * @target daycount
- * @purpose Calculate year fractions
- */
-```
-
-### Class Diagram Control
-
-**Exclude classes from diagrams** to avoid clutter:
-
-```typescript
-/**
- * Simple DTO for bond details
- * @exclude-from-diagram
- */
-class BondDetailsDTO {
-  // ...
-}
-```
-
-```python
-"""Utility helper for date calculations.
-
-@exclude-from-diagram
-"""
-class DateUtils:
-    # ...
-```
-
-**When to exclude:**
-
-- DTOs/POJOs with no business logic
-- Simple utilities
-- Generated code
-- Framework boilerplate
-
-**Default:** All classes included unless marked `@exclude-from-diagram`
+Classes can be excluded from diagrams with `@exclude-from-diagram` (for DTOs,
+utilities, generated code)
 
 ---
 
 ## How It Works
 
-**Extractors:**
+Extractors parse TypeScript (ts-morph), Python (libcst), and IAC configs
+(wrangler.toml, Terraform) to produce a single **Intermediate Representation
+(IR)** - a validated JSON file that captures services, relationships, and
+deployment topology.
 
-| Source     | Tool          | What We Extract                                    |
-| ---------- | ------------- | -------------------------------------------------- |
-| TypeScript | `ts-morph`    | JSDoc, imports, decorators                         |
-| Python     | `libcst`      | Docstrings, decorators, imports                    |
-| Wrangler   | `@iarna/toml` | Service bindings, routes, KV/R2, env config        |
-| Terraform  | `hcl2-parser` | Infrastructure resources, DNS, deployment topology |
-
-All extractors output to a single **Intermediate Representation (IR)** - a JSON
-file (`schemas/aac-ir.json`) that captures services, relationships, endpoints,
-and deployment nodes. Think of it as a language-agnostic snapshot of your
-architecture.
-
-**Why IR?** Decouples extraction from rendering. Add a new language? Write an
-extractor. Want a different diagram tool? Swap the generator.
+**Why IR?** Language-agnostic. Add a new language? Write an extractor. Want
+different diagrams? Swap the generator.
 
 **Extraction Pipeline:**
 
@@ -272,53 +205,8 @@ workspaces (drift from code), and custom generators (maintenance burden).
 
 ## Appendix: IR Schema {#ir-schema}
 
-Full schema: `schemas/aac-ir.json`
+Full schema and validation rules: `schemas/aac-ir.json`
 
-**Key structures:**
-
-```typescript
-// Service (Worker, Page, etc)
-{
-  id: string;                    // kebab-case
-  name: string;
-  type: "cloudflare-worker-typescript" | "cloudflare-worker-python" | ...;
-  layer: "ui" | "api-gateway" | "business-logic" | "data-access";
-  description: string;
-  endpoints?: Endpoint[];
-  configuration?: {
-    environment: Array<{ name, required, description }>;
-    bindings: Array<{ name, type, target }>;
-  };
-}
-
-// Relationship (service-to-service)
-{
-  source: string;                // Service ID
-  destination: string;           // Service ID
-  protocol: "service-binding" | "https" | "grpc" | ...;
-  authentication?: "internal-jwt" | "auth0-jwt" | ...;
-  binding?: string;              // For Cloudflare service bindings
-}
-
-// DeploymentNode (per environment)
-{
-  id: string;
-  name: string;
-  type: "infrastructure" | "container";
-  technology?: string;           // "Cloudflare Workers", "KV", "R2"
-  properties?: {
-    workerName, routes, customDomains,
-    kvNamespaces: [{ binding, namespaceId }],
-    r2Buckets: [{ binding, bucketName }],
-    durableObjects: [{ binding, className }]
-  };
-  containerInstances?: string[]; // Service IDs running on this node
-}
-
-// Component (class/module for diagrams)
-{
-  id: string;
-  type: "class" | "interface" | "module" | "function";
-  excludeFromDiagram?: boolean;  // Default: false (opt-out)
-}
-```
+The IR captures services, relationships, endpoints, deployment nodes, and
+components in a language-agnostic JSON format. See the schema file for complete
+structure definitions.

@@ -381,110 +381,23 @@ public BigDecimal calculatePresentValue(
 
 ## 🏗️ Architecture as Code Annotations
 
-These annotations drive automatic generation of C4 diagrams and architecture
-documentation via Structurizr DSL. See ADR-0001 for complete reference.
+AAC annotations drive automatic generation of C4 diagrams, architecture
+documentation, and service discovery via Structurizr DSL.
 
-**What gets generated:** System context, container, component, and deployment
-diagrams + per-service docs + infrastructure topology → `/docs/architecture`
+**For complete AAC annotation syntax and examples, see:**
+[AAC Style Guide](../reference/aac-style-guide.md)
 
-**Run:** `npm run docs:arch` to extract annotations and generate all artifacts
+**Quick examples from this codebase:**
 
-### Service-Level (Required)
+Service annotations appear at the top of entry point files (`index.ts`,
+`main.py`) using `@service`, `@type`, `@layer`, and `@description` tags.
+Endpoint annotations use `@endpoint`, `@authentication`, and `@scope` tags.
+Service bindings use `@service-binding` to document inter-service dependencies.
 
-```
-@service <identifier>
-@type <deployment-type>
-@layer <architectural-layer>
-@description <one-line purpose>
-@owner <team>
-@dependencies <comma-separated service IDs or 'none'>
-@security-model <auth-type>
-```
+**To generate diagrams:** Run `npm run docs:arch`
 
-**Example:**
-
-```typescript
-/**
- * @service gateway
- * @type cloudflare-worker-typescript
- * @layer api-gateway
- * @description Auth verification and routing
- * @owner platform-team
- * @internal-routes /health, /api/*
- * @dependencies svc-daycount, svc-valuation, svc-metrics, svc-pricing
- * @security-model auth0-oidc
- * @sla-tier critical
- */
-```
-
-### Endpoint-Level (For all public/internal APIs)
-
-```
-@endpoint <METHOD> <path>
-@gateway-route <METHOD> <full-gateway-path>
-@authentication <auth-type>
-@scope <required-permission>
-```
-
-**Example:**
-
-```typescript
-/**
- * @endpoint POST /count
- * @gateway-route POST /api/daycount/v1/count
- * @authentication internal-jwt
- * @scope daycount:write
- */
-```
-
-### Service Binding (Where applicable)
-
-```
-@service-binding <BINDING_NAME>
-@target <target-service>
-@purpose <why this dependency exists>
-```
-
-**Example:**
-
-```typescript
-/**
- * @service-binding SVC_DAYCOUNT
- * @target daycount
- * @purpose Calculate year fractions and accrual days
- */
-```
-
-### Class Diagram Control (Optional)
-
-Use `@exclude-from-diagram` to prevent classes from appearing in generated
-component diagrams. Useful for DTOs, utilities, generated code, and framework
-boilerplate.
-
-**TypeScript:**
-
-```typescript
-/**
- * Simple DTO for bond details
- * @exclude-from-diagram
- */
-class BondDetailsDTO {
-  // ...
-}
-```
-
-**Python:**
-
-```python
-"""Utility helper for date calculations.
-
-@exclude-from-diagram
-"""
-class DateUtils:
-    # ...
-```
-
-**Default behavior:** All classes are included unless explicitly excluded.
+**For decision rationale:** See
+[ADR-0001: Architecture as Code](../adr/0001-architecture-as-code.md)
 
 ---
 
@@ -751,7 +664,10 @@ function process() {
 - [JSDoc Reference](https://jsdoc.app/)
 - [Google Style Guide - Python Docstrings](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings)
 - [Oracle Javadoc Guide](https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html)
-- [Architecture as Code (ADR-0001)](../adr/0001-architecture-as-code.md)
+- [AAC Style Guide](../reference/aac-style-guide.md) – Architecture annotation
+  reference
+- [ADR-0001: Architecture as Code](../adr/0001-architecture-as-code.md) –
+  Decision rationale
 
 ---
 

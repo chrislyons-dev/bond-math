@@ -10,6 +10,20 @@ Docs
 
 ---
 
+## Scope of This Guide
+
+This guide covers **AAC-specific annotations** for architecture documentation
+generation.
+
+**For general code documentation** (JSDoc patterns, function docs, error
+handling, security documentation, etc.), see
+[Code Documentation Standards](../standards/code-documentation-standards.md).
+
+**For the decision rationale** behind AAC, see
+[ADR-0001: Architecture as Code](../adr/0001-architecture-as-code.md).
+
+---
+
 ## Quick Start
 
 VS Code snippets are available to generate AAC comments:
@@ -454,8 +468,9 @@ See real implementations:
 
 ## Related Documentation
 
-- **ADR-0001**: [Architecture as Code](../adr/0001-architecture-as-code.md)
-- **ADR-0011**:
-  [Internal JWT Authentication](../adr/0011-symmetric-jwt-for-internal-auth.md)
-- **ADR-0012**:
-  [Scope-Based Authorization](../adr/0012-scope-based-authorization.md)
+- **[Code Documentation Standards](../standards/code-documentation-standards.md)**
+  – General JSDoc/docstring patterns, error handling docs, security docs
+- **[ADR-0001: Architecture as Code](../adr/0001-architecture-as-code.md)** –
+  Decision rationale and trade-offs
+- **[ADR-0011: Internal JWT Authentication](../adr/0011-symmetric-jwt-for-internal-auth.md)**
+- **[ADR-0012: Scope-Based Authorization](../adr/0012-scope-based-authorization.md)**
