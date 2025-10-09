@@ -15,6 +15,12 @@ workspace "bond-math" "Architecture as Code generated workspace" {
                 description "Price ↔ yield calculations and cashflow generation for bullet bonds"
                 technology "Cloudflare Workers (Python)"
                 tags "Business Logic,SLA:high,Python"
+
+                # Components
+                bond_valuation_main = component "main" {
+                    description "Module: main"
+                    technology "Python Module"
+                }
             }
             daycount = container "Daycount" {
                 description "Authoritative day-count and year-fraction calculations for fixed income"
@@ -58,8 +64,28 @@ workspace "bond-math" "Architecture as Code generated workspace" {
                     description "Standard error response following RFC 7807 Problem Details"
                     technology "TypeScript Interface"
                 }
+                daycount_index = component "index" {
+                    description "Module: index"
+                    technology "TypeScript Interface"
+                }
+                daycount_logger = component "logger" {
+                    description "Module: logger"
+                    technology "TypeScript Interface"
+                }
+                daycount_scopes = component "scopes" {
+                    description "Module: scopes"
+                    technology "TypeScript Interface"
+                }
+                daycount_utils = component "utils" {
+                    description "Module: utils"
+                    technology "TypeScript Interface"
+                }
                 daycount_ValidationError = component "ValidationError" {
                     description "Validation error with field context"
+                    technology "TypeScript Interface"
+                }
+                daycount_validators = component "validators" {
+                    description "Module: validators"
                     technology "TypeScript Interface"
                 }
                 daycount_Variables = component "Variables" {
@@ -107,6 +133,22 @@ workspace "bond-math" "Architecture as Code generated workspace" {
                     description "Auth0 JWKS response structure"
                     technology "TypeScript Interface"
                 }
+                gateway_jwt = component "jwt" {
+                    description "Module: jwt"
+                    technology "TypeScript Interface"
+                }
+                gateway_logger = component "logger" {
+                    description "Module: logger"
+                    technology "TypeScript Interface"
+                }
+                gateway_middleware = component "middleware" {
+                    description "Module: middleware"
+                    technology "TypeScript Interface"
+                }
+                gateway_router = component "router" {
+                    description "Module: router"
+                    technology "TypeScript Interface"
+                }
                 gateway_ServiceRoute = component "ServiceRoute" {
                     description "Service route mapping"
                     technology "TypeScript Interface"
@@ -124,11 +166,23 @@ workspace "bond-math" "Architecture as Code generated workspace" {
                 description "Bond risk metrics (duration, convexity, PV01, DV01)"
                 technology "Cloudflare Workers (Python)"
                 tags "Business Logic,SLA:high,Python"
+
+                # Components
+                metrics_main = component "main" {
+                    description "Module: main"
+                    technology "Python Module"
+                }
             }
             pricing = container "Pricing" {
                 description "Curve-based cashflow discounting and present value calculations"
                 technology "Cloudflare Workers (Python)"
                 tags "Business Logic,SLA:high,Python"
+
+                # Components
+                pricing_main = component "main" {
+                    description "Module: main"
+                    technology "Python Module"
+                }
             }
 
             # Service-to-service relationships
@@ -214,6 +268,12 @@ workspace "bond-math" "Architecture as Code generated workspace" {
             title "Bond Math - Containers"
         }
 
+        component bond_valuation "Components_bond_valuation" {
+            include *
+            autoLayout
+            description "Component diagram for Bond Valuation"
+            title "Bond Valuation - Components"
+        }
         component daycount "Components_daycount" {
             include *
             autoLayout
@@ -225,6 +285,18 @@ workspace "bond-math" "Architecture as Code generated workspace" {
             autoLayout
             description "Component diagram for Gateway"
             title "Gateway - Components"
+        }
+        component metrics "Components_metrics" {
+            include *
+            autoLayout
+            description "Component diagram for Metrics"
+            title "Metrics - Components"
+        }
+        component pricing "Components_pricing" {
+            include *
+            autoLayout
+            description "Component diagram for Pricing"
+            title "Pricing - Components"
         }
 
         deployment * "Development" "Deployment_development" {

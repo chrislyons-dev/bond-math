@@ -75,6 +75,10 @@ All microservices and their relationships
 
 Internal structure of services:
 
+#### Bond Valuation Components
+
+![Bond Valuation Component Diagram](../diagrams/structurizr-Components_bond-valuation.png)
+
 #### Daycount Components
 
 ![Daycount Component Diagram](../diagrams/structurizr-Components_daycount.png)
@@ -82,6 +86,14 @@ Internal structure of services:
 #### Gateway Components
 
 ![Gateway Component Diagram](../diagrams/structurizr-Components_gateway.png)
+
+#### Metrics Components
+
+![Metrics Component Diagram](../diagrams/structurizr-Components_metrics.png)
+
+#### Pricing Components
+
+![Pricing Component Diagram](../diagrams/structurizr-Components_pricing.png)
 
 ### Class Diagrams
 

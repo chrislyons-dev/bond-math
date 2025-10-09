@@ -69,6 +69,30 @@ skinparam rectangle<<bondmath.Gateway.Variables>> {
   BorderColor #9a9a9a
   shadowing false
 }
+skinparam rectangle<<bondmath.Gateway.jwt>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Gateway.logger>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Gateway.middleware>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Gateway.router>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
 skinparam rectangle<<bondmath.Gateway>> {
   BorderColor #22548a
   FontColor #22548a
@@ -83,6 +107,10 @@ rectangle "Gateway\n<size:10>[Container: Cloudflare Workers (TypeScript)]</size>
   rectangle "==InternalJWT\n<size:10>[Component: TypeScript Interface]</size>\n\nInternal JWT payload structure" <<bondmath.Gateway.InternalJWT>> as bondmath.Gateway.InternalJWT
   rectangle "==JWK\n<size:10>[Component: TypeScript Interface]</size>\n\nJSON Web Key structure" <<bondmath.Gateway.JWK>> as bondmath.Gateway.JWK
   rectangle "==JWKS\n<size:10>[Component: TypeScript Interface]</size>\n\nAuth0 JWKS response structure" <<bondmath.Gateway.JWKS>> as bondmath.Gateway.JWKS
+  rectangle "==jwt\n<size:10>[Component: TypeScript Interface]</size>\n\nModule: jwt" <<bondmath.Gateway.jwt>> as bondmath.Gateway.jwt
+  rectangle "==logger\n<size:10>[Component: TypeScript Interface]</size>\n\nModule: logger" <<bondmath.Gateway.logger>> as bondmath.Gateway.logger
+  rectangle "==middleware\n<size:10>[Component: TypeScript Interface]</size>\n\nModule: middleware" <<bondmath.Gateway.middleware>> as bondmath.Gateway.middleware
+  rectangle "==router\n<size:10>[Component: TypeScript Interface]</size>\n\nModule: router" <<bondmath.Gateway.router>> as bondmath.Gateway.router
   rectangle "==ServiceRoute\n<size:10>[Component: TypeScript Interface]</size>\n\nService route mapping" <<bondmath.Gateway.ServiceRoute>> as bondmath.Gateway.ServiceRoute
   rectangle "==Variables\n<size:10>[Component: TypeScript Interface]</size>\n\nHono context variables" <<bondmath.Gateway.Variables>> as bondmath.Gateway.Variables
 }

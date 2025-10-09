@@ -33,6 +33,28 @@ This service is used by:
 
 - **Gateway**
 
+## Components
+
+This service contains 1 component(s):
+
+### Component Diagram
+
+High-level component relationships:
+
+![Bond Valuation Component Diagram](../../diagrams/structurizr-Components_bond-valuation.png)
+
+### Class Diagram
+
+Detailed UML class diagram showing properties, methods, and relationships:
+
+![Bond Valuation Class Diagram](../../diagrams/class-diagram-bond-valuation.png)
+
+### Modules
+
+#### main
+
+Module: main
+
 ## Deployment
 
 ### Preview Environment

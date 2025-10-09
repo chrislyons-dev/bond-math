@@ -418,8 +418,8 @@ ${service.description}
         content += `High-level component relationships:\n\n`;
         content += `![${service.name} Component Diagram](../../diagrams/structurizr-Components_${service.id}.png)\n\n`;
 
-        // Add class diagram for TypeScript services
-        if (service.type.includes('typescript')) {
+        // Add class diagram for TypeScript and Python services
+        if (service.type.includes('typescript') || service.type.includes('python')) {
           content += `### Class Diagram\n\n`;
           content += `Detailed UML class diagram showing properties, methods, and relationships:\n\n`;
           content += `![${service.name} Class Diagram](../../diagrams/class-diagram-${service.id}.png)\n\n`;

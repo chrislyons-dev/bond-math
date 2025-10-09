@@ -253,6 +253,60 @@ export async function extractTypeScriptService(
         components.push(component);
       }
     }
+
+    // Extract top-level functions and group into module components
+    if (currentService) {
+      const moduleFunctions = sourceFile.getFunctions();
+      if (moduleFunctions.length > 0) {
+        const fileName = sourceFile.getBaseName().replace('.ts', '');
+        const moduleId = `${currentService.id}.${fileName}`;
+
+        // Check if we already have a module component for this file
+        let moduleComponent = components.find(c => c.id === moduleId && c.type === 'module');
+
+        if (!moduleComponent) {
+          moduleComponent = {
+            id: moduleId,
+            name: fileName,
+            serviceId: currentService.id,
+            type: 'module',
+            description: `Module: ${fileName}`,
+            excludeFromDiagram: false,
+            functions: [],
+          };
+          components.push(moduleComponent);
+        }
+
+        // Extract each function
+        for (const func of moduleFunctions) {
+          const params = func.getParameters().map(p => ({
+            name: p.getName(),
+            type: p.getType().getText(),
+            isOptional: p.hasQuestionToken(),
+          }));
+
+          const returnType = func.getReturnType().getText();
+          const isAsync = func.isAsync();
+          const isExported = func.isExported();
+
+          // Classify as pure vs effectful
+          const stereotype = classifyFunctionPurity(func, returnType, isAsync);
+
+          moduleComponent.functions!.push({
+            name: func.getName() || 'anonymous',
+            returnType,
+            parameters: params,
+            isAsync,
+            isExported,
+            stereotype,
+          });
+        }
+
+        // Set module stereotype based on functions
+        const hasEffectful = moduleComponent.functions!.some(f => f.stereotype === 'effectful');
+        moduleComponent.stereotype = hasEffectful ? 'effectful' : 'pure';
+      }
+    }
   }
 
   // Extract component relationships
@@ -269,6 +323,58 @@ export async function extractTypeScriptService(
     components,
     componentRelationships,
   };
+}
+
+/**
+ * Classify a function as pure or effectful based on its signature and body
+ */
+function classifyFunctionPurity(
+  func: any,
+  returnType: string,
+  isAsync: boolean
+): 'pure' | 'effectful' {
+  // Async functions are always effectful
+  if (isAsync) {
+    return 'effectful';
+  }
+
+  // Check return type for effectful patterns
+  const effectfulTypes = ['Promise', 'IO', 'Task', 'Effect', 'Observable', 'Response'];
+  for (const type of effectfulTypes) {
+    if (returnType.includes(type)) {
+      return 'effectful';
+    }
+  }
+
+  // Check function body for effectful operations
+  const bodyText = func.getBodyText?.() || '';
+  const effectfulPatterns = [
+    'fetch(',
+    'console.',
+    'localStorage',
+    'sessionStorage',
+    'document.',
+    'window.',
+    'process.',
+    'Math.random',
+    'Date.now',
+    'new Date',
+    '.json(',
+    '.text(',
+    '.blob(',
+    'addEventListener',
+    'setTimeout',
+    'setInterval',
+  ];
+
+  for (const pattern of effectfulPatterns) {
+    if (bodyText.includes(pattern)) {
+      return 'effectful';
+    }
+  }
+
+  // Default to pure if no effectful indicators found
+  return 'pure';
 }
 
 /**

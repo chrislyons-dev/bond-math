@@ -99,6 +99,59 @@ note right of JWKS
 Auth0 JWKS response structure
 end note
 
+class jwt <<effectful>> {
+  +{static} async mintInternalToken(auth0Claims: Auth0Claims, targetService: string, secret: string, ttl: number): Promise<string>
+  -{static} createActorClaim(auth0Claims: Auth0Claims): ActorClaim
+  -{static} extractPermissions(claims: Auth0Claims): string[]
+  -{static} async signJWT(payload: InternalJWT, secret: string): Promise<string>
+  -{static} async signData(data: string, secret: string): Promise<ArrayBuffer>
+  +{static} async verifyInternalToken(token: string, secret: string, expectedAudience: string): Promise<InternalJWT>
+  -{static} async verifySignature(data: string, signature: ArrayBuffer, secret: string): Promise<boolean>
+  -{static} validateInternalClaims(payload: InternalJWT, expectedAudience: string): void
+  -{static} generateRequestId(): string
+  -{static} base64UrlEncode(data: string | ArrayBuffer): string
+  -{static} base64UrlDecodeToString(str: string): string
+  -{static} base64UrlDecodeToArrayBuffer(str: string): ArrayBuffer
+}
+note right of jwt
+  Module: jwt
+  
+  Stereotype: <<effectful>>
+end note
+
+class logger <<effectful>> {
+  +{static} createLogger(): Logger
+}
+note right of logger
+  Module: logger
+  
+  Stereotype: <<effectful>>
+end note
+
+class middleware <<effectful>> {
+  +{static} async requestId(c: Context<{ Bindings: Env; Variables: Variables; }, any, {}>, next: Next): Promise<void>
+  +{static} rateLimiter(options: { windowMs: number; maxRequests: number; }): (c: Context<{ Bindings: Env; Variables: Variables; }, any, {}>, next: Next) =...
+  +{static} async securityHeaders(c: Context<{ Bindings: Env; Variables: Variables; }, any, {}>, next: Next): Promise<void>
+  +{static} async timing(c: Context<{ Bindings: Env; Variables: Variables; }, any, {}>, next: Next): Promise<void>
+}
+note right of middleware
+  Module: middleware
+  
+  Stereotype: <<effectful>>
+end note
+
+class router <<effectful>> {
+  +{static} findServiceRoute(path: string): ServiceRoute | null
+  +{static} async routeToService(request: Request<unknown, CfProperties<unknown>>, route: ServiceRoute, env: Env, internalToken: string): Promise<Response>
+  -{static} createForwardedRequest(originalRequest: Request<unknown, CfProperties<unknown>>, route: ServiceRoute, internalToken: string): Request<unknown, CfProperties<unknown>>
+  +{static} getServiceIdentifier(route: ServiceRoute): string
+}
+note right of router
+  Module: router
+  
+  Stereotype: <<effectful>>
+end note
+
 interface ServiceRoute {
   prefix: string
   binding: keyof Env

@@ -1,0 +1,18 @@
+@startuml
+title Bond Valuation - Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class main <<effectful>> {
+  +{static} async calculate_price(request: Request): JsonResponse
+  +{static} async calculate_yield(request: Request): JsonResponse
+}
+note right of main
+  Module: main
+  
+  Stereotype: <<effectful>>
+end note
+
+
+@enduml

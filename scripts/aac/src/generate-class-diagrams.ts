@@ -72,7 +72,7 @@ function generateClassDiagramForService(
   lines.push("skinparam linetype ortho");
   lines.push("");
 
-  // Generate classes and interfaces
+  // Generate classes, interfaces, and modules
   for (const component of components.sort((a, b) =>
     a.name!.localeCompare(b.name!)
   )) {
@@ -80,6 +80,8 @@ function generateClassDiagramForService(
       generateInterface(lines, component);
     } else if (component.type === "class") {
       generateClass(lines, component);
+    } else if (component.type === "module") {
+      generateModule(lines, component);
     }
     lines.push("");
   }
@@ -120,8 +122,9 @@ function generateClassDiagramForService(
 
 function generateInterface(lines: string[], component: Component): void {
   const name = component.name || component.id.split(".").pop() || component.id;
+  const stereotype = component.stereotype ? ` <<${component.stereotype}>>` : '';
 
-  lines.push(`interface ${name} {`);
+  lines.push(`interface ${name}${stereotype} {`);
 
   // Properties
   if (component.properties && component.properties.length > 0) {
@@ -158,8 +161,9 @@ function generateInterface(lines: string[], component: Component): void {
 
 function generateClass(lines: string[], component: Component): void {
   const name = component.name || component.id.split(".").pop() || component.id;
+  const stereotype = component.stereotype ? ` <<${component.stereotype}>>` : '';
 
-  lines.push(`class ${name} {`);
+  lines.push(`class ${name}${stereotype} {`);
 
   // Properties
   if (component.properties && component.properties.length > 0) {
@@ -192,6 +196,39 @@ function generateClass(lines: string[], component: Component): void {
   if (component.description) {
     lines.push(`note right of ${name}`);
     lines.push(`  ${component.description}`);
+    lines.push(`end note`);
+  }
+}
+
+function generateModule(lines: string[], component: Component): void {
+  const name = component.name || component.id.split(".").pop() || component.id;
+  const stereotype = component.stereotype ? ` <<${component.stereotype}>>` : '';
+
+  lines.push(`class ${name}${stereotype} {`);
+
+  // Functions as static methods
+  if (component.functions && component.functions.length > 0) {
+    for (const func of component.functions) {
+      const params = func.parameters
+        ?.map((p) => `${p.name}${p.isOptional ? "?" : ""}: ${simplifyType(p.type)}`)
+        .join(", ") || "";
+      const returnType = func.returnType ? `: ${simplifyType(func.returnType)}` : "";
+      const async = func.isAsync ? "async " : "";
+      const purity = func.stereotype === 'pure' ? '{static} ' : '{static} ';
+      const exported = func.isExported ? '+' : '-';
+      lines.push(`  ${exported}${purity}${async}${func.name}(${params})${returnType}`);
+    }
+  }
+
+  lines.push("}");
+
+  if (component.description) {
+    lines.push(`note right of ${name}`);
+    lines.push(`  ${component.description}`);
+    if (component.stereotype) {
+      lines.push(`  `);
+      lines.push(`  Stereotype: <<${component.stereotype}>>`);
+    }
     lines.push(`end note`);
   }
 }

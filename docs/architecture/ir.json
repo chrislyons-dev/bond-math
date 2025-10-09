@@ -165,6 +165,45 @@
   ],
   "components": [
     {
+      "id": "bond-valuation.main",
+      "name": "main",
+      "serviceId": "bond-valuation",
+      "type": "module",
+      "description": "Module: main",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "calculate_price",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculate_yield",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
       "id": "daycount.ActorClaim",
       "name": "ActorClaim",
       "serviceId": "daycount",
@@ -450,6 +489,257 @@
       "methods": []
     },
     {
+      "id": "daycount.index",
+      "name": "index",
+      "serviceId": "daycount",
+      "type": "module",
+      "description": "Module: index",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "createErrorBody",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").ErrorResponse",
+          "parameters": [
+            {
+              "name": "status",
+              "type": "number",
+              "isOptional": false
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "detail",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "errors",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/validators\").ValidationError[] | undefined",
+              "isOptional": true
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculateSingle",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DayCountResult",
+          "parameters": [
+            {
+              "name": "startStr",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "endStr",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "convention",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DayCountConvention",
+              "isOptional": false
+            },
+            {
+              "name": "options",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DayCountOptions",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "daycount.logger",
+      "name": "logger",
+      "serviceId": "daycount",
+      "type": "module",
+      "description": "Module: logger",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "createLogger",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/pino/pino\").Logger",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "daycount.scopes",
+      "name": "scopes",
+      "serviceId": "daycount",
+      "type": "module",
+      "description": "Module: scopes",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "requireScopes",
+          "returnType": "(c: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<any, any, {}>, next: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next) => Promise<void>",
+          "parameters": [
+            {
+              "name": "requiredScopes",
+              "type": "string[]",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "requireAnyScope",
+          "returnType": "(c: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<any, any, {}>, next: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next) => Promise<void>",
+          "parameters": [
+            {
+              "name": "allowedScopes",
+              "type": "string[]",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "requireRole",
+          "returnType": "(c: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<any, any, {}>, next: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next) => Promise<void>",
+          "parameters": [
+            {
+              "name": "allowedRoles",
+              "type": "string[]",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "daycount.utils",
+      "name": "utils",
+      "serviceId": "daycount",
+      "type": "module",
+      "description": "Module: utils",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "parseDate",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DateComponents",
+          "parameters": [
+            {
+              "name": "dateString",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "isLeapYear",
+          "returnType": "boolean",
+          "parameters": [
+            {
+              "name": "year",
+              "type": "number",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        },
+        {
+          "name": "actualDaysBetween",
+          "returnType": "number",
+          "parameters": [
+            {
+              "name": "start",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DateComponents",
+              "isOptional": false
+            },
+            {
+              "name": "end",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DateComponents",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "daysInMonth",
+          "returnType": "number",
+          "parameters": [
+            {
+              "name": "year",
+              "type": "number",
+              "isOptional": false
+            },
+            {
+              "name": "month",
+              "type": "number",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        },
+        {
+          "name": "isEndOfMonth",
+          "returnType": "boolean",
+          "parameters": [
+            {
+              "name": "date",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DateComponents",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        },
+        {
+          "name": "validateDateOrder",
+          "returnType": "void",
+          "parameters": [
+            {
+              "name": "start",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DateComponents",
+              "isOptional": false
+            },
+            {
+              "name": "end",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DateComponents",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
       "id": "daycount.ValidationError",
       "name": "ValidationError",
       "serviceId": "daycount",
@@ -471,6 +761,45 @@
         }
       ],
       "methods": []
+    },
+    {
+      "id": "daycount.validators",
+      "name": "validators",
+      "serviceId": "daycount",
+      "type": "module",
+      "description": "Module: validators",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "normalizeConvention",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DayCountConvention",
+          "parameters": [
+            {
+              "name": "convention",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        },
+        {
+          "name": "validateRequest",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/validators\").ValidationError | null",
+          "parameters": [
+            {
+              "name": "body",
+              "type": "unknown",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        }
+      ],
+      "stereotype": "pure"
     },
     {
       "id": "daycount.Variables",
@@ -849,6 +1178,422 @@
       "methods": []
     },
     {
+      "id": "gateway.jwt",
+      "name": "jwt",
+      "serviceId": "gateway",
+      "type": "module",
+      "description": "Module: jwt",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "mintInternalToken",
+          "returnType": "Promise<string>",
+          "parameters": [
+            {
+              "name": "auth0Claims",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Auth0Claims",
+              "isOptional": false
+            },
+            {
+              "name": "targetService",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "secret",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "ttl",
+              "type": "number",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "createActorClaim",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").ActorClaim",
+          "parameters": [
+            {
+              "name": "auth0Claims",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Auth0Claims",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "extractPermissions",
+          "returnType": "string[]",
+          "parameters": [
+            {
+              "name": "claims",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Auth0Claims",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "signJWT",
+          "returnType": "Promise<string>",
+          "parameters": [
+            {
+              "name": "payload",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").InternalJWT",
+              "isOptional": false
+            },
+            {
+              "name": "secret",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "signData",
+          "returnType": "Promise<ArrayBuffer>",
+          "parameters": [
+            {
+              "name": "data",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "secret",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "verifyInternalToken",
+          "returnType": "Promise<import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").InternalJWT>",
+          "parameters": [
+            {
+              "name": "token",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "secret",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "expectedAudience",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "verifySignature",
+          "returnType": "Promise<boolean>",
+          "parameters": [
+            {
+              "name": "data",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "signature",
+              "type": "ArrayBuffer",
+              "isOptional": false
+            },
+            {
+              "name": "secret",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "validateInternalClaims",
+          "returnType": "void",
+          "parameters": [
+            {
+              "name": "payload",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").InternalJWT",
+              "isOptional": false
+            },
+            {
+              "name": "expectedAudience",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "generateRequestId",
+          "returnType": "string",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "base64UrlEncode",
+          "returnType": "string",
+          "parameters": [
+            {
+              "name": "data",
+              "type": "string | ArrayBuffer",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "base64UrlDecodeToString",
+          "returnType": "string",
+          "parameters": [
+            {
+              "name": "str",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "base64UrlDecodeToArrayBuffer",
+          "returnType": "ArrayBuffer",
+          "parameters": [
+            {
+              "name": "str",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "gateway.logger",
+      "name": "logger",
+      "serviceId": "gateway",
+      "type": "module",
+      "description": "Module: logger",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "createLogger",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/pino/pino\").Logger",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "gateway.middleware",
+      "name": "middleware",
+      "serviceId": "gateway",
+      "type": "module",
+      "description": "Module: middleware",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "requestId",
+          "returnType": "Promise<void>",
+          "parameters": [
+            {
+              "name": "c",
+              "type": "import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<{ Bindings: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Env; Variables: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Variables; }, any, {}>",
+              "isOptional": false
+            },
+            {
+              "name": "next",
+              "type": "import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "rateLimiter",
+          "returnType": "(c: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<{ Bindings: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Env; Variables: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Variables; }, any, {}>, next: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next) => Promise<void | Response>",
+          "parameters": [
+            {
+              "name": "options",
+              "type": "{ windowMs: number; maxRequests: number; }",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "securityHeaders",
+          "returnType": "Promise<void>",
+          "parameters": [
+            {
+              "name": "c",
+              "type": "import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<{ Bindings: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Env; Variables: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Variables; }, any, {}>",
+              "isOptional": false
+            },
+            {
+              "name": "next",
+              "type": "import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "timing",
+          "returnType": "Promise<void>",
+          "parameters": [
+            {
+              "name": "c",
+              "type": "import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<{ Bindings: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Env; Variables: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Variables; }, any, {}>",
+              "isOptional": false
+            },
+            {
+              "name": "next",
+              "type": "import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "gateway.router",
+      "name": "router",
+      "serviceId": "gateway",
+      "type": "module",
+      "description": "Module: router",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "findServiceRoute",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").ServiceRoute | null",
+          "parameters": [
+            {
+              "name": "path",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        },
+        {
+          "name": "routeToService",
+          "returnType": "Promise<Response>",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request<unknown, CfProperties<unknown>>",
+              "isOptional": false
+            },
+            {
+              "name": "route",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").ServiceRoute",
+              "isOptional": false
+            },
+            {
+              "name": "env",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Env",
+              "isOptional": false
+            },
+            {
+              "name": "internalToken",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "createForwardedRequest",
+          "returnType": "Request<unknown, CfProperties<unknown>>",
+          "parameters": [
+            {
+              "name": "originalRequest",
+              "type": "Request<unknown, CfProperties<unknown>>",
+              "isOptional": false
+            },
+            {
+              "name": "route",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").ServiceRoute",
+              "isOptional": false
+            },
+            {
+              "name": "internalToken",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "getServiceIdentifier",
+          "returnType": "string",
+          "parameters": [
+            {
+              "name": "route",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").ServiceRoute",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
       "id": "gateway.ServiceRoute",
       "name": "ServiceRoute",
       "serviceId": "gateway",
@@ -899,6 +1644,112 @@
         }
       ],
       "methods": []
+    },
+    {
+      "id": "metrics.main",
+      "name": "main",
+      "serviceId": "metrics",
+      "type": "module",
+      "description": "Module: main",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "calculate_duration",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculate_convexity",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculate_risk_metrics",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "pricing.main",
+      "name": "main",
+      "serviceId": "pricing",
+      "type": "module",
+      "description": "Module: main",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "calculate_present_value",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculate_scenarios",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculate_key_rate_pv01",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
     }
   ],
   "componentRelationships": [

@@ -35,7 +35,7 @@ This service depends on:
 
 ## Components
 
-This service contains 9 component(s):
+This service contains 13 component(s):
 
 ### Component Diagram
 
@@ -86,6 +86,24 @@ Service route mapping
 #### Variables
 
 Hono context variables
+
+### Modules
+
+#### jwt
+
+Module: jwt
+
+#### logger
+
+Module: logger
+
+#### middleware
+
+Module: middleware
+
+#### router
+
+Module: router
 
 ## Deployment
 

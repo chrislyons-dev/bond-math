@@ -1,0 +1,19 @@
+@startuml
+title Pricing - Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class main <<effectful>> {
+  +{static} async calculate_present_value(request: Request): JsonResponse
+  +{static} async calculate_scenarios(request: Request): JsonResponse
+  +{static} async calculate_key_rate_pv01(request: Request): JsonResponse
+}
+note right of main
+  Module: main
+  
+  Stereotype: <<effectful>>
+end note
+
+
+@enduml

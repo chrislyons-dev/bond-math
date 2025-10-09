@@ -91,10 +91,12 @@ export interface Component {
   name?: string;
   serviceId: string;
   type: 'class' | 'interface' | 'module' | 'function' | 'middleware';
+  stereotype?: 'pure' | 'effectful' | 'immutable' | 'adapter' | 'sealed';
   description?: string;
   excludeFromDiagram?: boolean;
   properties?: ComponentProperty[];
   methods?: ComponentMethod[];
+  functions?: ComponentFunction[];
   extends?: string;
   implements?: string[];
 }
@@ -113,6 +115,16 @@ export interface ComponentMethod {
   parameters?: ComponentParameter[];
   visibility?: 'public' | 'private' | 'protected';
   isAsync?: boolean;
+  stereotype?: 'pure' | 'effectful';
+}
+
+export interface ComponentFunction {
+  name: string;
+  returnType?: string;
+  parameters?: ComponentParameter[];
+  isAsync?: boolean;
+  isExported?: boolean;
+  stereotype?: 'pure' | 'effectful';
 }
 
 export interface ComponentParameter {

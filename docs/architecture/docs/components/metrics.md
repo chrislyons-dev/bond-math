@@ -40,6 +40,28 @@ This service is used by:
 
 - **Gateway**
 
+## Components
+
+This service contains 1 component(s):
+
+### Component Diagram
+
+High-level component relationships:
+
+![Metrics Component Diagram](../../diagrams/structurizr-Components_metrics.png)
+
+### Class Diagram
+
+Detailed UML class diagram showing properties, methods, and relationships:
+
+![Metrics Class Diagram](../../diagrams/class-diagram-metrics.png)
+
+### Modules
+
+#### main
+
+Module: main
+
 ## Deployment
 
 ### Preview Environment

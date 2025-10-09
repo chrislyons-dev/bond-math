@@ -19,7 +19,7 @@ This service is used by:
 
 ## Components
 
-This service contains 11 component(s):
+This service contains 16 component(s):
 
 ### Component Diagram
 
@@ -78,6 +78,28 @@ Validation error with field context
 #### Variables
 
 Hono context variables
+
+### Modules
+
+#### index
+
+Module: index
+
+#### logger
+
+Module: logger
+
+#### scopes
+
+Module: scopes
+
+#### utils
+
+Module: utils
+
+#### validators
+
+Module: validators
 
 ## Deployment
 

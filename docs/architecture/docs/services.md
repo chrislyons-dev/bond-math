@@ -35,6 +35,10 @@ Price ↔ yield calculations and cashflow generation for bullet bonds
 
 - Gateway
 
+**Components:** 1
+
+![Bond Valuation Component Diagram](../diagrams/structurizr-Components_bond-valuation.png)
+
 **[View detailed documentation →](./components/bond-valuation.md)**
 
 ### Daycount {#daycount}
@@ -49,7 +53,7 @@ Authoritative day-count and year-fraction calculations for fixed income
 
 - Gateway
 
-**Components:** 11
+**Components:** 16
 
 ![Daycount Component Diagram](../diagrams/structurizr-Components_daycount.png)
 
@@ -71,7 +75,7 @@ minting, and service routing
 - Metrics (`service-binding`, auth: internal-jwt)
 - Pricing (`service-binding`, auth: internal-jwt)
 
-**Components:** 9
+**Components:** 13
 
 ![Gateway Component Diagram](../diagrams/structurizr-Components_gateway.png)
 
@@ -98,6 +102,10 @@ Bond risk metrics (duration, convexity, PV01, DV01)
 
 - Gateway
 
+**Components:** 1
+
+![Metrics Component Diagram](../diagrams/structurizr-Components_metrics.png)
+
 **[View detailed documentation →](./components/metrics.md)**
 
 ### Pricing {#pricing}
@@ -120,5 +128,9 @@ Curve-based cashflow discounting and present value calculations
 **Used by (incoming):**
 
 - Gateway
+
+**Components:** 1
+
+![Pricing Component Diagram](../diagrams/structurizr-Components_pricing.png)
 
 **[View detailed documentation →](./components/pricing.md)**

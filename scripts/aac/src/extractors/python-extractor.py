@@ -2,7 +2,8 @@
 """
 Python Extractor - Extract AAC metadata from Python services
 
-Uses Python's ast module to parse docstrings and extract AAC annotations
+Uses Python's ast module to parse docstrings and extract AAC annotations.
+Supports functional programming constructs with purity classification.
 """
 
 import ast
@@ -10,7 +11,7 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 
 
 def parse_annotations(text: str) -> Dict[str, Any]:
@@ -66,6 +67,141 @@ def parse_list(value: Optional[str]) -> Optional[List[str]]:
         return None
     items = [s.strip() for s in value.split(",")]
     return [s for s in items if s and s != "none"]
+
+
+def get_type_annotation(annotation: Optional[ast.expr]) -> str:
+    """Extract type annotation as string"""
+    if annotation is None:
+        return "Any"
+
+    if isinstance(annotation, ast.Name):
+        return annotation.id
+    elif isinstance(annotation, ast.Constant):
+        return str(annotation.value)
+    elif isinstance(annotation, ast.Subscript):
+        # Handle generics like List[str], Optional[int]
+        base = get_type_annotation(annotation.value)
+        slice_type = get_type_annotation(annotation.slice)
+        return f"{base}[{slice_type}]"
+    elif isinstance(annotation, ast.Tuple):
+        # Handle Tuple[int, str]
+        types = [get_type_annotation(elt) for elt in annotation.elts]
+        return f"Tuple[{', '.join(types)}]"
+    elif isinstance(annotation, ast.BinOp):
+        # Handle Union types with | operator (Python 3.10+)
+        left = get_type_annotation(annotation.left)
+        right = get_type_annotation(annotation.right)
+        return f"{left} | {right}"
+    elif isinstance(annotation, ast.Attribute):
+        # Handle module.Type
+        value = get_type_annotation(annotation.value)
+        return f"{value}.{annotation.attr}"
+    else:
+        return "Any"
+
+
+def classify_function_purity(node: ast.FunctionDef, body_text: str) -> str:
+    """Classify a function as 'pure' or 'effectful'"""
+    # Async functions are always effectful
+    if isinstance(node, ast.AsyncFunctionDef):
+        return "effectful"
+
+    # Check return type for effectful patterns
+    if node.returns:
+        return_type = get_type_annotation(node.returns)
+        effectful_types = ["Coroutine", "Awaitable", "Generator", "AsyncGenerator", "Iterator"]
+        for etype in effectful_types:
+            if etype in return_type:
+                return "effectful"
+
+    # Check for effectful patterns in body
+    effectful_patterns = [
+        "print(",
+        "open(",
+        "input(",
+        "requests.",
+        "urllib.",
+        "datetime.now",
+        "time.time",
+        "random.",
+        "os.",
+        "sys.",
+        ".write(",
+        ".read(",
+        "socket.",
+        "http.",
+        "sql",
+        "db.",
+        "cursor",
+        "connection",
+        "session",
+    ]
+
+    body_lower = body_text.lower()
+    for pattern in effectful_patterns:
+        if pattern in body_lower:
+            return "effectful"
+
+    # Check AST for effectful operations
+    for child in ast.walk(node):
+        # I/O operations
+        if isinstance(child, ast.Call):
+            if isinstance(child.func, ast.Name):
+                if child.func.id in ["print", "open", "input", "exec", "eval"]:
+                    return "effectful"
+            elif isinstance(child.func, ast.Attribute):
+                # Check for methods like file.write(), db.query()
+                if child.func.attr in ["write", "read", "query", "execute", "commit"]:
+                    return "effectful"
+
+        # Global variable modifications
+        if isinstance(child, (ast.Global, ast.Nonlocal)):
+            return "effectful"
+
+    return "pure"
+
+
+def extract_function_signature(node: ast.FunctionDef) -> Dict[str, Any]:
+    """Extract function signature with parameters and return type"""
+    parameters = []
+
+    for arg in node.args.args:
+        param = {
+            "name": arg.arg,
+            "type": get_type_annotation(arg.annotation),
+            "isOptional": False,
+        }
+        parameters.append(param)
+
+    # Handle optional parameters with defaults
+    defaults_offset = len(node.args.args) - len(node.args.defaults)
+    for i, default in enumerate(node.args.defaults):
+        param_index = defaults_offset + i
+        if param_index < len(parameters):
+            parameters[param_index]["isOptional"] = True
+
+    return_type = get_type_annotation(node.returns) if node.returns else "None"
+
+    return {
+        "parameters": parameters,
+        "returnType": return_type,
+        "isAsync": isinstance(node, ast.AsyncFunctionDef),
+    }
+
+
+def has_decorator(node: ast.FunctionDef, decorator_names: List[str]) -> bool:
+    """Check if function has any of the given decorators"""
+    for decorator in node.decorator_list:
+        if isinstance(decorator, ast.Name) and decorator.id in decorator_names:
+            return True
+        elif isinstance(decorator, ast.Attribute) and decorator.attr in decorator_names:
+            return True
+    return False
+
+
+def is_dataclass(node: ast.ClassDef) -> bool:
+    """Check if class is a dataclass"""
+    return has_decorator(node, ["dataclass"])
 
 
 def extract_from_python_file(file_path: Path, service_id: str) -> Dict[str, Any]:
@@ -127,20 +263,23 @@ def extract_from_python_file(file_path: Path, service_id: str) -> Dict[str, Any]
             current_service["endpoints"] = []
             services.append(current_service)
 
-    # Extract function/method docstrings for endpoint metadata
-    for node in ast.walk(tree):
-        # Check for endpoint annotations in function docstrings
+    # Collect top-level functions for module component
+    module_functions = []
+
+    # Process top-level nodes
+    for node in tree.body:
+        # Extract endpoint metadata and top-level functions
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             docstring = ast.get_docstring(node)
+
+            # Check for endpoint annotation
             if docstring and "@endpoint" in docstring:
                 annotations = parse_annotations(docstring)
 
                 if "endpoint" in annotations and current_service:
-                    # Parse endpoint definition (e.g., "POST /endpoint")
                     parts = annotations["endpoint"].split(None, 1)
                     if len(parts) == 2:
                         method, path = parts
-
                         endpoint = {
                             "method": method.upper(),
                             "path": path,
@@ -164,7 +303,22 @@ def extract_from_python_file(file_path: Path, service_id: str) -> Dict[str, Any]
 
                         endpoints.append(endpoint)
 
-        # Extract class metadata for components
+            # Extract as module function if top-level
+            if current_service and not node.name.startswith("_"):
+                signature = extract_function_signature(node)
+                purity = classify_function_purity(node, source)
+
+                function_info = {
+                    "name": node.name,
+                    "returnType": signature["returnType"],
+                    "parameters": signature["parameters"],
+                    "isAsync": signature["isAsync"],
+                    "isExported": True,  # Top-level functions are exported
+                    "stereotype": purity,
+                }
+                module_functions.append(function_info)
+
+        # Extract classes with full details
         elif isinstance(node, ast.ClassDef):
             docstring = ast.get_docstring(node)
             exclude_from_diagram = False
@@ -174,15 +328,66 @@ def extract_from_python_file(file_path: Path, service_id: str) -> Dict[str, Any]
                 exclude_from_diagram = annotations.get("excludeFromDiagram", False)
 
             if current_service:
+                # Determine stereotype
+                stereotype = None
+                if is_dataclass(node):
+                    stereotype = "immutable"
+
                 component = {
                     "id": f"{current_service['id']}.{node.name}",
                     "name": node.name,
                     "serviceId": current_service["id"],
                     "type": "class",
+                    "properties": [],
+                    "methods": [],
                 }
 
+                if stereotype:
+                    component["stereotype"] = stereotype
+
+                # Extract properties (class attributes)
+                for item in node.body:
+                    if isinstance(item, ast.AnnAssign):
+                        # Annotated attribute (e.g., name: str)
+                        if isinstance(item.target, ast.Name):
+                            prop = {
+                                "name": item.target.id,
+                                "type": get_type_annotation(item.annotation),
+                                "isOptional": False,
+                                "isReadonly": False,
+                            }
+                            component["properties"].append(prop)
+
+                # Extract methods
+                for item in node.body:
+                    if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                        # Skip private methods, __init__, and special methods
+                        if item.name.startswith("__"):
+                            continue
+
+                        signature = extract_function_signature(item)
+                        method_purity = classify_function_purity(item, source)
+
+                        # Filter out 'self' parameter
+                        params = [p for p in signature["parameters"] if p["name"] != "self"]
+
+                        method = {
+                            "name": item.name,
+                            "returnType": signature["returnType"],
+                            "parameters": params,
+                            "isAsync": signature["isAsync"],
+                            "stereotype": method_purity,
+                        }
+
+                        # Determine visibility
+                        if item.name.startswith("_"):
+                            method["visibility"] = "private"
+                        else:
+                            method["visibility"] = "public"
+
+                        component["methods"].append(method)
+
                 if docstring and not exclude_from_diagram:
-                    # Get first line as description
                     first_line = docstring.split("\n")[0].strip()
                     if first_line:
                         component["description"] = first_line
@@ -191,6 +396,25 @@ def extract_from_python_file(file_path: Path, service_id: str) -> Dict[str, Any]
                     component["excludeFromDiagram"] = True
 
                 components.append(component)
+
+    # Create module component for top-level functions
+    if current_service and module_functions:
+        file_name = file_path.stem  # e.g., "main" from "main.py"
+        module_component = {
+            "id": f"{current_service['id']}.{file_name}",
+            "name": file_name,
+            "serviceId": current_service["id"],
+            "type": "module",
+            "description": f"Module: {file_name}",
+            "excludeFromDiagram": False,
+            "functions": module_functions,
+        }
+
+        # Determine module stereotype based on functions
+        has_effectful = any(f["stereotype"] == "effectful" for f in module_functions)
+        module_component["stereotype"] = "effectful" if has_effectful else "pure"
+
+        components.append(module_component)
 
     # Add endpoints to service
     if current_service and endpoints:

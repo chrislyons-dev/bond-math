@@ -1,0 +1,34 @@
+@startuml
+set separator none
+title Pricing - Components
+
+top to bottom direction
+skinparam ranksep 60
+skinparam nodesep 30
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<bondmath.Pricing.main>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Pricing>> {
+  BorderColor #265277
+  FontColor #265277
+  shadowing false
+}
+
+rectangle "Pricing\n<size:10>[Container: Cloudflare Workers (Python)]</size>" <<bondmath.Pricing>> {
+  rectangle "==main\n<size:10>[Component: Python Module]</size>\n\nModule: main" <<bondmath.Pricing.main>> as bondmath.Pricing.main
+}
+
+@enduml
