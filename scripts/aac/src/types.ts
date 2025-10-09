@@ -183,10 +183,10 @@ export interface AACAnnotations {
   slaTier?: Service['slaTier'];
   endpoint?: string;
   gatewayRoute?: string;
-  authentication?: string;
+  authentication?: Endpoint['authentication'];
   scope?: string;
   rateLimit?: string;
-  cacheable?: string;
+  cacheable?: 'true' | 'false';
   cacheTtl?: string;
   serviceBinding?: string;
   target?: string;

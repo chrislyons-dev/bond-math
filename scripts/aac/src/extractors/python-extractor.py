@@ -13,6 +13,53 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
+# Constants for purity classification
+EFFECTFUL_RETURN_TYPES = frozenset([
+    "Coroutine",
+    "Awaitable",
+    "Generator",
+    "AsyncGenerator",
+    "Iterator",
+])
+
+EFFECTFUL_BODY_PATTERNS = frozenset([
+    "print(",
+    "open(",
+    "input(",
+    "requests.",
+    "urllib.",
+    "datetime.now",
+    "time.time",
+    "random.",
+    "os.",
+    "sys.",
+    ".write(",
+    ".read(",
+    "socket.",
+    "http.",
+    "sql",
+    "db.",
+    "cursor",
+    "connection",
+    "session",
+])
+
+EFFECTFUL_FUNCTION_NAMES = frozenset([
+    "print",
+    "open",
+    "input",
+    "exec",
+    "eval",
+])
+
+EFFECTFUL_METHOD_NAMES = frozenset([
+    "write",
+    "read",
+    "query",
+    "execute",
+    "commit",
+])
+
 
 def parse_annotations(text: str) -> Dict[str, Any]:
     """Parse AAC annotations from docstring text"""
@@ -101,7 +148,15 @@ def get_type_annotation(annotation: Optional[ast.expr]) -> str:
 
 
 def classify_function_purity(node: ast.FunctionDef, body_text: str) -> str:
-    """Classify a function as 'pure' or 'effectful'"""
+    """Classify a function as 'pure' or 'effectful'
+
+    Args:
+        node: AST function definition node
+        body_text: Source code text of function body
+
+    Returns:
+        'pure' if function has no side effects, 'effectful' otherwise
+    """
     # Async functions are always effectful
     if isinstance(node, ast.AsyncFunctionDef):
         return "effectful"
@@ -109,49 +164,26 @@ def classify_function_purity(node: ast.FunctionDef, body_text: str) -> str:
     # Check return type for effectful patterns
     if node.returns:
         return_type = get_type_annotation(node.returns)
-        effectful_types = ["Coroutine", "Awaitable", "Generator", "AsyncGenerator", "Iterator"]
-        for etype in effectful_types:
+        for etype in EFFECTFUL_RETURN_TYPES:
             if etype in return_type:
                 return "effectful"
 
-    # Check for effectful patterns in body
-    effectful_patterns = [
-        "print(",
-        "open(",
-        "input(",
-        "requests.",
-        "urllib.",
-        "datetime.now",
-        "time.time",
-        "random.",
-        "os.",
-        "sys.",
-        ".write(",
-        ".read(",
-        "socket.",
-        "http.",
-        "sql",
-        "db.",
-        "cursor",
-        "connection",
-        "session",
-    ]
-
+    # Check for effectful patterns in body text
     body_lower = body_text.lower()
-    for pattern in effectful_patterns:
+    for pattern in EFFECTFUL_BODY_PATTERNS:
         if pattern in body_lower:
             return "effectful"
 
     # Check AST for effectful operations
     for child in ast.walk(node):
-        # I/O operations
+        # I/O function calls
         if isinstance(child, ast.Call):
             if isinstance(child.func, ast.Name):
-                if child.func.id in ["print", "open", "input", "exec", "eval"]:
+                if child.func.id in EFFECTFUL_FUNCTION_NAMES:
                     return "effectful"
             elif isinstance(child.func, ast.Attribute):
                 # Check for methods like file.write(), db.query()
-                if child.func.attr in ["write", "read", "query", "execute", "commit"]:
+                if child.func.attr in EFFECTFUL_METHOD_NAMES:
                     return "effectful"
 
         # Global variable modifications
@@ -205,14 +237,47 @@ def is_dataclass(node: ast.ClassDef) -> bool:
 
 
 def extract_from_python_file(file_path: Path, service_id: str) -> Dict[str, Any]:
-    """Extract AAC metadata from a Python file"""
-    with open(file_path, "r", encoding="utf-8") as f:
-        source = f.read()
+    """Extract AAC metadata from a Python file
 
+    Args:
+        file_path: Path to Python source file
+        service_id: Service identifier (kebab-case)
+
+    Returns:
+        Dictionary containing services and components
+
+    Raises:
+        ValueError: If inputs are invalid
+        FileNotFoundError: If file doesn't exist
+        IOError: If file cannot be read
+    """
+    # Input validation
+    if not isinstance(file_path, Path):
+        raise ValueError(f"file_path must be a Path object, got {type(file_path)}")
+
+    if not isinstance(service_id, str) or not service_id:
+        raise ValueError("service_id must be a non-empty string")
+
+    if not file_path.exists():
+        raise FileNotFoundError(f"Python file not found: {file_path}")
+
+    if not file_path.is_file():
+        raise ValueError(f"Path is not a file: {file_path}")
+
+    # Read file with error handling
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            source = f.read()
+    except IOError as e:
+        raise IOError(f"Failed to read {file_path}: {e}")
+    except UnicodeDecodeError as e:
+        raise ValueError(f"File encoding error in {file_path}: {e}")
+
+    # Parse AST with error handling
     try:
         tree = ast.parse(source, filename=str(file_path))
     except SyntaxError as e:
-        print(f"Error parsing {file_path}: {e}", file=sys.stderr)
+        print(f"[ERROR] Syntax error in {file_path}:{e.lineno}: {e.msg}", file=sys.stderr)
         return {"services": [], "components": []}
 
     services = []
@@ -429,15 +494,19 @@ def main():
         print("Usage: python-extractor.py <file-path> <service-id>", file=sys.stderr)
         sys.exit(1)
 
-    file_path = Path(sys.argv[1])
-    service_id = sys.argv[2]
+    try:
+        file_path = Path(sys.argv[1])
+        service_id = sys.argv[2]
 
-    if not file_path.exists():
-        print(f"Error: File not found: {file_path}", file=sys.stderr)
+        result = extract_from_python_file(file_path, service_id)
+        print(json.dumps(result, indent=2))
+
+    except (ValueError, FileNotFoundError, IOError) as e:
+        print(f"[ERROR] {e}", file=sys.stderr)
         sys.exit(1)
-
-    result = extract_from_python_file(file_path, service_id)
-    print(json.dumps(result, indent=2))
+    except Exception as e:
+        print(f"[ERROR] Unexpected error: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -10,11 +10,33 @@ import type { AACIR } from './types.js';
 import { loadJSON, log } from './utils.js';
 
 export async function validateIR(irPath: string, schemaPath: string): Promise<boolean> {
+  // Input validation
+  if (!irPath || typeof irPath !== 'string') {
+    throw new Error('irPath must be a non-empty string');
+  }
+
+  if (!schemaPath || typeof schemaPath !== 'string') {
+    throw new Error('schemaPath must be a non-empty string');
+  }
+
   log.info('Validating IR against schema');
 
-  // Load IR and schema
+  // Load IR and schema (loadJSON handles file validation)
   const ir = await loadJSON<AACIR>(irPath);
   const schema = await loadJSON(schemaPath);
+
+  // Validate IR structure
+  if (!ir || typeof ir !== 'object') {
+    throw new Error('IR must be a valid object');
+  }
+
+  if (!Array.isArray(ir.services)) {
+    throw new Error('IR.services must be an array');
+  }
+
+  if (!Array.isArray(ir.relationships)) {
+    throw new Error('IR.relationships must be an array');
+  }
 
   // Create AJV instance
   const ajv = new Ajv({
@@ -52,8 +74,24 @@ export async function validateIR(irPath: string, schemaPath: string): Promise<bo
 
 /**
  * Validate relationships (no circular dependencies, valid service references)
+ * @param ir - The AAC IR to validate
+ * @returns true if valid, false if errors found
+ * @throws {Error} If IR is invalid
  */
 export function validateRelationships(ir: AACIR): boolean {
+  // Input validation
+  if (!ir || typeof ir !== 'object') {
+    throw new Error('ir must be a valid AACIR object');
+  }
+
+  if (!Array.isArray(ir.services)) {
+    throw new Error('ir.services must be an array');
+  }
+
+  if (!Array.isArray(ir.relationships)) {
+    throw new Error('ir.relationships must be an array');
+  }
+
   log.info('Validating relationships');
 
   const serviceIds = new Set(ir.services.map((s) => s.id));

@@ -14,31 +14,97 @@ export interface TypeScriptExtractorOptions {
   serviceId: string;
 }
 
+/**
+ * Constants for purity classification
+ */
+const EFFECTFUL_RETURN_TYPES = [
+  'Promise',
+  'IO',
+  'Task',
+  'Effect',
+  'Observable',
+  'Response',
+] as const;
+
+const EFFECTFUL_BODY_PATTERNS = [
+  'fetch(',
+  'console.',
+  'localStorage',
+  'sessionStorage',
+  'document.',
+  'window.',
+  'process.',
+  'Math.random',
+  'Date.now',
+  'new Date',
+  '.json(',
+  '.text(',
+  '.blob(',
+  'addEventListener',
+  'setTimeout',
+  'setInterval',
+] as const;
+
 export async function extractTypeScriptService(
   options: TypeScriptExtractorOptions
 ): Promise<PartialIR> {
+  // Input validation
+  if (!options || typeof options !== 'object') {
+    throw new Error('options must be a valid object');
+  }
+
   const { servicePath, serviceId } = options;
+
+  if (!servicePath || typeof servicePath !== 'string') {
+    throw new Error('servicePath is required and must be a non-empty string');
+  }
+
+  if (!serviceId || typeof serviceId !== 'string') {
+    throw new Error('serviceId is required and must be a non-empty string');
+  }
+
+  // Validate serviceId format (kebab-case)
+  if (!/^[a-z][a-z0-9-]*$/.test(serviceId)) {
+    throw new Error(`serviceId must be in kebab-case format: ${serviceId}`);
+  }
 
   log.info(`Extracting TypeScript service: ${serviceId}`);
 
-  // Initialize ts-morph project
-  const project = new Project({
-    tsConfigFilePath: join(servicePath, 'tsconfig.json'),
-    skipAddingFilesFromTsConfig: true,
-  });
+  // Initialize ts-morph project with error handling
+  let project: Project;
+  try {
+    const tsconfigPath = join(servicePath, 'tsconfig.json');
+    project = new Project({
+      tsConfigFilePath: tsconfigPath,
+      skipAddingFilesFromTsConfig: true,
+    });
+  } catch (error: any) {
+    throw new Error(`Failed to initialize TypeScript project at ${servicePath}: ${error.message}`);
+  }
 
-  // Add source files
-  project.addSourceFilesAtPaths(join(servicePath, 'src/**/*.ts'));
+  // Add source files with error handling
+  try {
+    const sourcePattern = join(servicePath, 'src/**/*.ts');
+    const sourceFiles = project.addSourceFilesAtPaths(sourcePattern);
+
+    if (sourceFiles.length === 0) {
+      log.warn(`No TypeScript files found in ${sourcePattern}`);
+    }
+  } catch (error: any) {
+    throw new Error(`Failed to add source files from ${servicePath}: ${error.message}`);
+  }
 
   const services: Service[] = [];
   const components: Component[] = [];
   const componentRelationships: ComponentRelationship[] = [];
   let currentService: Service | null = null;
 
-  // Process each source file
+  // Process each source file with error handling
   for (const sourceFile of project.getSourceFiles()) {
     const filePath = sourceFile.getFilePath();
     log.info(`Processing: ${filePath}`);
+
+    try {
 
     // Check for service-level annotations in file-level JSDoc
     const fileJsDoc = sourceFile
@@ -74,8 +140,8 @@ export async function extractTypeScriptService(
             internalRoutes: parseList(annotations.internalRoutes),
             publicRoutes: parseList(annotations.publicRoutes),
             dependencies: parseList(annotations.dependencies),
-            securityModel: annotations.securityModel as any,
-            slaTier: annotations.slaTier as any,
+            securityModel: annotations.securityModel,
+            slaTier: annotations.slaTier,
             endpoints: [],
           };
 
@@ -107,7 +173,7 @@ export async function extractTypeScriptService(
             method: method as Endpoint['method'],
             path: path,
             gatewayRoute: annotations.gatewayRoute,
-            authentication: annotations.authentication as any,
+            authentication: annotations.authentication,
             scope: annotations.scope,
             rateLimit: annotations.rateLimit,
             cacheable: annotations.cacheable === 'true',
@@ -307,11 +373,26 @@ export async function extractTypeScriptService(
         moduleComponent.stereotype = hasEffectful ? 'effectful' : 'pure';
       }
     }
+
+    } catch (error: any) {
+      log.error(`Failed to process ${filePath}: ${error.message}`);
+      // Continue processing other files
+    }
   }
 
-  // Extract component relationships
+  // Extract component relationships with error handling
   if (currentService) {
-    extractComponentRelationships(project, currentService, components, componentRelationships);
+    try {
+      extractComponentRelationships(project, currentService, components, componentRelationships);
+    } catch (error: any) {
+      log.warn(`Failed to extract component relationships: ${error.message}`);
+      // Continue - relationships are optional
+    }
+  }
+
+  // Validate we found at least one service
+  if (services.length === 0) {
+    log.warn(`No service metadata found in ${servicePath}. Make sure files have @service annotations.`);
   }
 
   log.success(
@@ -327,6 +408,11 @@ export async function extractTypeScriptService(
 
 /**
  * Classify a function as pure or effectful based on its signature and body
+ *
+ * @param func - Function node from ts-morph
+ * @param returnType - Function return type as string
+ * @param isAsync - Whether function is async
+ * @returns 'pure' if function has no side effects, 'effectful' otherwise
  */
 function classifyFunctionPurity(
   func: any,
@@ -339,8 +425,7 @@ function classifyFunctionPurity(
   }
 
   // Check return type for effectful patterns
-  const effectfulTypes = ['Promise', 'IO', 'Task', 'Effect', 'Observable', 'Response'];
-  for (const type of effectfulTypes) {
+  for (const type of EFFECTFUL_RETURN_TYPES) {
     if (returnType.includes(type)) {
       return 'effectful';
     }
@@ -348,26 +433,7 @@ function classifyFunctionPurity(
 
   // Check function body for effectful operations
   const bodyText = func.getBodyText?.() || '';
-  const effectfulPatterns = [
-    'fetch(',
-    'console.',
-    'localStorage',
-    'sessionStorage',
-    'document.',
-    'window.',
-    'process.',
-    'Math.random',
-    'Date.now',
-    'new Date',
-    '.json(',
-    '.text(',
-    '.blob(',
-    'addEventListener',
-    'setTimeout',
-    'setInterval',
-  ];
-
-  for (const pattern of effectfulPatterns) {
+  for (const pattern of EFFECTFUL_BODY_PATTERNS) {
     if (bodyText.includes(pattern)) {
       return 'effectful';
     }

@@ -8,20 +8,27 @@ import type { AACAnnotations, PartialIR } from './types.js';
 
 /**
  * Parse AAC annotations from JSDoc or docstring text
+ * @param text - Comment text containing AAC annotations
+ * @returns Parsed annotations object
+ * @throws {Error} If text is not a string
  */
 export function parseAnnotations(text: string): AACAnnotations {
+  if (typeof text !== 'string') {
+    throw new Error('text must be a string');
+  }
+
   const annotations: AACAnnotations = {};
   const lines = text.split('\n');
 
   for (const line of lines) {
     const trimmed = line.trim();
 
-    // Match @tag value patterns
-    const match = trimmed.match(/^[@*\s]*@(\w+(?:-\w+)*)\s+(.+)$/);
+    // Match @tag or @tag value patterns
+    const match = trimmed.match(/^[@*\s]*@(\w+(?:-\w+)*)(?:\s+(.+))?$/);
     if (!match) continue;
 
     const [, tag, value] = match;
-    const cleanValue = value.trim();
+    const cleanValue = value?.trim() || '';
 
     switch (tag) {
       case 'service':
@@ -40,7 +47,7 @@ export function parseAnnotations(text: string): AACAnnotations {
         annotations.gatewayRoute = cleanValue;
         break;
       case 'authentication':
-        annotations.authentication = cleanValue;
+        annotations.authentication = cleanValue as AACAnnotations['authentication'];
         break;
       case 'scope':
         annotations.scope = cleanValue;
@@ -59,16 +66,16 @@ export function parseAnnotations(text: string): AACAnnotations {
         break;
 
       case 'type':
-        annotations.type = cleanValue as any;
+        annotations.type = cleanValue as AACAnnotations['type'];
         break;
       case 'layer':
-        annotations.layer = cleanValue as any;
+        annotations.layer = cleanValue as AACAnnotations['layer'];
         break;
       case 'security-model':
-        annotations.securityModel = cleanValue as any;
+        annotations.securityModel = cleanValue as AACAnnotations['securityModel'];
         break;
       case 'sla-tier':
-        annotations.slaTier = cleanValue as any;
+        annotations.slaTier = cleanValue as AACAnnotations['slaTier'];
         break;
 
       case 'internal-routes':
@@ -82,7 +89,7 @@ export function parseAnnotations(text: string): AACAnnotations {
         break;
 
       case 'cacheable':
-        annotations.cacheable = cleanValue.toLowerCase();
+        annotations.cacheable = cleanValue.toLowerCase() as AACAnnotations['cacheable'];
         break;
 
       case 'cache-ttl':
@@ -118,18 +125,45 @@ export function parseList(value: string | undefined): string[] | undefined {
 
 /**
  * Save partial IR to JSON file
+ * @throws {Error} If file cannot be written
  */
 export async function savePartialIR(filePath: string, data: PartialIR): Promise<void> {
-  await mkdir(dirname(filePath), { recursive: true });
-  await writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+  if (!filePath || typeof filePath !== 'string') {
+    throw new Error('filePath must be a non-empty string');
+  }
+  if (!data || typeof data !== 'object') {
+    throw new Error('data must be a valid PartialIR object');
+  }
+
+  try {
+    await mkdir(dirname(filePath), { recursive: true });
+    await writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (error: any) {
+    throw new Error(`Failed to save IR to ${filePath}: ${error.message}`);
+  }
 }
 
 /**
  * Load JSON file
+ * @throws {Error} If file cannot be read or JSON is invalid
  */
 export async function loadJSON<T>(filePath: string): Promise<T> {
-  const content = await readFile(filePath, 'utf-8');
-  return JSON.parse(content);
+  if (!filePath || typeof filePath !== 'string') {
+    throw new Error('filePath must be a non-empty string');
+  }
+
+  try {
+    const content = await readFile(filePath, 'utf-8');
+    return JSON.parse(content);
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      throw new Error(`File not found: ${filePath}`);
+    }
+    if (error instanceof SyntaxError) {
+      throw new Error(`Invalid JSON in ${filePath}: ${error.message}`);
+    }
+    throw new Error(`Failed to load JSON from ${filePath}: ${error.message}`);
+  }
 }
 
 /**
