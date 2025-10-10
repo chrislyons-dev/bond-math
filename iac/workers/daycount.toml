@@ -32,7 +32,8 @@ name = "bond-math-daycount"
 vars = { ENVIRONMENT = "production" }
 
 # Secrets (set via: wrangler secret put <NAME>)
-# - INTERNAL_JWT_SECRET (MUST match Gateway's secret for JWT verification)
+# - INTERNAL_JWT_SECRET_CURRENT (auto-rotated on each deployment)
+# - INTERNAL_JWT_SECRET_PREVIOUS (for zero-downtime rotation)
 
 # Routes will be configured via Terraform
 # Internal access via service bindings from gateway, valuation, metrics workers

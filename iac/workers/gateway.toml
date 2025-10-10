@@ -43,7 +43,8 @@ INTERNAL_JWT_TTL = "90"
 # Secrets (set via: wrangler secret put <NAME>)
 # - AUTH0_DOMAIN
 # - AUTH0_AUDIENCE
-# - INTERNAL_JWT_SECRET
+# - INTERNAL_JWT_SECRET_CURRENT (auto-rotated on each deployment)
+# - INTERNAL_JWT_SECRET_PREVIOUS (for zero-downtime rotation)
 
 # Build configuration
 [build]

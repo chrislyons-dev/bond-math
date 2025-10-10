@@ -134,24 +134,26 @@ async function signData(data: string, secret: string): Promise<ArrayBuffer> {
 }
 
 /**
- * Verifies an internal JWT token
+ * Validates secret strength
  *
- * @param token - JWT token to verify
- * @param secret - HMAC signing secret
- * @param expectedAudience - Expected audience (service identifier)
- * @returns Decoded payload if valid
- * @throws Error if verification fails
+ * @param secret - Secret to validate
+ * @param secretName - Name of secret for error message
+ * @throws Error if secret is too short
  */
-export async function verifyInternalToken(
-  token: string,
-  secret: string,
-  expectedAudience: string
-): Promise<InternalJWT> {
-  // Validate secret strength before use
+function validateSecretStrength(secret: string, secretName: string): void {
   if (secret.length < 32) {
-    throw new Error('INTERNAL_JWT_SECRET must be at least 32 characters');
+    throw new Error(`${secretName} must be at least 32 characters`);
   }
+}
 
+/**
+ * Parses JWT token into parts
+ *
+ * @param token - JWT token to parse
+ * @returns Tuple of [headerB64, payloadB64, signatureB64]
+ * @throws Error if token format is invalid
+ */
+function parseTokenParts(token: string): [string, string, string] {
   const parts = token.split('.');
   if (parts.length !== 3) {
     throw new Error('Invalid token format');
@@ -165,10 +167,42 @@ export async function verifyInternalToken(
     throw new Error('Invalid token format');
   }
 
-  // Verify signature
+  return [headerB64, payloadB64, signatureB64];
+}
+
+/**
+ * Verifies an internal JWT token with dual-secret support
+ *
+ * @param token - JWT token to verify
+ * @param secret - Current HMAC signing secret
+ * @param expectedAudience - Expected audience (service identifier)
+ * @param previousSecret - Previous HMAC secret for rotation grace period (optional)
+ * @returns Decoded payload if valid
+ * @throws Error if verification fails
+ */
+export async function verifyInternalToken(
+  token: string,
+  secret: string,
+  expectedAudience: string,
+  previousSecret?: string
+): Promise<InternalJWT> {
+  // Validate secret strength
+  validateSecretStrength(secret, 'INTERNAL_JWT_SECRET');
+  if (previousSecret) {
+    validateSecretStrength(previousSecret, 'Previous INTERNAL_JWT_SECRET');
+  }
+
+  // Parse token
+  const [headerB64, payloadB64, signatureB64] = parseTokenParts(token);
+
+  // Verify signature with dual-secret support
   const data = `${headerB64}.${payloadB64}`;
   const signature = base64UrlDecodeToArrayBuffer(signatureB64);
-  const isValid = await verifySignature(data, signature, secret);
+  let isValid = await verifySignature(data, signature, secret);
+
+  if (!isValid && previousSecret) {
+    isValid = await verifySignature(data, signature, previousSecret);
+  }
 
   if (!isValid) {
     throw new Error('Invalid token signature');

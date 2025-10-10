@@ -11,8 +11,10 @@ export interface Env {
   AUTH0_AUDIENCE: string;
 
   // Internal JWT Configuration
-  INTERNAL_JWT_SECRET: string;
-  INTERNAL_JWT_TTL: string; // seconds, default 90
+  INTERNAL_JWT_SECRET?: string; // Legacy - for backward compatibility
+  INTERNAL_JWT_SECRET_CURRENT?: string; // Current secret (active, used for signing)
+  INTERNAL_JWT_SECRET_PREVIOUS?: string; // Previous secret (for zero-downtime rotation)
+  INTERNAL_JWT_TTL?: string; // seconds, default 90
 
   // Environment
   ENVIRONMENT?: string; // production, staging, development

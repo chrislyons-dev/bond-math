@@ -51,12 +51,15 @@ class JWTMiddleware:
     Stores actor claim in request context.
     """
 
-    def __init__(self, secret: str, expected_audience: str) -> None:
+    def __init__(
+        self, secret: str, expected_audience: str, previous_secret: str | None = None
+    ) -> None:
         """Initialize JWT middleware.
 
         Args:
-            secret: HMAC signing secret (from env.INTERNAL_JWT_SECRET)
+            secret: Current HMAC signing secret (from env.INTERNAL_JWT_SECRET_CURRENT)
             expected_audience: Expected audience (e.g., "svc-valuation")
+            previous_secret: Previous HMAC secret for rotation grace period (optional)
 
         Raises:
             ValueError: If secret is too short
@@ -64,7 +67,11 @@ class JWTMiddleware:
         if len(secret) < 32:
             raise ValueError("JWT secret must be at least 32 characters")
 
+        if previous_secret is not None and len(previous_secret) < 32:
+            raise ValueError("Previous JWT secret must be at least 32 characters")
+
         self.secret = secret
+        self.previous_secret = previous_secret
         self.expected_audience = expected_audience
 
     async def __call__(
@@ -117,6 +124,7 @@ class JWTMiddleware:
         """Verify an internal JWT token.
 
         SECURITY: Validates signature, expiration, and audience.
+        Supports dual-secret verification for zero-downtime rotation.
 
         Args:
             token: JWT token to verify
@@ -133,12 +141,17 @@ class JWTMiddleware:
 
         header_b64, payload_b64, signature_b64 = parts
 
-        # Verify signature
+        # Verify signature with current secret
         data = f"{header_b64}.{payload_b64}"
-        expected_sig = self._compute_signature(data)
         actual_sig = self._base64url_decode_bytes(signature_b64)
 
-        if not hmac.compare_digest(expected_sig, actual_sig):
+        signature_valid = self._verify_signature(data, actual_sig, self.secret)
+
+        # If current secret fails, try previous secret (rotation grace period)
+        if not signature_valid and self.previous_secret:
+            signature_valid = self._verify_signature(data, actual_sig, self.previous_secret)
+
+        if not signature_valid:
             raise ValueError("Invalid token signature")
 
         # Decode payload
@@ -182,6 +195,25 @@ class JWTMiddleware:
             data.encode("utf-8"),
             hashlib.sha256,
         ).digest()
+
+    def _verify_signature(self, data: str, signature: bytes, secret: str) -> bool:
+        """Verify HMAC-SHA256 signature.
+
+        Args:
+            data: Signed data
+            signature: Signature to verify
+            secret: HMAC secret
+
+        Returns:
+            True if signature is valid
+        """
+        expected_sig = hmac.new(
+            secret.encode("utf-8"),
+            data.encode("utf-8"),
+            hashlib.sha256,
+        ).digest()
+
+        return hmac.compare_digest(expected_sig, signature)
 
     def _validate_claims(self, payload: dict[str, Any]) -> None:
         """Validate JWT claims.

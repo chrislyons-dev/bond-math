@@ -62,10 +62,11 @@ export function verifyInternalJWT(expectedAudience: string) {
     }
 
     const token = match[1];
-    const secret = c.env.INTERNAL_JWT_SECRET;
+    const secret = c.env.INTERNAL_JWT_SECRET_CURRENT || c.env.INTERNAL_JWT_SECRET;
+    const previousSecret = c.env.INTERNAL_JWT_SECRET_PREVIOUS;
 
     if (!secret) {
-      logger.error('INTERNAL_JWT_SECRET not configured');
+      logger.error('INTERNAL_JWT_SECRET_CURRENT not configured');
       throw new HTTPException(500, {
         message: 'Service configuration error',
       });
@@ -73,7 +74,14 @@ export function verifyInternalJWT(expectedAudience: string) {
 
     // Validate secret strength
     if (secret.length < 32) {
-      logger.error('INTERNAL_JWT_SECRET is too short (minimum 32 characters)');
+      logger.error('INTERNAL_JWT_SECRET_CURRENT is too short (minimum 32 characters)');
+      throw new HTTPException(500, {
+        message: 'Service configuration error',
+      });
+    }
+
+    if (previousSecret && previousSecret.length < 32) {
+      logger.error('INTERNAL_JWT_SECRET_PREVIOUS is too short (minimum 32 characters)');
       throw new HTTPException(500, {
         message: 'Service configuration error',
       });
@@ -81,12 +89,12 @@ export function verifyInternalJWT(expectedAudience: string) {
 
     // Warn about weak secrets in production
     if (c.env.ENVIRONMENT === 'production' && /^(test|dev|secret|password)/i.test(secret)) {
-      logger.warn('INTERNAL_JWT_SECRET appears to be a weak or default value');
+      logger.warn('INTERNAL_JWT_SECRET_CURRENT appears to be a weak or default value');
     }
 
     // Verify and decode token
     try {
-      const payload = await verifyToken(token, secret, expectedAudience);
+      const payload = await verifyToken(token, secret, expectedAudience, previousSecret);
 
       // Store actor claim in context for handlers
       c.set('actor', payload.act);
@@ -111,39 +119,53 @@ export function verifyInternalJWT(expectedAudience: string) {
 }
 
 /**
- * Verifies an internal JWT token
+ * Verifies an internal JWT token with dual-secret support
  *
  * SECURITY: Validates signature, expiration, and audience
+ * Supports dual-secret verification for zero-downtime rotation
  *
  * @param token - JWT token to verify
- * @param secret - HMAC signing secret
+ * @param secret - Current HMAC signing secret
  * @param expectedAudience - Expected audience (service identifier)
+ * @param previousSecret - Previous HMAC secret for rotation grace period (optional)
  * @returns Decoded payload if valid
  * @throws Error if verification fails
  */
 async function verifyToken(
   token: string,
   secret: string,
-  expectedAudience: string
+  expectedAudience: string,
+  previousSecret?: string
 ): Promise<InternalJWT> {
   const parts = token.split('.');
   if (parts.length !== 3) {
     throw new Error('Invalid token format');
   }
 
-  const [headerB64, payloadB64, signatureB64] = parts;
+  const headerB64 = parts[0];
+  const payloadB64 = parts[1];
+  const signatureB64 = parts[2];
 
-  // Verify signature
+  if (!headerB64 || !payloadB64 || !signatureB64) {
+    throw new Error('Invalid token format');
+  }
+
+  // Verify signature with current secret
   const data = `${headerB64}.${payloadB64}`;
-  const signature = base64UrlDecodeToArrayBuffer(signatureB64!);
-  const isValid = await verifySignature(data, signature, secret);
+  const signature = base64UrlDecodeToArrayBuffer(signatureB64);
+  let isValid = await verifySignature(data, signature, secret);
+
+  // If current secret fails, try previous secret (rotation grace period)
+  if (!isValid && previousSecret) {
+    isValid = await verifySignature(data, signature, previousSecret);
+  }
 
   if (!isValid) {
     throw new Error('Invalid token signature');
   }
 
   // Decode and validate payload
-  const payload = JSON.parse(base64UrlDecodeToString(payloadB64!)) as InternalJWT;
+  const payload = JSON.parse(base64UrlDecodeToString(payloadB64)) as InternalJWT;
   validateClaims(payload, expectedAudience);
 
   return payload;

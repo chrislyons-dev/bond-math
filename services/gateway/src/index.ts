@@ -161,12 +161,14 @@ app.all('/api/*', async (c) => {
     // Step 3: Mint internal JWT for target service
     const targetService = getServiceIdentifier(route);
     const ttl = parseInt(c.env.INTERNAL_JWT_TTL || '90', 10);
-    const internalToken = await mintInternalToken(
-      auth0Claims,
-      targetService,
-      c.env.INTERNAL_JWT_SECRET,
-      ttl
-    );
+    const secret = c.env.INTERNAL_JWT_SECRET_CURRENT || c.env.INTERNAL_JWT_SECRET;
+
+    if (!secret) {
+      pinoLogger.error('INTERNAL_JWT_SECRET_CURRENT not configured');
+      throw new Error('Service configuration error');
+    }
+
+    const internalToken = await mintInternalToken(auth0Claims, targetService, secret, ttl);
 
     // Step 4: Route to service via service binding
     const response = await routeToService(request, route, c.env, internalToken);

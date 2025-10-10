@@ -52,11 +52,14 @@ def create_app(
 
     # Add JWT authentication middleware
     if enable_auth:
-        jwt_secret = os.environ.get("INTERNAL_JWT_SECRET")
+        jwt_secret = os.environ.get("INTERNAL_JWT_SECRET_CURRENT") or os.environ.get(
+            "INTERNAL_JWT_SECRET"
+        )
+        jwt_previous = os.environ.get("INTERNAL_JWT_SECRET_PREVIOUS")
         if jwt_secret:
-            app.use(JWTMiddleware(jwt_secret, f"svc-{service_name}"))
+            app.use(JWTMiddleware(jwt_secret, f"svc-{service_name}", jwt_previous))
         else:
-            logger.warn("INTERNAL_JWT_SECRET not configured - authentication disabled")
+            logger.warn("INTERNAL_JWT_SECRET_CURRENT not configured - authentication disabled")
 
     # Register default error handler
     @app.error_handler

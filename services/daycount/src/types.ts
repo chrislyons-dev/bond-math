@@ -142,8 +142,12 @@ export interface ActorClaim {
  * Cloudflare Worker environment bindings
  */
 export interface Env {
-  /** Internal JWT signing/verification secret */
-  INTERNAL_JWT_SECRET: string;
+  /** Internal JWT signing/verification secret (legacy - for backward compatibility) */
+  INTERNAL_JWT_SECRET?: string;
+  /** Current internal JWT secret (active, used for signing) */
+  INTERNAL_JWT_SECRET_CURRENT?: string;
+  /** Previous internal JWT secret (for zero-downtime rotation) */
+  INTERNAL_JWT_SECRET_PREVIOUS?: string;
   /** Environment name (development, preview, production) */
   ENVIRONMENT?: string;
 }
