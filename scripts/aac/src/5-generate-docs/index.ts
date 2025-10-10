@@ -2,7 +2,13 @@ import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import nunjucks from 'nunjucks';
-import type { AACIR, Service, Component, Relationship, DeploymentEnvironment } from '../shared/types.js';
+import type {
+  AACIR,
+  Service,
+  Component,
+  Relationship,
+  DeploymentEnvironment,
+} from '../shared/types.js';
 
 // Configure Nunjucks
 const __filename = fileURLToPath(import.meta.url);
@@ -52,10 +58,12 @@ async function generateIndexMd(ir: AACIR, outputDir: string): Promise<void> {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([layer, services]) => ({
       layer: toTitleCase(layer),
-      services: services.sort((a, b) => a.id.localeCompare(b.id)).map((s) => ({
-        ...s,
-        technology: getTechnology(s.type),
-      })),
+      services: services
+        .sort((a, b) => a.id.localeCompare(b.id))
+        .map((s) => ({
+          ...s,
+          technology: getTechnology(s.type),
+        })),
     }));
 
   // Prepare services with components
@@ -74,9 +82,7 @@ async function generateIndexMd(ir: AACIR, outputDir: string): Promise<void> {
   const servicesWithClasses = ir.services
     .filter(
       (s) =>
-        s.type.includes('typescript') &&
-        componentCounts.get(s.id) &&
-        componentCounts.get(s.id)! > 0
+        s.type.includes('typescript') && componentCounts.get(s.id) && componentCounts.get(s.id)! > 0
     )
     .sort((a, b) => a.id.localeCompare(b.id))
     .map((s) => ({ ...s, identifier: toIdentifier(s.id) }));
@@ -126,31 +132,33 @@ async function generateServicesMd(ir: AACIR, outputDir: string): Promise<void> {
   }
 
   // Prepare services data
-  const services = ir.services.sort((a, b) => a.id.localeCompare(b.id)).map((service) => {
-    const outgoing = ir.relationships.filter((r) => r.source === service.id);
-    const incoming = ir.relationships.filter((r) => r.destination === service.id);
+  const services = ir.services
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map((service) => {
+      const outgoing = ir.relationships.filter((r) => r.source === service.id);
+      const incoming = ir.relationships.filter((r) => r.destination === service.id);
 
-    return {
-      ...service,
-      identifier: toIdentifier(service.id),
-      technology: getTechnology(service.type),
-      layerTitle: toTitleCase(service.layer || 'unknown'),
-      endpoints: service.endpoints || [],
-      outgoingDependencies: outgoing.map((rel) => ({
-        targetName: ir.services.find((s) => s.id === rel.destination)?.name || rel.destination,
-        protocol: rel.protocol,
-        authentication: rel.authentication,
-      })),
-      incomingDependencies: incoming.map((rel) => ({
-        sourceName: ir.services.find((s) => s.id === rel.source)?.name || rel.source,
-      })),
-      configuration: {
-        environment: service.configuration?.environment || [],
-        bindings: service.configuration?.bindings || [],
-      },
-      componentCount: componentCounts.get(service.id) || 0,
-    };
-  });
+      return {
+        ...service,
+        identifier: toIdentifier(service.id),
+        technology: getTechnology(service.type),
+        layerTitle: toTitleCase(service.layer || 'unknown'),
+        endpoints: service.endpoints || [],
+        outgoingDependencies: outgoing.map((rel) => ({
+          targetName: ir.services.find((s) => s.id === rel.destination)?.name || rel.destination,
+          protocol: rel.protocol,
+          authentication: rel.authentication,
+        })),
+        incomingDependencies: incoming.map((rel) => ({
+          sourceName: ir.services.find((s) => s.id === rel.source)?.name || rel.source,
+        })),
+        configuration: {
+          environment: service.configuration?.environment || [],
+          bindings: service.configuration?.bindings || [],
+        },
+        componentCount: componentCounts.get(service.id) || 0,
+      };
+    });
 
   // Prepare template data
   const data = {

@@ -25,7 +25,16 @@ export async function extractPythonService(options: PythonExtractorOptions): Pro
 
   const mainFilePath = join(servicePath, mainFile);
   // Python script is in src, not dist - need to go up from dist/1-extract/extractors to src/1-extract/extractors
-  const pythonScriptPath = join(__dirname, '..', '..', '..', 'src', '1-extract', 'extractors', 'python-extractor.py');
+  const pythonScriptPath = join(
+    __dirname,
+    '..',
+    '..',
+    '..',
+    'src',
+    '1-extract',
+    'extractors',
+    'python-extractor.py'
+  );
 
   // Call Python script
   const pythonExecutable = process.platform === 'win32' ? 'py' : 'python3';

@@ -6,7 +6,13 @@
 
 import { join } from 'path';
 import { readFile } from 'fs/promises';
-import type { AACIR, Service, Relationship, Component, ComponentRelationship } from '../shared/types.js';
+import type {
+  AACIR,
+  Service,
+  Relationship,
+  Component,
+  ComponentRelationship,
+} from '../shared/types.js';
 import { extractTypeScriptService } from './extractors/typescript.js';
 import { extractPythonService } from './extractors/python.js';
 import { extractWranglerConfig } from './extractors/wrangler.js';
