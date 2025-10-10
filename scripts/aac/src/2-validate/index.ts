@@ -6,8 +6,8 @@
 
 import Ajv from 'ajv';
 import { join } from 'path';
-import type { AACIR } from './types.js';
-import { loadJSON, log } from './utils.js';
+import type { AACIR } from '../shared/types.js';
+import { loadJSON, log } from '../shared/utils.js';
 
 export async function validateIR(irPath: string, schemaPath: string): Promise<boolean> {
   // Input validation

@@ -15,8 +15,8 @@ import type {
   ComponentParameter,
   Endpoint,
   PartialIR,
-} from '../types.js';
-import { parseAnnotations, parseList, log } from '../utils.js';
+} from '../../shared/types.js';
+import { parseAnnotations, parseList, log } from '../../shared/utils.js';
 
 export interface TypeScriptExtractorOptions {
   servicePath: string;

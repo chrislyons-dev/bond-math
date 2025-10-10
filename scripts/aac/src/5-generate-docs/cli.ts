@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { generateDocs } from './generate-docs.js';
+import { generateDocs } from './index.js';
 import { join } from 'path';
 
 const ROOT_DIR = process.cwd();

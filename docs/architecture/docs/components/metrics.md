@@ -1,11 +1,12 @@
 # Metrics
 
-> **Auto-generated from code** - Last updated: 2025-10-09
+> **Auto-generated from code** - Last updated: 2025-10-10
 
 ## Overview
 
-**Service ID:** `metrics` **Type:** cloudflare-worker-python **Layer:** Business
-Logic
+- **Service ID:** `metrics`
+- **Type:** cloudflare-worker-python
+- **Layer:** Business Logic
 
 Bond risk metrics (duration, convexity, PV01, DV01)
 
@@ -61,20 +62,6 @@ Detailed UML class diagram showing properties, methods, and relationships:
 #### main
 
 Module: main
-
-## Deployment
-
-### Preview Environment
-
-- **bond-math-metrics-preview** (Cloudflare Workers)
-
-![Preview Deployment Diagram](../../diagrams/structurizr-Deployment_preview.png)
-
-### Production Environment
-
-- **bond-math-metrics** (Cloudflare Workers)
-
-![Production Deployment Diagram](../../diagrams/structurizr-Deployment_production.png)
 
 ---
 

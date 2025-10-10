@@ -1,11 +1,12 @@
 # Daycount
 
-> **Auto-generated from code** - Last updated: 2025-10-09
+> **Auto-generated from code** - Last updated: 2025-10-10
 
 ## Overview
 
-**Service ID:** `daycount` **Type:** cloudflare-worker-typescript **Layer:**
-Business Logic
+- **Service ID:** `daycount`
+- **Type:** cloudflare-worker-typescript
+- **Layer:** Business Logic
 
 Authoritative day-count and year-fraction calculations for fixed income
 
@@ -100,20 +101,6 @@ Module: utils
 #### validators
 
 Module: validators
-
-## Deployment
-
-### Preview Environment
-
-- **bond-math-daycount-preview** (Cloudflare Workers)
-
-![Preview Deployment Diagram](../../diagrams/structurizr-Deployment_preview.png)
-
-### Production Environment
-
-- **bond-math-daycount** (Cloudflare Workers)
-
-![Production Deployment Diagram](../../diagrams/structurizr-Deployment_production.png)
 
 ---
 

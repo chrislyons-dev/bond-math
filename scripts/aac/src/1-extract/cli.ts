@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * CLI entry point for diagram rendering
+ * CLI entry point for AAC extraction
  */
 
-import { main } from './render-diagrams.js';
+import { main } from './index.js';
 
 main().catch((error) => {
   console.error(error);

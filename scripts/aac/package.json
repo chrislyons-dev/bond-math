@@ -5,11 +5,11 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "extract": "node dist/cli.js",
-    "validate": "node dist/validate-cli.js",
-    "generate-dsl": "node dist/generate-dsl-cli.js",
-    "render": "node dist/render-diagrams-cli.js",
-    "generate-docs": "node dist/generate-docs-cli.js",
+    "extract": "node dist/1-extract/cli.js",
+    "validate": "node dist/2-validate/cli.js",
+    "generate-dsl": "node dist/3-generate-dsl/cli.js",
+    "render": "node dist/4-render-diagrams/cli.js",
+    "generate-docs": "node dist/5-generate-docs/cli.js",
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
@@ -18,7 +18,9 @@
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
+    "@types/nunjucks": "^3.2.6",
     "ajv": "^8.12.0",
+    "nunjucks": "^3.2.4",
     "ts-morph": "^21.0.1"
   },
   "devDependencies": {

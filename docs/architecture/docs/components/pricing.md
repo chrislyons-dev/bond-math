@@ -1,11 +1,12 @@
 # Pricing
 
-> **Auto-generated from code** - Last updated: 2025-10-09
+> **Auto-generated from code** - Last updated: 2025-10-10
 
 ## Overview
 
-**Service ID:** `pricing` **Type:** cloudflare-worker-python **Layer:** Business
-Logic
+- **Service ID:** `pricing`
+- **Type:** cloudflare-worker-python
+- **Layer:** Business Logic
 
 Curve-based cashflow discounting and present value calculations
 
@@ -61,20 +62,6 @@ Detailed UML class diagram showing properties, methods, and relationships:
 #### main
 
 Module: main
-
-## Deployment
-
-### Preview Environment
-
-- **bond-math-pricing-preview** (Cloudflare Workers)
-
-![Preview Deployment Diagram](../../diagrams/structurizr-Deployment_preview.png)
-
-### Production Environment
-
-- **bond-math-pricing** (Cloudflare Workers)
-
-![Production Deployment Diagram](../../diagrams/structurizr-Deployment_production.png)
 
 ---
 

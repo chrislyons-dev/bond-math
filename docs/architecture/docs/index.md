@@ -1,6 +1,6 @@
 # Bond Math Architecture Documentation
 
-> **Auto-generated from code** - Last updated: 2025-10-09
+> **Auto-generated from code** - Last updated: 2025-10-10
 
 This documentation is automatically generated from code annotations and
 infrastructure-as-code configuration using the Architecture as Code (AAC)
@@ -71,45 +71,7 @@ All microservices and their relationships
 
 ![Containers Diagram](../diagrams/structurizr-Containers.png)
 
-### Component Diagrams
-
-Internal structure of services:
-
-#### Bond Valuation Components
-
-![Bond Valuation Component Diagram](../diagrams/structurizr-Components_bond-valuation.png)
-
-#### Daycount Components
-
-![Daycount Component Diagram](../diagrams/structurizr-Components_daycount.png)
-
-#### Gateway Components
-
-![Gateway Component Diagram](../diagrams/structurizr-Components_gateway.png)
-
-#### Metrics Components
-
-![Metrics Component Diagram](../diagrams/structurizr-Components_metrics.png)
-
-#### Pricing Components
-
-![Pricing Component Diagram](../diagrams/structurizr-Components_pricing.png)
-
-### Class Diagrams
-
-Detailed UML diagrams showing properties, methods, and relationships:
-
-#### Daycount Classes
-
-![Daycount Class Diagram](../diagrams/class-diagram-daycount.png)
-
-#### Gateway Classes
-
-![Gateway Class Diagram](../diagrams/class-diagram-gateway.png)
-
 ### Deployment Diagrams
-
-Infrastructure topology:
 
 #### Development Environment
 

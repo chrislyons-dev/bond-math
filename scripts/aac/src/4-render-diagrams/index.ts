@@ -8,9 +8,9 @@ import { spawn } from 'child_process';
 import { join, dirname, basename } from 'path';
 import { readdir, mkdir, access } from 'fs/promises';
 import { existsSync } from 'fs';
-import { log, loadJSON } from './utils.js';
+import { log, loadJSON } from '../shared/utils.js';
 import { generateClassDiagrams } from './generate-class-diagrams.js';
-import type { AACIR } from './types.js';
+import type { AACIR } from '../shared/types.js';
 
 const STRUCTURIZR_CLI_VERSION = '2024.11.03';
 const STRUCTURIZR_CLI_URL = `https://github.com/structurizr/cli/releases/download/v${STRUCTURIZR_CLI_VERSION}/structurizr-cli.zip`;

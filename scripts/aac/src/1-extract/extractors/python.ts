@@ -5,10 +5,10 @@
  */
 
 import { spawn } from 'child_process';
-import { join, dirname } from 'path';
+import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import type { PartialIR } from '../types.js';
-import { log } from '../utils.js';
+import type { PartialIR } from '../../shared/types.js';
+import { log } from '../../shared/utils.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -24,8 +24,8 @@ export async function extractPythonService(options: PythonExtractorOptions): Pro
   log.info(`Extracting Python service: ${serviceId}`);
 
   const mainFilePath = join(servicePath, mainFile);
-  // Python script is in src, not dist
-  const pythonScriptPath = join(__dirname, '../../src/extractors/python-extractor.py');
+  // Python script is in src, not dist - need to go up from dist/1-extract/extractors to src/1-extract/extractors
+  const pythonScriptPath = join(__dirname, '..', '..', '..', 'src', '1-extract', 'extractors', 'python-extractor.py');
 
   // Call Python script
   const pythonExecutable = process.platform === 'win32' ? 'py' : 'python3';

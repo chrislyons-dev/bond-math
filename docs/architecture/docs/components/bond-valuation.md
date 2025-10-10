@@ -1,11 +1,12 @@
 # Bond Valuation
 
-> **Auto-generated from code** - Last updated: 2025-10-09
+> **Auto-generated from code** - Last updated: 2025-10-10
 
 ## Overview
 
-**Service ID:** `bond-valuation` **Type:** cloudflare-worker-python **Layer:**
-Business Logic
+- **Service ID:** `bond-valuation`
+- **Type:** cloudflare-worker-python
+- **Layer:** Business Logic
 
 Price ↔ yield calculations and cashflow generation for bullet bonds
 
@@ -41,7 +42,7 @@ This service contains 1 component(s):
 
 High-level component relationships:
 
-![Bond Valuation Component Diagram](../../diagrams/structurizr-Components_bond-valuation.png)
+![Bond Valuation Component Diagram](../../diagrams/structurizr-Components_bond_valuation.png)
 
 ### Class Diagram
 
@@ -54,20 +55,6 @@ Detailed UML class diagram showing properties, methods, and relationships:
 #### main
 
 Module: main
-
-## Deployment
-
-### Preview Environment
-
-- **bond-math-valuation-preview** (Cloudflare Workers)
-
-![Preview Deployment Diagram](../../diagrams/structurizr-Deployment_preview.png)
-
-### Production Environment
-
-- **bond-math-valuation** (Cloudflare Workers)
-
-![Production Deployment Diagram](../../diagrams/structurizr-Deployment_production.png)
 
 ---
 

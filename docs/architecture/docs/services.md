@@ -1,6 +1,6 @@
 # Service Inventory
 
-> **Auto-generated from code** - Last updated: 2025-10-09
+> **Auto-generated from code** - Last updated: 2025-10-10
 
 Complete inventory of all services in the Bond Math architecture.
 
@@ -18,9 +18,8 @@ Complete inventory of all services in the Bond Math architecture.
 
 ### Bond Valuation {#bond-valuation}
 
-**ID:** `bond-valuation`  
-**Type:** cloudflare-worker-python  
-**Layer:** Business Logic
+**ID:** `bond-valuation` **Type:** cloudflare-worker-python **Layer:** Business
+Logic
 
 Price ↔ yield calculations and cashflow generation for bullet bonds
 
@@ -37,15 +36,14 @@ Price ↔ yield calculations and cashflow generation for bullet bonds
 
 **Components:** 1
 
-![Bond Valuation Component Diagram](../diagrams/structurizr-Components_bond-valuation.png)
+![Bond Valuation Component Diagram](../diagrams/structurizr-Components_bond_valuation.png)
 
 **[View detailed documentation →](./components/bond-valuation.md)**
 
 ### Daycount {#daycount}
 
-**ID:** `daycount`  
-**Type:** cloudflare-worker-typescript  
-**Layer:** Business Logic
+**ID:** `daycount` **Type:** cloudflare-worker-typescript **Layer:** Business
+Logic
 
 Authoritative day-count and year-fraction calculations for fixed income
 
@@ -61,9 +59,7 @@ Authoritative day-count and year-fraction calculations for fixed income
 
 ### Gateway {#gateway}
 
-**ID:** `gateway`  
-**Type:** cloudflare-worker-typescript  
-**Layer:** Api Gateway
+**ID:** `gateway` **Type:** cloudflare-worker-typescript **Layer:** Api Gateway
 
 Entry point for all API traffic - handles Auth0 verification, internal JWT
 minting, and service routing
@@ -83,9 +79,7 @@ minting, and service routing
 
 ### Metrics {#metrics}
 
-**ID:** `metrics`  
-**Type:** cloudflare-worker-python  
-**Layer:** Business Logic
+**ID:** `metrics` **Type:** cloudflare-worker-python **Layer:** Business Logic
 
 Bond risk metrics (duration, convexity, PV01, DV01)
 
@@ -110,9 +104,7 @@ Bond risk metrics (duration, convexity, PV01, DV01)
 
 ### Pricing {#pricing}
 
-**ID:** `pricing`  
-**Type:** cloudflare-worker-python  
-**Layer:** Business Logic
+**ID:** `pricing` **Type:** cloudflare-worker-python **Layer:** Business Logic
 
 Curve-based cashflow discounting and present value calculations
 

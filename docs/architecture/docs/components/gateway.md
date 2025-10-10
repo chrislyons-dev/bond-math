@@ -1,11 +1,12 @@
 # Gateway
 
-> **Auto-generated from code** - Last updated: 2025-10-09
+> **Auto-generated from code** - Last updated: 2025-10-10
 
 ## Overview
 
-**Service ID:** `gateway` **Type:** cloudflare-worker-typescript **Layer:** Api
-Gateway
+- **Service ID:** `gateway`
+- **Type:** cloudflare-worker-typescript
+- **Layer:** Api Gateway
 
 Entry point for all API traffic - handles Auth0 verification, internal JWT
 minting, and service routing
@@ -104,26 +105,6 @@ Module: middleware
 #### router
 
 Module: router
-
-## Deployment
-
-### Development Environment
-
-- **bond-math-gateway-dev** (Cloudflare Workers)
-
-![Development Deployment Diagram](../../diagrams/structurizr-Deployment_development.png)
-
-### Preview Environment
-
-- **bond-math-gateway-preview** (Cloudflare Workers)
-
-![Preview Deployment Diagram](../../diagrams/structurizr-Deployment_preview.png)
-
-### Production Environment
-
-- **bond-math-gateway** (Cloudflare Workers)
-
-![Production Deployment Diagram](../../diagrams/structurizr-Deployment_production.png)
 
 ---
 

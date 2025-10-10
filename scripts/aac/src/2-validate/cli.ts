@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * CLI entry point for AAC extraction
+ * CLI entry point for IR validation
  */
 
-import { main } from './extract.js';
+import { main } from './index.js';
 
 main().catch((error) => {
   console.error(error);

@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validateRelationships } from './validate.js';
-import type { AACIR, Service, Relationship } from './types.js';
+import { validateRelationships } from './index.js';
+import type { AACIR, Service, Relationship } from '../shared/types.js';
 
 // Helper to create test IR
 function createTestIR(services: Service[], relationships: Relationship[]): AACIR {

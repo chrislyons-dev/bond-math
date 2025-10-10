@@ -6,7 +6,7 @@
 
 import { join } from 'path';
 import { writeFile, mkdir } from 'fs/promises';
-import type { AACIR, Service, Component } from './types.js';
+import type { AACIR, Service, Component } from '../shared/types.js';
 import {
   DSLBuilder,
   toIdentifier,
@@ -14,7 +14,7 @@ import {
   getTechnology,
   getServiceTags,
 } from './dsl-builder.js';
-import { loadJSON, log } from './utils.js';
+import { loadJSON, log } from '../shared/utils.js';
 
 export async function generateStructurizrDSL(ir: AACIR): Promise<string> {
   const dsl = new DSLBuilder();

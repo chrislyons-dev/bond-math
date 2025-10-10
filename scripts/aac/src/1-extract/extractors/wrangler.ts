@@ -14,8 +14,8 @@ import type {
   EnvironmentVariable,
   DeploymentEnvironment,
   DeploymentNode,
-} from '../types.js';
-import { log } from '../utils.js';
+} from '../../shared/types.js';
+import { log } from '../../shared/utils.js';
 
 export interface WranglerExtractorOptions {
   tomlPath: string;

@@ -10,8 +10,8 @@
 
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
-import type { AACIR, Component, ComponentRelationship } from './types.js';
-import { loadJSON, log } from './utils.js';
+import type { AACIR, Component, ComponentRelationship } from '../shared/types.js';
+import { loadJSON, log } from '../shared/utils.js';
 
 export async function generateClassDiagrams(ir: AACIR, outputDir: string): Promise<void> {
   if (!ir.components || ir.components.length === 0) {
