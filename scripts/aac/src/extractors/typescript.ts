@@ -14,7 +14,7 @@ import type {
   ComponentMethod,
   ComponentParameter,
   Endpoint,
-  PartialIR
+  PartialIR,
 } from '../types.js';
 import { parseAnnotations, parseList, log } from '../utils.js';
 
@@ -58,7 +58,7 @@ const EFFECTFUL_BODY_PATTERNS = [
  * Extract parameters from a function/method
  */
 function extractParameters(params: any[]): ComponentParameter[] {
-  return params.map(p => ({
+  return params.map((p) => ({
     name: p.getName(),
     type: p.getType?.()?.getText() || p.getTypeNode()?.getText() || 'any',
     isOptional: p.hasQuestionToken(),
@@ -76,8 +76,11 @@ function extractClassProperties(cls: any): ComponentProperty[] {
     properties.push({
       name: prop.getName(),
       type: propType,
-      visibility: prop.hasModifier(SyntaxKind.PrivateKeyword) ? 'private' :
-                 prop.hasModifier(SyntaxKind.ProtectedKeyword) ? 'protected' : 'public',
+      visibility: prop.hasModifier(SyntaxKind.PrivateKeyword)
+        ? 'private'
+        : prop.hasModifier(SyntaxKind.ProtectedKeyword)
+          ? 'protected'
+          : 'public',
       isOptional: prop.hasQuestionToken(),
       isReadonly: prop.isReadonly(),
     });
@@ -118,8 +121,11 @@ function extractClassMethods(cls: any): ComponentMethod[] {
       name: method.getName(),
       returnType: method.getReturnType().getText(),
       parameters: params,
-      visibility: method.hasModifier(SyntaxKind.PrivateKeyword) ? 'private' :
-                 method.hasModifier(SyntaxKind.ProtectedKeyword) ? 'protected' : 'public',
+      visibility: method.hasModifier(SyntaxKind.PrivateKeyword)
+        ? 'private'
+        : method.hasModifier(SyntaxKind.ProtectedKeyword)
+          ? 'protected'
+          : 'public',
       isAsync: method.isAsync(),
     });
   }
@@ -276,7 +282,11 @@ function extractClassComponents(sourceFile: any, service: Service, components: C
 /**
  * Extract interface components from source file
  */
-function extractInterfaceComponents(sourceFile: any, service: Service, components: Component[]): void {
+function extractInterfaceComponents(
+  sourceFile: any,
+  service: Service,
+  components: Component[]
+): void {
   const interfaces = sourceFile.getInterfaces();
 
   for (const iface of interfaces) {
@@ -323,7 +333,7 @@ function extractModuleComponents(sourceFile: any, service: Service, components: 
   const moduleId = `${service.id}.${fileName}`;
 
   // Check if we already have a module component for this file
-  let moduleComponent = components.find(c => c.id === moduleId && c.type === 'module');
+  let moduleComponent = components.find((c) => c.id === moduleId && c.type === 'module');
 
   if (!moduleComponent) {
     moduleComponent = {
@@ -359,7 +369,7 @@ function extractModuleComponents(sourceFile: any, service: Service, components: 
   }
 
   // Set module stereotype based on functions
-  const hasEffectful = moduleComponent.functions!.some(f => f.stereotype === 'effectful');
+  const hasEffectful = moduleComponent.functions!.some((f) => f.stereotype === 'effectful');
   moduleComponent.stereotype = hasEffectful ? 'effectful' : 'pure';
 }
 
@@ -457,7 +467,9 @@ export async function extractTypeScriptService(
 
   // Validate we found at least one service
   if (services.length === 0) {
-    log.warn(`No service metadata found in ${servicePath}. Make sure files have @service annotations.`);
+    log.warn(
+      `No service metadata found in ${servicePath}. Make sure files have @service annotations.`
+    );
   }
 
   log.success(
@@ -554,7 +566,13 @@ function analyzeClassRelationships(
     // Check extends clause
     const extendsClause = cls.getExtends();
     if (extendsClause) {
-      addRelationship(sourceComponent, extendsClause.getText(), 'Extends', componentMap, relationships);
+      addRelationship(
+        sourceComponent,
+        extendsClause.getText(),
+        'Extends',
+        componentMap,
+        relationships
+      );
     }
 
     // Check implements clause

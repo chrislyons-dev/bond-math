@@ -126,7 +126,12 @@ All microservices and their relationships
 
     // Add class diagrams for TypeScript services
     const servicesWithClasses = ir.services
-      .filter((s) => s.type.includes('typescript') && serviceComponentCounts.get(s.id) && serviceComponentCounts.get(s.id)! > 0)
+      .filter(
+        (s) =>
+          s.type.includes('typescript') &&
+          serviceComponentCounts.get(s.id) &&
+          serviceComponentCounts.get(s.id)! > 0
+      )
       .sort((a, b) => a.id.localeCompare(b.id));
 
     if (servicesWithClasses.length > 0) {

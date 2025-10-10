@@ -21,8 +21,20 @@ describe('validateRelationships', () => {
   it('should pass validation for valid relationships', () => {
     const ir = createTestIR(
       [
-        { id: 'gateway', name: 'Gateway', type: 'cloudflare-worker-typescript', layer: 'api-gateway', description: 'Gateway' },
-        { id: 'daycount', name: 'Daycount', type: 'cloudflare-worker-typescript', layer: 'business-logic', description: 'Daycount' },
+        {
+          id: 'gateway',
+          name: 'Gateway',
+          type: 'cloudflare-worker-typescript',
+          layer: 'api-gateway',
+          description: 'Gateway',
+        },
+        {
+          id: 'daycount',
+          name: 'Daycount',
+          type: 'cloudflare-worker-typescript',
+          layer: 'business-logic',
+          description: 'Daycount',
+        },
       ] as Service[],
       [
         { source: 'gateway', destination: 'daycount', protocol: 'service-binding' },
@@ -37,11 +49,15 @@ describe('validateRelationships', () => {
   it('should detect unknown source service', () => {
     const ir = createTestIR(
       [
-        { id: 'gateway', name: 'Gateway', type: 'cloudflare-worker-typescript', layer: 'api-gateway', description: 'Gateway' },
+        {
+          id: 'gateway',
+          name: 'Gateway',
+          type: 'cloudflare-worker-typescript',
+          layer: 'api-gateway',
+          description: 'Gateway',
+        },
       ] as Service[],
-      [
-        { source: 'unknown-service', destination: 'gateway', protocol: 'https' },
-      ] as Relationship[]
+      [{ source: 'unknown-service', destination: 'gateway', protocol: 'https' }] as Relationship[]
     );
 
     const result = validateRelationships(ir);
@@ -52,11 +68,15 @@ describe('validateRelationships', () => {
   it('should detect unknown destination service', () => {
     const ir = createTestIR(
       [
-        { id: 'gateway', name: 'Gateway', type: 'cloudflare-worker-typescript', layer: 'api-gateway', description: 'Gateway' },
+        {
+          id: 'gateway',
+          name: 'Gateway',
+          type: 'cloudflare-worker-typescript',
+          layer: 'api-gateway',
+          description: 'Gateway',
+        },
       ] as Service[],
-      [
-        { source: 'gateway', destination: 'unknown-service', protocol: 'https' },
-      ] as Relationship[]
+      [{ source: 'gateway', destination: 'unknown-service', protocol: 'https' }] as Relationship[]
     );
 
     const result = validateRelationships(ir);
@@ -67,9 +87,27 @@ describe('validateRelationships', () => {
   it('should detect circular dependencies', () => {
     const ir = createTestIR(
       [
-        { id: 'a', name: 'A', type: 'cloudflare-worker-typescript', layer: 'business-logic', description: 'A' },
-        { id: 'b', name: 'B', type: 'cloudflare-worker-typescript', layer: 'business-logic', description: 'B' },
-        { id: 'c', name: 'C', type: 'cloudflare-worker-typescript', layer: 'business-logic', description: 'C' },
+        {
+          id: 'a',
+          name: 'A',
+          type: 'cloudflare-worker-typescript',
+          layer: 'business-logic',
+          description: 'A',
+        },
+        {
+          id: 'b',
+          name: 'B',
+          type: 'cloudflare-worker-typescript',
+          layer: 'business-logic',
+          description: 'B',
+        },
+        {
+          id: 'c',
+          name: 'C',
+          type: 'cloudflare-worker-typescript',
+          layer: 'business-logic',
+          description: 'C',
+        },
       ] as Service[],
       [
         { source: 'a', destination: 'b', protocol: 'service-binding' },
@@ -86,7 +124,13 @@ describe('validateRelationships', () => {
   it('should pass for empty relationships', () => {
     const ir = createTestIR(
       [
-        { id: 'gateway', name: 'Gateway', type: 'cloudflare-worker-typescript', layer: 'api-gateway', description: 'Gateway' },
+        {
+          id: 'gateway',
+          name: 'Gateway',
+          type: 'cloudflare-worker-typescript',
+          layer: 'api-gateway',
+          description: 'Gateway',
+        },
       ] as Service[],
       []
     );
@@ -97,9 +141,15 @@ describe('validateRelationships', () => {
   });
 
   it('should throw on invalid IR structure (not an object)', () => {
-    expect(() => validateRelationships(null as unknown as AACIR)).toThrow('ir must be a valid AACIR object');
-    expect(() => validateRelationships(undefined as unknown as AACIR)).toThrow('ir must be a valid AACIR object');
-    expect(() => validateRelationships('string' as unknown as AACIR)).toThrow('ir must be a valid AACIR object');
+    expect(() => validateRelationships(null as unknown as AACIR)).toThrow(
+      'ir must be a valid AACIR object'
+    );
+    expect(() => validateRelationships(undefined as unknown as AACIR)).toThrow(
+      'ir must be a valid AACIR object'
+    );
+    expect(() => validateRelationships('string' as unknown as AACIR)).toThrow(
+      'ir must be a valid AACIR object'
+    );
   });
 
   it('should throw on invalid IR structure (missing services array)', () => {
@@ -123,11 +173,15 @@ describe('validateRelationships', () => {
   it('should handle self-referencing service (no cycle)', () => {
     const ir = createTestIR(
       [
-        { id: 'a', name: 'A', type: 'cloudflare-worker-typescript', layer: 'business-logic', description: 'A' },
+        {
+          id: 'a',
+          name: 'A',
+          type: 'cloudflare-worker-typescript',
+          layer: 'business-logic',
+          description: 'A',
+        },
       ] as Service[],
-      [
-        { source: 'a', destination: 'a', protocol: 'service-binding' },
-      ] as Relationship[]
+      [{ source: 'a', destination: 'a', protocol: 'service-binding' }] as Relationship[]
     );
 
     // Self-reference should be detected as a cycle
@@ -139,10 +193,34 @@ describe('validateRelationships', () => {
   it('should pass for complex valid dependency graph', () => {
     const ir = createTestIR(
       [
-        { id: 'gateway', name: 'Gateway', type: 'cloudflare-worker-typescript', layer: 'api-gateway', description: 'Gateway' },
-        { id: 'daycount', name: 'Daycount', type: 'cloudflare-worker-typescript', layer: 'business-logic', description: 'Daycount' },
-        { id: 'valuation', name: 'Valuation', type: 'cloudflare-worker-python', layer: 'business-logic', description: 'Valuation' },
-        { id: 'metrics', name: 'Metrics', type: 'cloudflare-worker-python', layer: 'business-logic', description: 'Metrics' },
+        {
+          id: 'gateway',
+          name: 'Gateway',
+          type: 'cloudflare-worker-typescript',
+          layer: 'api-gateway',
+          description: 'Gateway',
+        },
+        {
+          id: 'daycount',
+          name: 'Daycount',
+          type: 'cloudflare-worker-typescript',
+          layer: 'business-logic',
+          description: 'Daycount',
+        },
+        {
+          id: 'valuation',
+          name: 'Valuation',
+          type: 'cloudflare-worker-python',
+          layer: 'business-logic',
+          description: 'Valuation',
+        },
+        {
+          id: 'metrics',
+          name: 'Metrics',
+          type: 'cloudflare-worker-python',
+          layer: 'business-logic',
+          description: 'Metrics',
+        },
       ] as Service[],
       [
         { source: 'gateway', destination: 'daycount', protocol: 'service-binding' },

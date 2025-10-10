@@ -112,11 +112,7 @@ describe('parseList', () => {
 
 describe('sortServices', () => {
   it('should sort services alphabetically by id', () => {
-    const services: Partial<Service>[] = [
-      { id: 'metrics' },
-      { id: 'gateway' },
-      { id: 'daycount' },
-    ];
+    const services: Partial<Service>[] = [{ id: 'metrics' }, { id: 'gateway' }, { id: 'daycount' }];
 
     const result = sortServices(services as Service[]);
 
@@ -124,10 +120,7 @@ describe('sortServices', () => {
   });
 
   it('should not mutate original array', () => {
-    const services: Partial<Service>[] = [
-      { id: 'metrics' },
-      { id: 'gateway' },
-    ];
+    const services: Partial<Service>[] = [{ id: 'metrics' }, { id: 'gateway' }];
 
     const original = [...services];
     sortServices(services as Service[]);

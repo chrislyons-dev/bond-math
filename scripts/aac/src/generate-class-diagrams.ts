@@ -8,17 +8,14 @@
  * - Relationships (extends, implements, uses)
  */
 
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import type { AACIR, Component, ComponentRelationship } from "./types.js";
-import { loadJSON, log } from "./utils.js";
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
+import type { AACIR, Component, ComponentRelationship } from './types.js';
+import { loadJSON, log } from './utils.js';
 
-export async function generateClassDiagrams(
-  ir: AACIR,
-  outputDir: string
-): Promise<void> {
+export async function generateClassDiagrams(ir: AACIR, outputDir: string): Promise<void> {
   if (!ir.components || ir.components.length === 0) {
-    log.info("No components found, skipping class diagram generation");
+    log.info('No components found, skipping class diagram generation');
     return;
   }
 
@@ -50,7 +47,7 @@ export async function generateClassDiagrams(
 
     const filename = `class-diagram-${serviceId}.puml`;
     const filepath = join(outputDir, filename);
-    await writeFile(filepath, diagram, "utf-8");
+    await writeFile(filepath, diagram, 'utf-8');
     log.info(`  Generated ${filename}`);
     count++;
   }
@@ -65,25 +62,23 @@ function generateClassDiagramForService(
 ): string {
   const lines: string[] = [];
 
-  lines.push("@startuml");
+  lines.push('@startuml');
   lines.push(`title ${serviceName} - Class Diagram`);
-  lines.push("");
-  lines.push("skinparam classAttributeIconSize 0");
-  lines.push("skinparam linetype ortho");
-  lines.push("");
+  lines.push('');
+  lines.push('skinparam classAttributeIconSize 0');
+  lines.push('skinparam linetype ortho');
+  lines.push('');
 
   // Generate classes, interfaces, and modules
-  for (const component of components.sort((a, b) =>
-    a.name!.localeCompare(b.name!)
-  )) {
-    if (component.type === "interface") {
+  for (const component of components.sort((a, b) => a.name!.localeCompare(b.name!))) {
+    if (component.type === 'interface') {
       generateInterface(lines, component);
-    } else if (component.type === "class") {
+    } else if (component.type === 'class') {
       generateClass(lines, component);
-    } else if (component.type === "module") {
+    } else if (component.type === 'module') {
       generateModule(lines, component);
     }
-    lines.push("");
+    lines.push('');
   }
 
   // Generate relationships
@@ -99,13 +94,13 @@ function generateClassDiagramForService(
       const destName = getComponentName(rel.destination);
 
       switch (rel.technology) {
-        case "Extends":
+        case 'Extends':
           lines.push(`${sourceName} --|> ${destName}`);
           break;
-        case "Implements":
+        case 'Implements':
           lines.push(`${sourceName} ..|> ${destName}`);
           break;
-        case "Uses":
+        case 'Uses':
           lines.push(`${sourceName} ..> ${destName} : uses`);
           break;
         default:
@@ -114,14 +109,14 @@ function generateClassDiagramForService(
     }
   }
 
-  lines.push("");
-  lines.push("@enduml");
+  lines.push('');
+  lines.push('@enduml');
 
-  return lines.join("\n");
+  return lines.join('\n');
 }
 
 function generateInterface(lines: string[], component: Component): void {
-  const name = component.name || component.id.split(".").pop() || component.id;
+  const name = component.name || component.id.split('.').pop() || component.id;
   const stereotype = component.stereotype ? ` <<${component.stereotype}>>` : '';
 
   lines.push(`interface ${name}${stereotype} {`);
@@ -129,8 +124,8 @@ function generateInterface(lines: string[], component: Component): void {
   // Properties
   if (component.properties && component.properties.length > 0) {
     for (const prop of component.properties) {
-      const optional = prop.isOptional ? "?" : "";
-      const readonly = prop.isReadonly ? "{readonly} " : "";
+      const optional = prop.isOptional ? '?' : '';
+      const readonly = prop.isReadonly ? '{readonly} ' : '';
       lines.push(`  ${readonly}${prop.name}${optional}: ${simplifyType(prop.type)}`);
     }
   }
@@ -138,19 +133,20 @@ function generateInterface(lines: string[], component: Component): void {
   // Methods
   if (component.methods && component.methods.length > 0) {
     if (component.properties && component.properties.length > 0) {
-      lines.push("  --");
+      lines.push('  --');
     }
     for (const method of component.methods) {
-      const params = method.parameters
-        ?.map((p) => `${p.name}${p.isOptional ? "?" : ""}: ${simplifyType(p.type)}`)
-        .join(", ") || "";
-      const returnType = method.returnType ? `: ${simplifyType(method.returnType)}` : "";
-      const async = method.isAsync ? "async " : "";
+      const params =
+        method.parameters
+          ?.map((p) => `${p.name}${p.isOptional ? '?' : ''}: ${simplifyType(p.type)}`)
+          .join(', ') || '';
+      const returnType = method.returnType ? `: ${simplifyType(method.returnType)}` : '';
+      const async = method.isAsync ? 'async ' : '';
       lines.push(`  ${async}${method.name}(${params})${returnType}`);
     }
   }
 
-  lines.push("}");
+  lines.push('}');
 
   if (component.description) {
     lines.push(`note right of ${name}`);
@@ -160,7 +156,7 @@ function generateInterface(lines: string[], component: Component): void {
 }
 
 function generateClass(lines: string[], component: Component): void {
-  const name = component.name || component.id.split(".").pop() || component.id;
+  const name = component.name || component.id.split('.').pop() || component.id;
   const stereotype = component.stereotype ? ` <<${component.stereotype}>>` : '';
 
   lines.push(`class ${name}${stereotype} {`);
@@ -169,8 +165,8 @@ function generateClass(lines: string[], component: Component): void {
   if (component.properties && component.properties.length > 0) {
     for (const prop of component.properties) {
       const visibility = getVisibilitySymbol(prop.visibility);
-      const optional = prop.isOptional ? "?" : "";
-      const readonly = prop.isReadonly ? "{readonly} " : "";
+      const optional = prop.isOptional ? '?' : '';
+      const readonly = prop.isReadonly ? '{readonly} ' : '';
       lines.push(`  ${visibility}${readonly}${prop.name}${optional}: ${simplifyType(prop.type)}`);
     }
   }
@@ -178,20 +174,21 @@ function generateClass(lines: string[], component: Component): void {
   // Methods
   if (component.methods && component.methods.length > 0) {
     if (component.properties && component.properties.length > 0) {
-      lines.push("  --");
+      lines.push('  --');
     }
     for (const method of component.methods) {
       const visibility = getVisibilitySymbol(method.visibility);
-      const params = method.parameters
-        ?.map((p) => `${p.name}${p.isOptional ? "?" : ""}: ${simplifyType(p.type)}`)
-        .join(", ") || "";
-      const returnType = method.returnType ? `: ${simplifyType(method.returnType)}` : "";
-      const async = method.isAsync ? "async " : "";
+      const params =
+        method.parameters
+          ?.map((p) => `${p.name}${p.isOptional ? '?' : ''}: ${simplifyType(p.type)}`)
+          .join(', ') || '';
+      const returnType = method.returnType ? `: ${simplifyType(method.returnType)}` : '';
+      const async = method.isAsync ? 'async ' : '';
       lines.push(`  ${visibility}${async}${method.name}(${params})${returnType}`);
     }
   }
 
-  lines.push("}");
+  lines.push('}');
 
   if (component.description) {
     lines.push(`note right of ${name}`);
@@ -201,7 +198,7 @@ function generateClass(lines: string[], component: Component): void {
 }
 
 function generateModule(lines: string[], component: Component): void {
-  const name = component.name || component.id.split(".").pop() || component.id;
+  const name = component.name || component.id.split('.').pop() || component.id;
   const stereotype = component.stereotype ? ` <<${component.stereotype}>>` : '';
 
   lines.push(`class ${name}${stereotype} {`);
@@ -209,18 +206,19 @@ function generateModule(lines: string[], component: Component): void {
   // Functions as static methods
   if (component.functions && component.functions.length > 0) {
     for (const func of component.functions) {
-      const params = func.parameters
-        ?.map((p) => `${p.name}${p.isOptional ? "?" : ""}: ${simplifyType(p.type)}`)
-        .join(", ") || "";
-      const returnType = func.returnType ? `: ${simplifyType(func.returnType)}` : "";
-      const async = func.isAsync ? "async " : "";
+      const params =
+        func.parameters
+          ?.map((p) => `${p.name}${p.isOptional ? '?' : ''}: ${simplifyType(p.type)}`)
+          .join(', ') || '';
+      const returnType = func.returnType ? `: ${simplifyType(func.returnType)}` : '';
+      const async = func.isAsync ? 'async ' : '';
       const purity = func.stereotype === 'pure' ? '{static} ' : '{static} ';
       const exported = func.isExported ? '+' : '-';
       lines.push(`  ${exported}${purity}${async}${func.name}(${params})${returnType}`);
     }
   }
 
-  lines.push("}");
+  lines.push('}');
 
   if (component.description) {
     lines.push(`note right of ${name}`);
@@ -235,36 +233,36 @@ function generateModule(lines: string[], component: Component): void {
 
 function getVisibilitySymbol(visibility?: string): string {
   switch (visibility) {
-    case "private":
-      return "-";
-    case "protected":
-      return "#";
-    case "public":
+    case 'private':
+      return '-';
+    case 'protected':
+      return '#';
+    case 'public':
     default:
-      return "+";
+      return '+';
   }
 }
 
 function getComponentName(componentId: string): string {
-  const parts = componentId.split(".");
+  const parts = componentId.split('.');
   return parts[parts.length - 1] || componentId;
 }
 
 function simplifyType(type: string): string {
   // Remove overly verbose type information for cleaner diagrams
-  type = type.replace(/import\([^)]+\)\./g, "");
+  type = type.replace(/import\([^)]+\)\./g, '');
 
   // Truncate very long union types
-  if (type.length > 50 && type.includes("|")) {
-    const parts = type.split("|");
+  if (type.length > 50 && type.includes('|')) {
+    const parts = type.split('|');
     if (parts.length > 3) {
-      return parts.slice(0, 2).join("|") + " | ...";
+      return parts.slice(0, 2).join('|') + ' | ...';
     }
   }
 
   // Truncate very long types
   if (type.length > 80) {
-    return type.substring(0, 77) + "...";
+    return type.substring(0, 77) + '...';
   }
 
   return type;
@@ -275,11 +273,11 @@ function simplifyType(type: string): string {
  */
 export async function main() {
   const rootPath = process.cwd();
-  const irPath = join(rootPath, "docs/architecture/ir.json");
-  const outputDir = join(rootPath, "docs/architecture/diagrams");
+  const irPath = join(rootPath, 'docs/architecture/ir.json');
+  const outputDir = join(rootPath, 'docs/architecture/diagrams');
 
   try {
-    log.info("Generating PlantUML class diagrams");
+    log.info('Generating PlantUML class diagrams');
 
     // Load IR
     const ir = await loadJSON<AACIR>(irPath);
@@ -287,7 +285,7 @@ export async function main() {
     // Generate class diagrams
     await generateClassDiagrams(ir, outputDir);
 
-    log.success("Class diagram generation complete");
+    log.success('Class diagram generation complete');
   } catch (error: any) {
     log.error(`Class diagram generation failed: ${error.message}`);
     process.exit(1);
