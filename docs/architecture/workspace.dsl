@@ -208,6 +208,10 @@ workspace "bond-math" "Architecture as Code generated workspace" {
             }
         }
         deploymentEnvironment "Preview" {
+            deploymentNode "bond-math-ui" {
+                technology "Cloudflare Workers"
+                containerInstance ui
+            }
             deploymentNode "bond-math-gateway-preview" {
                 technology "Cloudflare Workers"
                 containerInstance gateway
@@ -230,6 +234,10 @@ workspace "bond-math" "Architecture as Code generated workspace" {
             }
         }
         deploymentEnvironment "Production" {
+            deploymentNode "bond-math-ui" {
+                technology "Cloudflare Workers"
+                containerInstance ui
+            }
             deploymentNode "bond-math-gateway" {
                 technology "Cloudflare Workers"
                 containerInstance gateway

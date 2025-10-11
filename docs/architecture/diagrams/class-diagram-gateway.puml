@@ -38,8 +38,10 @@ end note
 interface Env {
   AUTH0_DOMAIN: string
   AUTH0_AUDIENCE: string
-  INTERNAL_JWT_SECRET: string
-  INTERNAL_JWT_TTL: string
+  INTERNAL_JWT_SECRET?: string
+  INTERNAL_JWT_SECRET_CURRENT?: string
+  INTERNAL_JWT_SECRET_PREVIOUS?: string
+  INTERNAL_JWT_TTL?: string
   ENVIRONMENT?: string
   SVC_DAYCOUNT: Fetcher
   SVC_VALUATION: Fetcher
@@ -105,7 +107,9 @@ class jwt <<effectful>> {
   -{static} extractPermissions(claims: Auth0Claims): string[]
   -{static} async signJWT(payload: InternalJWT, secret: string): Promise<string>
   -{static} async signData(data: string, secret: string): Promise<ArrayBuffer>
-  +{static} async verifyInternalToken(token: string, secret: string, expectedAudience: string): Promise<InternalJWT>
+  -{static} validateSecretStrength(secret: string, secretName: string): void
+  -{static} parseTokenParts(token: string): [string, string, string]
+  +{static} async verifyInternalToken(token: string, secret: string, expectedAudience: string, previousSecret?: string | undefined): Promise<InternalJWT>
   -{static} async verifySignature(data: string, signature: ArrayBuffer, secret: string): Promise<boolean>
   -{static} validateInternalClaims(payload: InternalJWT, expectedAudience: string): void
   -{static} generateRequestId(): string

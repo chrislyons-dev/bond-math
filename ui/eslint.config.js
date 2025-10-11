@@ -45,6 +45,7 @@ export default [
         fetch: 'readonly',
         URL: 'readonly',
         React: 'readonly',
+        HeadersInit: 'readonly',
       },
     },
     plugins: {

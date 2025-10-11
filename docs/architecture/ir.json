@@ -429,7 +429,19 @@
         {
           "name": "INTERNAL_JWT_SECRET",
           "type": "string",
-          "isOptional": false,
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "INTERNAL_JWT_SECRET_CURRENT",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "INTERNAL_JWT_SECRET_PREVIOUS",
+          "type": "string",
+          "isOptional": true,
           "isReadonly": false
         },
         {
@@ -971,13 +983,25 @@
         {
           "name": "INTERNAL_JWT_SECRET",
           "type": "string",
-          "isOptional": false,
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "INTERNAL_JWT_SECRET_CURRENT",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "INTERNAL_JWT_SECRET_PREVIOUS",
+          "type": "string",
+          "isOptional": true,
           "isReadonly": false
         },
         {
           "name": "INTERNAL_JWT_TTL",
           "type": "string",
-          "isOptional": false,
+          "isOptional": true,
           "isReadonly": false
         },
         {
@@ -1281,6 +1305,39 @@
           "stereotype": "effectful"
         },
         {
+          "name": "validateSecretStrength",
+          "returnType": "void",
+          "parameters": [
+            {
+              "name": "secret",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "secretName",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "parseTokenParts",
+          "returnType": "[string, string, string]",
+          "parameters": [
+            {
+              "name": "token",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
           "name": "verifyInternalToken",
           "returnType": "Promise<import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").InternalJWT>",
           "parameters": [
@@ -1298,6 +1355,11 @@
               "name": "expectedAudience",
               "type": "string",
               "isOptional": false
+            },
+            {
+              "name": "previousSecret",
+              "type": "string | undefined",
+              "isOptional": true
             }
           ],
           "isAsync": true,
@@ -1805,6 +1867,17 @@
       "name": "preview",
       "deploymentNodes": [
         {
+          "id": "ui-preview",
+          "name": "bond-math-ui",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-ui",
+            "routes": []
+          },
+          "containerInstances": ["ui"]
+        },
+        {
           "id": "gateway-preview",
           "name": "bond-math-gateway-preview",
           "type": "container",
@@ -1864,6 +1937,17 @@
     {
       "name": "production",
       "deploymentNodes": [
+        {
+          "id": "ui-production",
+          "name": "bond-math-ui",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-ui",
+            "routes": []
+          },
+          "containerInstances": ["ui"]
+        },
         {
           "id": "gateway-production",
           "name": "bond-math-gateway",

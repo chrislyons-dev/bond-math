@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import type {
   DatePair,
   DayCountConvention,
@@ -17,8 +18,10 @@ import { isValidDate, isValidDateRange, getToday, getDaysFromToday } from '@lib/
  * - Error handling with user feedback
  * - Accessibility compliant (WCAG 2.1 AA)
  * - Responsive design
+ * - Requires authentication
  */
-export default function DayCountCalculator() {
+function DayCountCalculatorInner() {
+  const { isAuthenticated, getAccessTokenSilently } = useAuth0();
   const [pairs, setPairs] = useState<DatePair[]>([
     { start: getToday(), end: getDaysFromToday(180) },
   ]);
@@ -96,13 +99,29 @@ export default function DayCountCalculator() {
       return;
     }
 
+    if (!isAuthenticated) {
+      setError('You must be logged in to use the calculator.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await calculateDayCount({
-        pairs,
-        convention,
+      // Get access token from Auth0
+      const token = await getAccessTokenSilently({
+        authorizationParams: {
+          audience: import.meta.env.PUBLIC_AUTH0_AUDIENCE,
+          scope: 'openid profile email',
+        },
       });
+
+      const response = await calculateDayCount(
+        {
+          pairs,
+          convention,
+        },
+        token
+      );
       setResults(response);
     } catch (err) {
       if (err instanceof ApiError) {
@@ -262,10 +281,11 @@ export default function DayCountCalculator() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !isAuthenticated}
             className="btn btn-primary w-full md:w-auto"
+            title={!isAuthenticated ? 'Please log in to use the calculator' : ''}
           >
-            {loading ? 'Calculating...' : 'Calculate'}
+            {loading ? 'Calculating...' : !isAuthenticated ? 'Log In to Calculate' : 'Calculate'}
           </button>
         </form>
       </div>
@@ -323,5 +343,45 @@ export default function DayCountCalculator() {
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * DayCountCalculator with Auth0 provider
+ */
+export default function DayCountCalculator() {
+  const domain = import.meta.env.PUBLIC_AUTH0_DOMAIN;
+  const clientId = import.meta.env.PUBLIC_AUTH0_CLIENT_ID;
+  const audience = import.meta.env.PUBLIC_AUTH0_AUDIENCE;
+  const redirectUri = import.meta.env.PUBLIC_AUTH0_REDIRECT_URI || `${window.location.origin}/callback`;
+
+  if (!domain || !clientId || !audience) {
+    console.error('Auth0 configuration missing:', { domain, clientId, audience });
+    return (
+      <div className="card p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+          Configuration Error
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Auth0 configuration is missing. Please check your environment variables.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <Auth0Provider
+      domain={domain}
+      clientId={clientId}
+      authorizationParams={{
+        redirect_uri: redirectUri,
+        audience: audience,
+        scope: 'openid profile email',
+      }}
+      useRefreshTokens={true}
+      cacheLocation="localstorage"
+    >
+      <DayCountCalculatorInner />
+    </Auth0Provider>
   );
 }

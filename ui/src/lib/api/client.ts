@@ -75,12 +75,22 @@ function getApiBaseUrl(): string {
 /**
  * Calculate day count year fractions
  */
-export async function calculateDayCount(request: DayCountRequest): Promise<DayCountResponse> {
+export async function calculateDayCount(
+  request: DayCountRequest,
+  token?: string
+): Promise<DayCountResponse> {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  // Add Authorization header if token is provided
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${getApiBaseUrl()}/api/daycount/v1/count`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     body: JSON.stringify(request),
   });
 

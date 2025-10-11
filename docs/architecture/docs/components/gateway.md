@@ -1,6 +1,6 @@
 # Gateway
 
-> **Auto-generated from code** - Last updated: 2025-10-10
+> **Auto-generated from code** - Last updated: 2025-10-11
 
 ## Overview
 

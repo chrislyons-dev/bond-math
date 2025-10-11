@@ -4,26 +4,26 @@
  * Coordinates all extractors to generate the complete AAC IR
  */
 
-import { join } from 'path';
 import { readFile } from 'fs/promises';
+import { join } from 'path';
 import type {
   AACIR,
-  Service,
-  Relationship,
   Component,
   ComponentRelationship,
+  Relationship,
+  Service,
 } from '../shared/types.js';
-import { extractTypeScriptService } from './extractors/typescript.js';
-import { extractPythonService } from './extractors/python.js';
-import { extractWranglerConfig } from './extractors/wrangler.js';
 import {
-  sortServices,
-  sortRelationships,
-  sortComponents,
-  sortComponentRelationships,
-  savePartialIR,
   log,
+  savePartialIR,
+  sortComponentRelationships,
+  sortComponents,
+  sortRelationships,
+  sortServices,
 } from '../shared/utils.js';
+import { extractPythonService } from './extractors/python.js';
+import { extractTypeScriptService } from './extractors/typescript.js';
+import { extractWranglerConfig } from './extractors/wrangler.js';
 
 interface ServiceConfig {
   id: string;

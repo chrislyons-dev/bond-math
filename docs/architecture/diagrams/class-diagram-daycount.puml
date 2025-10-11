@@ -79,7 +79,9 @@ Single day-count calculation result
 end note
 
 interface Env {
-  INTERNAL_JWT_SECRET: string
+  INTERNAL_JWT_SECRET?: string
+  INTERNAL_JWT_SECRET_CURRENT?: string
+  INTERNAL_JWT_SECRET_PREVIOUS?: string
   ENVIRONMENT?: string
 }
 note right of Env
