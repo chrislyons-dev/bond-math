@@ -34,6 +34,12 @@ This service depends on:
   - Authentication: internal-jwt
   - Service Binding: `SVC_PRICING`
 
+### Incoming Dependencies
+
+This service is used by:
+
+- **Ui**
+
 ## Components
 
 This service contains 13 component(s):

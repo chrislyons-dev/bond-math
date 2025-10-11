@@ -17,28 +17,42 @@ skinparam rectangle<<_transparent>> {
 }
 
 skinparam rectangle<<1>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+}
+rectangle "==Element" <<1>>
+
+skinparam rectangle<<2>> {
   BackgroundColor #3178c6
   FontColor #ffffff
   BorderColor #22548a
 }
-rectangle "==API Gateway, TypeScript" <<1>>
+rectangle "==API Gateway, TypeScript" <<2>>
 
-skinparam rectangle<<2>> {
+skinparam rectangle<<3>> {
   BackgroundColor #3776ab
   FontColor #ffffff
   BorderColor #265277
 }
-rectangle "==Business Logic, Python" <<2>>
+rectangle "==Business Logic, Python" <<3>>
 
-skinparam rectangle<<3>> {
+skinparam rectangle<<4>> {
   BackgroundColor #3178c6
   FontColor #ffffff
   BorderColor #22548a
 }
-rectangle "==Business Logic, TypeScript" <<3>>
+rectangle "==Business Logic, TypeScript" <<4>>
 
-rectangle "." <<_transparent>> as 4
-4 .[#707070,thickness=2].> 4 : "<color:#707070>Relationship"
+skinparam person<<5>> {
+  BackgroundColor #08457e
+  FontColor #ffffff
+  BorderColor #053058
+}
+person "==Person" <<5>>
+
+rectangle "." <<_transparent>> as 6
+6 .[#707070,thickness=2].> 6 : "<color:#707070>Relationship"
 
 
 @enduml

@@ -21,7 +21,19 @@ skinparam rectangle<<Development.bondmathgatewaydev.Gateway_1>> {
   BorderColor #22548a
   shadowing false
 }
+skinparam rectangle<<Development.bondmathui.Ui_1>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
 skinparam rectangle<<Development.bondmathgatewaydev>> {
+  BackgroundColor #ffffff
+  FontColor #000000
+  BorderColor #888888
+  shadowing false
+}
+skinparam rectangle<<Development.bondmathui>> {
   BackgroundColor #ffffff
   FontColor #000000
   BorderColor #888888
@@ -32,4 +44,9 @@ rectangle "bond-math-gateway-dev\n<size:10>[Deployment Node: Cloudflare Workers]
   rectangle "==Gateway\n<size:10>[Container: Cloudflare Workers (TypeScript)]</size>\n\nEntry point for all API traffic - handles Auth0 verification, internal JWT minting, and service routing" <<Development.bondmathgatewaydev.Gateway_1>> as Development.bondmathgatewaydev.Gateway_1
 }
 
+rectangle "bond-math-ui\n<size:10>[Deployment Node: Cloudflare Workers]</size>" <<Development.bondmathui>> as Development.bondmathui {
+  rectangle "==Ui\n<size:10>[Container: Cloudflare Pages]</size>\n\nUser interface for bond math calculations - Astro static site with React islands" <<Development.bondmathui.Ui_1>> as Development.bondmathui.Ui_1
+}
+
+Development.bondmathui.Ui_1 .[#707070,thickness=2].> Development.bondmathgatewaydev.Gateway_1 : "<color:#707070>Uses\n<color:#707070><size:8>[https (auth0-jwt)]</size>"
 @enduml

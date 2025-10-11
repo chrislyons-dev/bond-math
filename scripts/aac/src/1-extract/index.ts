@@ -67,6 +67,12 @@ export async function extractAll(rootPath: string): Promise<AACIR> {
       servicePath: join(rootPath, 'services/pricing'),
       wranglerToml: join(rootPath, 'iac/workers/pricing.toml'),
     },
+    {
+      id: 'ui',
+      type: 'typescript',
+      servicePath: join(rootPath, 'ui'),
+      wranglerToml: join(rootPath, 'ui/wrangler.toml'),
+    },
   ];
 
   // Extract from all services
@@ -87,6 +93,7 @@ export async function extractAll(rootPath: string): Promise<AACIR> {
       });
 
       if (tsResult.services) allServices.push(...tsResult.services);
+      if (tsResult.relationships) allRelationships.push(...tsResult.relationships);
       if (tsResult.components) allComponents.push(...tsResult.components);
       if (tsResult.componentRelationships)
         allComponentRelationships.push(...tsResult.componentRelationships);

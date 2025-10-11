@@ -21,8 +21,8 @@ Cloudflare Workers. The system provides:
 
 The system follows a microservices architecture with:
 
-- **5 services** deployed as Cloudflare Workers (2 TypeScript, 3 Python)
-- **4 service-to-service relationships** using service bindings
+- **6 services** deployed as Cloudflare Workers (2 TypeScript, 3 Python)
+- **5 service-to-service relationships** using service bindings
 - **3 deployment environments** (development, preview, production)
 
 ## Services
@@ -44,6 +44,11 @@ The system follows a microservices architecture with:
 - **[Pricing](./components/pricing.md)** (Python) - Curve-based cashflow
   discounting and present value calculations
 
+### Ui
+
+- **[Ui](./components/ui.md)** (cloudflare-pages) - User interface for bond math
+  calculations - Astro static site with React islands
+
 ## Documentation
 
 - **[Service Inventory](./services.md)** - Complete list of services with
@@ -54,6 +59,7 @@ The system follows a microservices architecture with:
   - [Gateway](./components/gateway.md)
   - [Metrics](./components/metrics.md)
   - [Pricing](./components/pricing.md)
+  - [Ui](./components/ui.md)
 
 ## Diagrams
 

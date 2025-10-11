@@ -6,13 +6,14 @@ Complete inventory of all services in the Bond Math architecture.
 
 ## Summary
 
-| Service                           | Type       | Layer          | Description                                                                                             |
-| --------------------------------- | ---------- | -------------- | ------------------------------------------------------------------------------------------------------- |
-| [Bond Valuation](#bond-valuation) | Python     | Business Logic | Price ↔ yield calculations and cashflow generation for bullet bonds                                    |
-| [Daycount](#daycount)             | TypeScript | Business Logic | Authoritative day-count and year-fraction calculations for fixed income                                 |
-| [Gateway](#gateway)               | TypeScript | Api Gateway    | Entry point for all API traffic - handles Auth0 verification, internal JWT minting, and service routing |
-| [Metrics](#metrics)               | Python     | Business Logic | Bond risk metrics (duration, convexity, PV01, DV01)                                                     |
-| [Pricing](#pricing)               | Python     | Business Logic | Curve-based cashflow discounting and present value calculations                                         |
+| Service                           | Type             | Layer          | Description                                                                                             |
+| --------------------------------- | ---------------- | -------------- | ------------------------------------------------------------------------------------------------------- |
+| [Bond Valuation](#bond-valuation) | Python           | Business Logic | Price ↔ yield calculations and cashflow generation for bullet bonds                                    |
+| [Daycount](#daycount)             | TypeScript       | Business Logic | Authoritative day-count and year-fraction calculations for fixed income                                 |
+| [Gateway](#gateway)               | TypeScript       | Api Gateway    | Entry point for all API traffic - handles Auth0 verification, internal JWT minting, and service routing |
+| [Metrics](#metrics)               | Python           | Business Logic | Bond risk metrics (duration, convexity, PV01, DV01)                                                     |
+| [Pricing](#pricing)               | Python           | Business Logic | Curve-based cashflow discounting and present value calculations                                         |
+| [Ui](#ui)                         | cloudflare-pages | Ui             | User interface for bond math calculations - Astro static site with React islands                        |
 
 ## Service Details
 
@@ -71,6 +72,10 @@ minting, and service routing
 - Metrics (`service-binding`, auth: internal-jwt)
 - Pricing (`service-binding`, auth: internal-jwt)
 
+**Used by (incoming):**
+
+- Ui
+
 **Components:** 13
 
 ![Gateway Component Diagram](../diagrams/structurizr-Components_gateway.png)
@@ -126,3 +131,24 @@ Curve-based cashflow discounting and present value calculations
 ![Pricing Component Diagram](../diagrams/structurizr-Components_pricing.png)
 
 **[View detailed documentation →](./components/pricing.md)**
+
+### Ui {#ui}
+
+**ID:** `ui` **Type:** cloudflare-pages **Layer:** Ui
+
+User interface for bond math calculations - Astro static site with React islands
+
+**Endpoints:**
+
+- `POST /api/daycount/v1/count`
+  - **Auth:** auth0-oidc
+
+**Dependencies (outgoing):**
+
+- Gateway (`https`, auth: auth0-jwt)
+
+**Components:** 20
+
+![Ui Component Diagram](../diagrams/structurizr-Components_ui.png)
+
+**[View detailed documentation →](./components/ui.md)**

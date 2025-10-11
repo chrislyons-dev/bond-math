@@ -1,8 +1,31 @@
+/**
+ * Authentication Button - Login/Logout control with user menu
+ *
+ * @component AuthButton
+ * @layer presentation
+ * @description Displays login button (unauthenticated) or user menu (authenticated)
+ * @owner platform-team
+ * @dependencies @auth0/auth0-react
+ * @security-model auth0-oidc
+ *
+ * Provides:
+ * - Login button that redirects to Auth0 Universal Login
+ * - User profile display with picture and name
+ * - Logout button that clears session
+ */
+
 import { useAuth0, Auth0Provider } from '@auth0/auth0-react';
 import { useState, useRef, useEffect } from 'react';
 
 /**
- * Inner component that uses Auth0 context
+ * Inner component that uses Auth0 context.
+ *
+ * Renders:
+ * - Avatar button (user picture or icon)
+ * - Dropdown menu with Profile link and Logout button (authenticated)
+ * - Dropdown menu with Login button (unauthenticated)
+ *
+ * Includes click-outside detection to close dropdown.
  */
 function AuthButtonInner() {
   const { isAuthenticated, isLoading, user, loginWithRedirect, logout } = useAuth0();
@@ -183,7 +206,19 @@ function AuthButtonInner() {
 }
 
 /**
- * Smart authentication button that shows login or logout based on auth state
+ * Smart authentication button that shows login or logout based on auth state.
+ *
+ * Wraps AuthButtonInner with Auth0Provider to provide authentication context.
+ * Falls back to static "Log In" link if Auth0 configuration is missing.
+ *
+ * @returns {JSX.Element} Auth button with Auth0 provider or fallback link
+ *
+ * @example
+ * ```tsx
+ * <Header>
+ *   <AuthButton />
+ * </Header>
+ * ```
  */
 export function AuthButton() {
   const domain = import.meta.env.PUBLIC_AUTH0_DOMAIN;

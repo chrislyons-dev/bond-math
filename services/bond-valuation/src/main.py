@@ -18,12 +18,19 @@ the microapi framework integration.
 
 from microapi import Field, JsonResponse, Request, create_worker_app, require_scopes, validate_body
 
+from .daycount import calculate_year_fraction
+from .factory import CalculatorFactory
+from .mappers import pricing_result_to_response, request_to_bond_spec
+
 # Constants
 SERVICE_NAME = "bond-valuation"
 SERVICE_VERSION = "2025.10"
 
 # Initialize app with standard middleware, health check, and error handling
 app, logger, on_fetch = create_worker_app(SERVICE_NAME, SERVICE_VERSION)
+
+# Initialize calculator factory with local daycount function
+calculator_factory = CalculatorFactory(daycount=calculate_year_fraction)
 
 
 @app.route("/price", methods=["POST"])
@@ -49,8 +56,6 @@ app, logger, on_fetch = create_worker_app(SERVICE_NAME, SERVICE_VERSION)
 async def calculate_price(request: Request) -> JsonResponse:
     """Calculate clean/dirty price from yield.
 
-    This is a stub implementation returning hardcoded values.
-
     @endpoint POST /price
     @gateway-route POST /api/valuation/v1/price
     @authentication internal-jwt
@@ -64,36 +69,56 @@ async def calculate_price(request: Request) -> JsonResponse:
     """
     # Auth and validation handled by middleware/decorators
     body = await request.json()
-
-    # Return hardcoded stub response
     request_id = request.header("x-request-id")
-    logger.info(
-        "Price calculated",
-        request_id=request_id,
-        yield_value=body.get("yield"),
-    )
 
-    return JsonResponse(
-        {
-            "cleanPrice": 99.948,
-            "dirtyPrice": 100.573,
-            "accruedInterest": 0.625,
-            "nextCouponDate": "2025-12-31",
-            "cashflows": [
-                {"date": "2025-12-31", "amount": 2.5},
-                {"date": "2026-06-30", "amount": 2.5},
-                {"date": "2026-12-31", "amount": 2.5},
-                {"date": "2027-06-30", "amount": 2.5},
-                {"date": "2027-12-31", "amount": 2.5},
-                {"date": "2028-06-30", "amount": 2.5},
-                {"date": "2028-12-31", "amount": 2.5},
-                {"date": "2029-06-30", "amount": 2.5},
-                {"date": "2029-12-31", "amount": 2.5},
-                {"date": "2030-07-01", "amount": 102.5},
-            ],
-            "version": SERVICE_VERSION,
-        }
-    )
+    try:
+        # Parse request to BondSpec
+        bond_spec = request_to_bond_spec(body)
+        ytm = float(body["yield"])
+
+        # Get appropriate calculator for bond type
+        calculator = calculator_factory.get(bond_spec.bond_type)
+
+        # Calculate price from yield
+        result = calculator.price_from_yield(bond_spec, ytm)
+
+        # Get cashflows
+        cashflows = calculator.cashflows(bond_spec)
+
+        logger.info(
+            "Price calculated",
+            request_id=request_id,
+            ytm=ytm,
+            clean_price=result.clean,
+            bond_type=bond_spec.bond_type.name,
+        )
+
+        # Convert to response
+        response_body = pricing_result_to_response(result, cashflows, SERVICE_VERSION)
+        return JsonResponse(response_body)
+
+    except (ValueError, KeyError) as e:
+        logger.error("Price calculation failed", request_id=request_id, error=str(e))
+        return JsonResponse(
+            {
+                "type": "https://bondmath.chrislyons.dev/errors/validation-error",
+                "title": "Validation Error",
+                "status": 400,
+                "detail": str(e),
+            },
+            status=400,
+        )
+    except Exception as e:
+        logger.error("Price calculation error", request_id=request_id, error=str(e))
+        return JsonResponse(
+            {
+                "type": "https://bondmath.chrislyons.dev/errors/internal-error",
+                "title": "Internal Server Error",
+                "status": 500,
+                "detail": "Price calculation failed",
+            },
+            status=500,
+        )
 
 
 @app.route("/yield", methods=["POST"])
@@ -119,8 +144,6 @@ async def calculate_price(request: Request) -> JsonResponse:
 async def calculate_yield(request: Request) -> JsonResponse:
     """Calculate yield from clean price.
 
-    This is a stub implementation returning hardcoded values.
-
     @endpoint POST /yield
     @gateway-route POST /api/valuation/v1/yield
     @authentication internal-jwt
@@ -134,22 +157,53 @@ async def calculate_yield(request: Request) -> JsonResponse:
     """
     # Auth and validation handled by middleware/decorators
     body = await request.json()
-
-    # Return hardcoded stub response
     request_id = request.header("x-request-id")
-    logger.info(
-        "Yield calculated",
-        request_id=request_id,
-        price=body.get("price"),
-    )
 
-    return JsonResponse(
-        {
-            "yield": 0.048,
-            "cleanPrice": body.get("price"),
-            "dirtyPrice": body.get("price", 99.948) + 0.625,
-            "accruedInterest": 0.625,
-            "nextCouponDate": "2025-12-31",
-            "version": SERVICE_VERSION,
-        }
-    )
+    try:
+        # Parse request to BondSpec
+        bond_spec = request_to_bond_spec(body)
+        clean_price = float(body["price"])
+
+        # Get appropriate calculator for bond type
+        calculator = calculator_factory.get(bond_spec.bond_type)
+
+        # Calculate yield from price (uses Newton-Raphson)
+        result = calculator.yield_from_price(bond_spec, clean_price)
+
+        # Get cashflows
+        cashflows = calculator.cashflows(bond_spec)
+
+        logger.info(
+            "Yield calculated",
+            request_id=request_id,
+            clean_price=clean_price,
+            ytm=result.ytm,
+            bond_type=bond_spec.bond_type.name,
+        )
+
+        # Convert to response
+        response_body = pricing_result_to_response(result, cashflows, SERVICE_VERSION)
+        return JsonResponse(response_body)
+
+    except (ValueError, KeyError) as e:
+        logger.error("Yield calculation failed", request_id=request_id, error=str(e))
+        return JsonResponse(
+            {
+                "type": "https://bondmath.chrislyons.dev/errors/validation-error",
+                "title": "Validation Error",
+                "status": 400,
+                "detail": str(e),
+            },
+            status=400,
+        )
+    except Exception as e:
+        logger.error("Yield calculation error", request_id=request_id, error=str(e))
+        return JsonResponse(
+            {
+                "type": "https://bondmath.chrislyons.dev/errors/internal-error",
+                "title": "Internal Server Error",
+                "status": 500,
+                "detail": "Yield calculation failed",
+            },
+            status=500,
+        )

@@ -14,6 +14,7 @@ import type {
   ComponentMethod,
   ComponentParameter,
   Endpoint,
+  Relationship,
   PartialIR,
 } from '../../shared/types.js';
 import { parseAnnotations, parseList, log } from '../../shared/utils.js';
@@ -197,9 +198,12 @@ function extractServiceMetadata(sourceFile: any, servicePath: string): Service |
 }
 
 /**
- * Extract endpoints from functions and methods
+ * Extract endpoints from functions and methods, and create relationships
+ *
+ * When an endpoint annotation is found (e.g., @endpoint POST /api/daycount/v1/count),
+ * this creates a relationship from the current service to the gateway (or target service).
  */
-function extractEndpoints(sourceFile: any, service: Service): void {
+function extractEndpoints(sourceFile: any, service: Service, relationships: Relationship[]): void {
   const functions = [
     ...sourceFile.getFunctions(),
     ...sourceFile.getClasses().flatMap((cls: any) => cls.getMethods()),
@@ -229,8 +233,71 @@ function extractEndpoints(sourceFile: any, service: Service): void {
 
         service.endpoints!.push(endpoint);
         log.info(`  Found endpoint: ${method} ${path}`);
+
+        // Create relationship when UI/client calls an API endpoint
+        // Parse endpoint path to determine target service
+        const targetService = parseEndpointTarget(path);
+        if (targetService && targetService !== service.id) {
+          // Map endpoint authentication to relationship authentication
+          const relationshipAuth = mapAuthenticationType(annotations.authentication);
+
+          // Create relationship from this service to target
+          const relationship: Relationship = {
+            source: service.id,
+            destination: targetService,
+            protocol: 'https',
+            authentication: relationshipAuth,
+          };
+
+          relationships.push(relationship);
+          log.info(`  Created relationship: ${service.id} -> ${targetService} (${method} ${path})`);
+        }
       }
     }
+  }
+}
+
+/**
+ * Parse endpoint path to determine target service
+ *
+ * Examples:
+ * - /api/daycount/v1/count -> gateway (all /api/* routes go through gateway)
+ * - /health -> null (internal endpoint, no external call)
+ */
+function parseEndpointTarget(path: string): string | null {
+  // If path starts with /api/, it's a call to the gateway
+  if (path.startsWith('/api/')) {
+    return 'gateway';
+  }
+
+  // Internal endpoints don't create relationships
+  return null;
+}
+
+/**
+ * Map endpoint authentication type to relationship authentication type
+ *
+ * Endpoint annotations use values like "auth0-oidc" while relationships
+ * use "auth0-jwt" to represent Auth0-based authentication.
+ */
+function mapAuthenticationType(
+  endpointAuth?: string
+): 'none' | 'internal-jwt' | 'auth0-jwt' | 'oauth2' | 'api-key' | undefined {
+  if (!endpointAuth) return undefined;
+
+  switch (endpointAuth) {
+    case 'auth0-oidc':
+      return 'auth0-jwt';
+    case 'internal-jwt':
+      return 'internal-jwt';
+    case 'oauth2':
+      return 'oauth2';
+    case 'api-key':
+      return 'api-key';
+    case 'none':
+      return 'none';
+    default:
+      return undefined;
   }
 }
 
@@ -412,11 +479,18 @@ export async function extractTypeScriptService(
 
   // Add source files with error handling
   try {
-    const sourcePattern = join(servicePath, 'src/**/*.ts');
-    const sourceFiles = project.addSourceFilesAtPaths(sourcePattern);
+    // Support both .ts and .tsx files (for UI components)
+    const tsPattern = join(servicePath, 'src/**/*.ts');
+    const tsxPattern = join(servicePath, 'src/**/*.tsx');
+
+    const tsFiles = project.addSourceFilesAtPaths(tsPattern);
+    const tsxFiles = project.addSourceFilesAtPaths(tsxPattern);
+    const sourceFiles = [...tsFiles, ...tsxFiles];
 
     if (sourceFiles.length === 0) {
-      log.warn(`No TypeScript files found in ${sourcePattern}`);
+      log.warn(`No TypeScript files found in ${servicePath}/src`);
+    } else {
+      log.info(`Found ${sourceFiles.length} TypeScript file(s)`);
     }
   } catch (error: any) {
     throw new Error(`Failed to add source files from ${servicePath}: ${error.message}`);
@@ -425,6 +499,7 @@ export async function extractTypeScriptService(
   const services: Service[] = [];
   const components: Component[] = [];
   const componentRelationships: ComponentRelationship[] = [];
+  const relationships: Relationship[] = [];
   let currentService: Service | null = null;
 
   // Process each source file with error handling
@@ -444,7 +519,7 @@ export async function extractTypeScriptService(
 
       // Extract endpoints and components only if we have a service
       if (currentService) {
-        extractEndpoints(sourceFile, currentService);
+        extractEndpoints(sourceFile, currentService, relationships);
         extractClassComponents(sourceFile, currentService, components);
         extractInterfaceComponents(sourceFile, currentService, components);
         extractModuleComponents(sourceFile, currentService, components);
@@ -473,11 +548,12 @@ export async function extractTypeScriptService(
   }
 
   log.success(
-    `Extracted ${services.length} service(s), ${components.length} component(s), ${componentRelationships.length} component relationship(s)`
+    `Extracted ${services.length} service(s), ${relationships.length} relationship(s), ${components.length} component(s), ${componentRelationships.length} component relationship(s)`
   );
 
   return {
     services,
+    relationships,
     components,
     componentRelationships,
   };

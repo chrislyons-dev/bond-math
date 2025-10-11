@@ -1,3 +1,31 @@
+/**
+ * Day Count Calculator - Interactive fixed-income calculation UI
+ *
+ * @component DayCountCalculator
+ * @layer presentation
+ * @description Interactive calculator for day count year fractions with Auth0 authentication
+ * @owner platform-team
+ * @dependencies @auth0/auth0-react, @lib/api/client, @lib/utils/validation
+ * @security-model auth0-oidc
+ *
+ * Features:
+ * - Multiple date pairs support with add/remove functionality
+ * - Six day count conventions (ACT/360, ACT/365F, 30/360, 30E/360, ACT/ACT ISDA, ACT/ACT ICMA)
+ * - Real-time client-side validation (date format, date range)
+ * - Field-level error display from API validation
+ * - Accessibility compliant (WCAG 2.1 AA - ARIA labels, keyboard navigation)
+ * - Responsive design (mobile-first)
+ * - Requires Auth0 authentication (button disabled when logged out)
+ *
+ * Authentication flow:
+ * 1. User must be authenticated via Auth0
+ * 2. Gets access token via getAccessTokenSilently()
+ * 3. Sends bearer token to Gateway API in Authorization header
+ * 4. Gateway verifies Auth0 token and mints internal JWT
+ * 5. Gateway forwards request to Day-Count service
+ * 6. Results displayed in table with days, year fraction, basis
+ */
+
 import { useState } from 'react';
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import type {
@@ -10,15 +38,12 @@ import { calculateDayCount, ApiError } from '@lib/api/client';
 import { isValidDate, isValidDateRange, getToday, getDaysFromToday } from '@lib/utils/validation';
 
 /**
- * DayCountCalculator - Interactive calculator for day count conventions
+ * DayCountCalculator inner component with Auth0 context.
  *
- * Features:
- * - Multiple date pairs support
- * - Real-time validation
- * - Error handling with user feedback
- * - Accessibility compliant (WCAG 2.1 AA)
- * - Responsive design
- * - Requires authentication
+ * Manages calculator state, form validation, and API communication.
+ * Uses Auth0 hooks to get access token and check authentication status.
+ *
+ * @returns {JSX.Element} Day count calculator form and results table
  */
 function DayCountCalculatorInner() {
   const { isAuthenticated, getAccessTokenSilently } = useAuth0();

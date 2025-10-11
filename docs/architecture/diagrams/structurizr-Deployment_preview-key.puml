@@ -17,9 +17,9 @@ skinparam rectangle<<_transparent>> {
 }
 
 skinparam rectangle<<1>> {
-  BackgroundColor #ffffff
+  BackgroundColor #dddddd
   FontColor #000000
-  BorderColor #888888
+  BorderColor #9a9a9a
 }
 rectangle "==Element" <<1>>
 

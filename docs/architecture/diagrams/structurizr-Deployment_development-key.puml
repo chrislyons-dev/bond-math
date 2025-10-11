@@ -17,9 +17,9 @@ skinparam rectangle<<_transparent>> {
 }
 
 skinparam rectangle<<1>> {
-  BackgroundColor #ffffff
+  BackgroundColor #dddddd
   FontColor #000000
-  BorderColor #888888
+  BorderColor #9a9a9a
 }
 rectangle "==Element" <<1>>
 
@@ -29,6 +29,9 @@ skinparam rectangle<<2>> {
   BorderColor #22548a
 }
 rectangle "==API Gateway, TypeScript" <<2>>
+
+rectangle "." <<_transparent>> as 3
+3 .[#707070,thickness=2].> 3 : "<color:#707070>Relationship"
 
 
 @enduml

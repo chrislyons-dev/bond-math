@@ -182,6 +182,7 @@ const SERVICE_ID_MAP: Record<string, string> = {
   'bond-math-valuation': 'bond-valuation',
   'bond-math-metrics': 'metrics',
   'bond-math-pricing': 'pricing',
+  'bond-math-ui': 'ui',
 };
 
 /**

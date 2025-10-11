@@ -1,15 +1,40 @@
-# Cloudflare Pages Configuration
-# This file is used for local development with wrangler pages dev
-# Production deployment is handled via GitHub Actions with automatic Pages deployment
+# Bond Math UI - Cloudflare Pages Configuration
+#
+# Static site built with Astro + React, deployed to Cloudflare Pages.
+# Provides user interface for bond calculation services with Auth0 authentication.
+#
+# @service ui
+# @type cloudflare-pages
+# @layer ui
+# @description User interface for bond math calculations - Astro static site with React islands
+# @owner platform-team
+# @external-routes /, /about, /day-count, /profile, /callback
+# @dependencies svc-gateway (via HTTP)
+# @security-model auth0-oidc
+# @sla-tier high
+#
+# Authentication: Auth0 PKCE flow with JWT bearer tokens sent to Gateway
+# Deployment: Static assets deployed to Cloudflare Pages edge network
 
 name = "bond-math-ui"
 compatibility_date = "2025-10-10"
 
-[env.development]
-vars = { PUBLIC_API_BASE_URL = "http://localhost:8787" }
+# Production environment configuration
+[env.production.vars]
+PUBLIC_API_BASE_URL = "https://bondmath.chrislyons.dev"
+PUBLIC_SITE_URL = "https://bondmath.chrislyons.dev"
 
-[env.preview]
-vars = { PUBLIC_API_BASE_URL = "https://api-preview.bondmath.chrislyons.dev" }
+# Preview environment (branch deployments)
+[env.preview.vars]
+PUBLIC_API_BASE_URL = "https://api-preview.bondmath.chrislyons.dev"
+PUBLIC_SITE_URL = "https://preview.bondmath.chrislyons.dev"
 
-[env.production]
-vars = { PUBLIC_API_BASE_URL = "https://bondmath.chrislyons.dev" }
+# Development environment (local dev server)
+[env.development.vars]
+PUBLIC_API_BASE_URL = "http://localhost:8787"
+PUBLIC_SITE_URL = "http://localhost:4321"
+
+# Build configuration
+# Note: Build happens via 'astro build' before deployment
+# Output: static files in dist/ directory
+# Deployment: via 'wrangler pages deploy dist' or GitHub Actions

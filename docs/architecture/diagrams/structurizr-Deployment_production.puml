@@ -45,6 +45,12 @@ skinparam rectangle<<Production.bondmathpricing.Pricing_1>> {
   BorderColor #265277
   shadowing false
 }
+skinparam rectangle<<Production.bondmathui.Ui_1>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
 skinparam rectangle<<Production.bondmathdaycount>> {
   BackgroundColor #ffffff
   FontColor #000000
@@ -64,6 +70,12 @@ skinparam rectangle<<Production.bondmathmetrics>> {
   shadowing false
 }
 skinparam rectangle<<Production.bondmathpricing>> {
+  BackgroundColor #ffffff
+  FontColor #000000
+  BorderColor #888888
+  shadowing false
+}
+skinparam rectangle<<Production.bondmathui>> {
   BackgroundColor #ffffff
   FontColor #000000
   BorderColor #888888
@@ -96,8 +108,13 @@ rectangle "bond-math-pricing\n<size:10>[Deployment Node: Cloudflare Workers]</si
   rectangle "==Pricing\n<size:10>[Container: Cloudflare Workers (Python)]</size>\n\nCurve-based cashflow discounting and present value calculations" <<Production.bondmathpricing.Pricing_1>> as Production.bondmathpricing.Pricing_1
 }
 
+rectangle "bond-math-ui\n<size:10>[Deployment Node: Cloudflare Workers]</size>" <<Production.bondmathui>> as Production.bondmathui {
+  rectangle "==Ui\n<size:10>[Container: Cloudflare Pages]</size>\n\nUser interface for bond math calculations - Astro static site with React islands" <<Production.bondmathui.Ui_1>> as Production.bondmathui.Ui_1
+}
+
 Production.bondmathgateway.Gateway_1 .[#707070,thickness=2].> Production.bondmathdaycount.Daycount_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
 Production.bondmathgateway.Gateway_1 .[#707070,thickness=2].> Production.bondmathvaluation.BondValuation_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
 Production.bondmathgateway.Gateway_1 .[#707070,thickness=2].> Production.bondmathmetrics.Metrics_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
 Production.bondmathgateway.Gateway_1 .[#707070,thickness=2].> Production.bondmathpricing.Pricing_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
+Production.bondmathui.Ui_1 .[#707070,thickness=2].> Production.bondmathgateway.Gateway_1 : "<color:#707070>Uses\n<color:#707070><size:8>[https (auth0-jwt)]</size>"
 @enduml

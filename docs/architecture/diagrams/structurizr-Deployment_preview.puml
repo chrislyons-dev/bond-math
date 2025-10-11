@@ -45,6 +45,12 @@ skinparam rectangle<<Preview.bondmathpricingpreview.Pricing_1>> {
   BorderColor #265277
   shadowing false
 }
+skinparam rectangle<<Preview.bondmathui.Ui_1>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
 skinparam rectangle<<Preview.bondmathdaycountpreview>> {
   BackgroundColor #ffffff
   FontColor #000000
@@ -69,11 +75,21 @@ skinparam rectangle<<Preview.bondmathpricingpreview>> {
   BorderColor #888888
   shadowing false
 }
+skinparam rectangle<<Preview.bondmathui>> {
+  BackgroundColor #ffffff
+  FontColor #000000
+  BorderColor #888888
+  shadowing false
+}
 skinparam rectangle<<Preview.bondmathvaluationpreview>> {
   BackgroundColor #ffffff
   FontColor #000000
   BorderColor #888888
   shadowing false
+}
+
+rectangle "bond-math-ui\n<size:10>[Deployment Node: Cloudflare Workers]</size>" <<Preview.bondmathui>> as Preview.bondmathui {
+  rectangle "==Ui\n<size:10>[Container: Cloudflare Pages]</size>\n\nUser interface for bond math calculations - Astro static site with React islands" <<Preview.bondmathui.Ui_1>> as Preview.bondmathui.Ui_1
 }
 
 rectangle "bond-math-gateway-preview\n<size:10>[Deployment Node: Cloudflare Workers]</size>" <<Preview.bondmathgatewaypreview>> as Preview.bondmathgatewaypreview {
@@ -96,8 +112,9 @@ rectangle "bond-math-pricing-preview\n<size:10>[Deployment Node: Cloudflare Work
   rectangle "==Pricing\n<size:10>[Container: Cloudflare Workers (Python)]</size>\n\nCurve-based cashflow discounting and present value calculations" <<Preview.bondmathpricingpreview.Pricing_1>> as Preview.bondmathpricingpreview.Pricing_1
 }
 
+Preview.bondmathgatewaypreview.Gateway_1 .[#707070,thickness=2].> Preview.bondmathpricingpreview.Pricing_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
+Preview.bondmathui.Ui_1 .[#707070,thickness=2].> Preview.bondmathgatewaypreview.Gateway_1 : "<color:#707070>Uses\n<color:#707070><size:8>[https (auth0-jwt)]</size>"
 Preview.bondmathgatewaypreview.Gateway_1 .[#707070,thickness=2].> Preview.bondmathdaycountpreview.Daycount_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
 Preview.bondmathgatewaypreview.Gateway_1 .[#707070,thickness=2].> Preview.bondmathvaluationpreview.BondValuation_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
 Preview.bondmathgatewaypreview.Gateway_1 .[#707070,thickness=2].> Preview.bondmathmetricspreview.Metrics_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
-Preview.bondmathgatewaypreview.Gateway_1 .[#707070,thickness=2].> Preview.bondmathpricingpreview.Pricing_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
 @enduml

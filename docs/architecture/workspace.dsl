@@ -184,16 +184,107 @@ workspace "bond-math" "Architecture as Code generated workspace" {
                     technology "Python Module"
                 }
             }
+            ui = container "Ui" {
+                description "User interface for bond math calculations - Astro static site with React islands"
+                technology "Cloudflare Pages"
+                tags "User Interface,SLA:high"
+
+                # Components
+                ui_ApiError = component "ApiError" {
+                    description "Custom error class for API errors with field-level validation details. Extends Error with HTTP status code and optional field-level errors from RFC 7807 Problem Details responses."
+                    technology "class"
+                }
+                ui_Auth0ProviderWithNavigateProps = component "Auth0ProviderWithNavigateProps" {
+                    technology "interface"
+                }
+                ui_Auth0ProviderWithNavigatex = component "Auth0ProviderWithNavigatex" {
+                    description "Module: Auth0ProviderWithNavigatex"
+                    technology "module"
+                }
+                ui_AuthButtonx = component "AuthButtonx" {
+                    description "Module: AuthButtonx"
+                    technology "module"
+                }
+                ui_CallbackHandlerx = component "CallbackHandlerx" {
+                    description "Module: CallbackHandlerx"
+                    technology "module"
+                }
+                ui_client = component "client" {
+                    description "Module: client"
+                    technology "module"
+                }
+                ui_DatePair = component "DatePair" {
+                    description "API Client for Bond Math services"
+                    technology "interface"
+                }
+                ui_DayCountCalculatorx = component "DayCountCalculatorx" {
+                    description "Module: DayCountCalculatorx"
+                    technology "module"
+                }
+                ui_DayCountOptions = component "DayCountOptions" {
+                    description "Optional parameters for day count calculations."
+                    technology "interface"
+                }
+                ui_DayCountRequest = component "DayCountRequest" {
+                    description "Request payload for day count calculations."
+                    technology "interface"
+                }
+                ui_DayCountResponse = component "DayCountResponse" {
+                    description "Response from day count calculation endpoint."
+                    technology "interface"
+                }
+                ui_DayCountResult = component "DayCountResult" {
+                    description "Result of a single day count calculation."
+                    technology "interface"
+                }
+                ui_ErrorResponse = component "ErrorResponse" {
+                    description "RFC 7807 Problem Details error response."
+                    technology "interface"
+                }
+                ui_LoginButtonx = component "LoginButtonx" {
+                    description "Module: LoginButtonx"
+                    technology "module"
+                }
+                ui_LogoutButtonx = component "LogoutButtonx" {
+                    description "Module: LogoutButtonx"
+                    technology "module"
+                }
+                ui_ProfileContentx = component "ProfileContentx" {
+                    description "Module: ProfileContentx"
+                    technology "module"
+                }
+                ui_TechVersions = component "TechVersions" {
+                    technology "interface"
+                }
+                ui_ThemeTogglex = component "ThemeTogglex" {
+                    description "Module: ThemeTogglex"
+                    technology "module"
+                }
+                ui_validation = component "validation" {
+                    description "Module: validation"
+                    technology "module"
+                }
+                ui_versions = component "versions" {
+                    description "Module: versions"
+                    technology "module"
+                }
+
+                # Component relationships
+                ui_DayCountRequest -> ui_DatePair "Uses"
+                ui_DayCountRequest -> ui_DayCountOptions "Uses"
+                ui_DayCountResponse -> ui_DayCountResult "Uses"
+            }
 
             # Service-to-service relationships
             gateway -> bond_valuation "Uses" "Service Binding (internal-jwt)"
             gateway -> daycount "Uses" "Service Binding (internal-jwt)"
             gateway -> metrics "Uses" "Service Binding (internal-jwt)"
             gateway -> pricing "Uses" "Service Binding (internal-jwt)"
+            ui -> gateway "Uses" "https (auth0-jwt)"
         }
 
         # User interactions
-        user -> bondMath "Uses" "HTTPS"
+        user -> ui "Uses" "HTTPS"
         user -> auth0 "Authenticates with" "OAuth2/OIDC"
 
         # System integrations
@@ -206,12 +297,12 @@ workspace "bond-math" "Architecture as Code generated workspace" {
                 technology "Cloudflare Workers"
                 containerInstance gateway
             }
-        }
-        deploymentEnvironment "Preview" {
             deploymentNode "bond-math-ui" {
                 technology "Cloudflare Workers"
                 containerInstance ui
             }
+        }
+        deploymentEnvironment "Preview" {
             deploymentNode "bond-math-gateway-preview" {
                 technology "Cloudflare Workers"
                 containerInstance gateway
@@ -232,12 +323,12 @@ workspace "bond-math" "Architecture as Code generated workspace" {
                 technology "Cloudflare Workers"
                 containerInstance pricing
             }
-        }
-        deploymentEnvironment "Production" {
             deploymentNode "bond-math-ui" {
                 technology "Cloudflare Workers"
                 containerInstance ui
             }
+        }
+        deploymentEnvironment "Production" {
             deploymentNode "bond-math-gateway" {
                 technology "Cloudflare Workers"
                 containerInstance gateway
@@ -257,6 +348,10 @@ workspace "bond-math" "Architecture as Code generated workspace" {
             deploymentNode "bond-math-pricing" {
                 technology "Cloudflare Workers"
                 containerInstance pricing
+            }
+            deploymentNode "bond-math-ui" {
+                technology "Cloudflare Workers"
+                containerInstance ui
             }
         }
     }
@@ -305,6 +400,12 @@ workspace "bond-math" "Architecture as Code generated workspace" {
             autoLayout
             description "Component diagram for Pricing"
             title "Pricing - Components"
+        }
+        component ui "Components_ui" {
+            include *
+            autoLayout
+            description "Component diagram for Ui"
+            title "Ui - Components"
         }
 
         deployment * "Development" "Deployment_development" {

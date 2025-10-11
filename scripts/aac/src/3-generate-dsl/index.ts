@@ -80,7 +80,7 @@ function generateModel(dsl: DSLBuilder, ir: AACIR): void {
 
     // User relationships
     dsl.comment('User interactions');
-    dsl.add('user -> bondMath "Uses" "HTTPS"');
+    dsl.add('user -> ui "Uses" "HTTPS"');
     dsl.add('user -> auth0 "Authenticates with" "OAuth2/OIDC"');
     dsl.blank();
 
