@@ -9,7 +9,12 @@ function CallbackHandlerInner() {
   const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    console.log('Callback state:', { isLoading, isAuthenticated, hasError: !!error, hasUser: !!user });
+    console.log('Callback state:', {
+      isLoading,
+      isAuthenticated,
+      hasError: !!error,
+      hasUser: !!user,
+    });
 
     // Redirect to home after successful authentication
     if (!isLoading && isAuthenticated && user && !error && !redirecting) {
@@ -90,7 +95,10 @@ function CallbackHandlerInner() {
         </p>
         {!isLoading && !isAuthenticated && !error && (
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-4">
-            Authentication did not complete. <a href="/" className="text-primary-600 dark:text-primary-400 hover:underline">Return home</a>
+            Authentication did not complete.{' '}
+            <a href="/" className="text-primary-600 dark:text-primary-400 hover:underline">
+              Return home
+            </a>
           </p>
         )}
       </div>
@@ -106,7 +114,8 @@ export function CallbackHandler() {
   const domain = import.meta.env.PUBLIC_AUTH0_DOMAIN;
   const clientId = import.meta.env.PUBLIC_AUTH0_CLIENT_ID;
   const audience = import.meta.env.PUBLIC_AUTH0_AUDIENCE;
-  const redirectUri = import.meta.env.PUBLIC_AUTH0_REDIRECT_URI || `${window.location.origin}/callback`;
+  const redirectUri =
+    import.meta.env.PUBLIC_AUTH0_REDIRECT_URI || `${window.location.origin}/callback`;
 
   if (!domain || !clientId || !audience) {
     return (

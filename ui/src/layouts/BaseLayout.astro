@@ -35,15 +35,49 @@ const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
     <link rel="icon" href="/bm_light_favicon.ico" />
 
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/bm_light_180.png" media="(prefers-color-scheme: light)" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/bm_dark_180.png" media="(prefers-color-scheme: dark)" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/bm_light_180.png"
+      media="(prefers-color-scheme: light)"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/bm_dark_180.png"
+      media="(prefers-color-scheme: dark)"
+    />
     <link rel="apple-touch-icon" sizes="180x180" href="/bm_light_180.png" />
 
     <!-- Various icon sizes -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/bm_light_32.png" media="(prefers-color-scheme: light)" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/bm_dark_32.png" media="(prefers-color-scheme: dark)" />
-    <link rel="icon" type="image/png" sizes="64x64" href="/bm_light_64.png" media="(prefers-color-scheme: light)" />
-    <link rel="icon" type="image/png" sizes="64x64" href="/bm_dark_64.png" media="(prefers-color-scheme: dark)" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/bm_light_32.png"
+      media="(prefers-color-scheme: light)"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/bm_dark_32.png"
+      media="(prefers-color-scheme: dark)"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="64x64"
+      href="/bm_light_64.png"
+      media="(prefers-color-scheme: light)"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="64x64"
+      href="/bm_dark_64.png"
+      media="(prefers-color-scheme: dark)"
+    />
 
     <!-- SEO -->
     <title>{title}</title>
@@ -94,7 +128,9 @@ const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
       }
     </script>
   </head>
-  <body class="flex flex-col min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors">
+  <body
+    class="flex flex-col min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors"
+  >
     <Header currentPath={currentPath} />
     <main class="flex-1 container mx-auto px-4 py-8">
       <slot />

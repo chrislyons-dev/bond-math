@@ -40,7 +40,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install black ruff mypy pytest pytest-asyncio pytest-cov
+          pip install black ruff mypy pytest pytest-asyncio pytest-cov types-python-dateutil
           # Install microapi so services can import it
           pip install -e libs/microapi
 
@@ -54,6 +54,7 @@ jobs:
         run: |
           cd services/gateway && npm run typecheck
           cd ../daycount && npm run typecheck
+          cd ../../ui && npm run typecheck
 
       - name: Format check (Python)
         run: |
@@ -264,6 +265,13 @@ jobs:
 
           cd ../daycount
           npx wrangler deploy --config ../../iac/workers/daycount.toml --dry-run --outdir dist
+
+      - name: Build and validate UI
+        run: |
+          cd ui
+          npm run build
+          # Validate that the build output exists
+          test -d dist || (echo "UI build failed - dist directory not found" && exit 1)
 
       - name: Validate Wrangler configs (Python)
         run: |

@@ -13,15 +13,6 @@ function getMajorVersion(versionStr: string): string {
   return match ? match[1] : versionStr;
 }
 
-/**
- * Extracts major.minor version from a semver string
- * Examples: "^5.0.5" -> "5.0", "~3.4.17" -> "3.4", "18.3.1" -> "18.3"
- */
-function _getMajorMinorVersion(versionStr: string): string {
-  const match = versionStr.match(/(\d+\.\d+)/);
-  return match ? match[1] : versionStr;
-}
-
 export interface TechVersions {
   astro: string;
   react: string;

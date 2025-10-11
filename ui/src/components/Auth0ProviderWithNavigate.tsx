@@ -43,13 +43,12 @@ interface Auth0ProviderWithNavigateProps {
  * </Auth0ProviderWithNavigate>
  * ```
  */
-export function Auth0ProviderWithNavigate({
-  children,
-}: Auth0ProviderWithNavigateProps) {
+export function Auth0ProviderWithNavigate({ children }: Auth0ProviderWithNavigateProps) {
   const domain = import.meta.env.PUBLIC_AUTH0_DOMAIN;
   const clientId = import.meta.env.PUBLIC_AUTH0_CLIENT_ID;
   const audience = import.meta.env.PUBLIC_AUTH0_AUDIENCE;
-  const redirectUri = import.meta.env.PUBLIC_AUTH0_REDIRECT_URI || `${window.location.origin}/callback`;
+  const redirectUri =
+    import.meta.env.PUBLIC_AUTH0_REDIRECT_URI || `${window.location.origin}/callback`;
 
   if (!domain || !clientId || !audience) {
     console.error('Auth0 configuration missing:', { domain, clientId, audience });

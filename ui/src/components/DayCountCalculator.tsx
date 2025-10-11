@@ -203,9 +203,7 @@ function DayCountCalculatorInner() {
           {/* Date Pairs */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Date Pairs
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Date Pairs</h3>
               <button
                 type="button"
                 onClick={handleAddPair}
@@ -223,9 +221,7 @@ function DayCountCalculatorInner() {
                   className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg space-y-4"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium text-gray-900 dark:text-white">
-                      Pair {index + 1}
-                    </h3>
+                    <h3 className="font-medium text-gray-900 dark:text-white">Pair {index + 1}</h3>
                     {pairs.length > 1 && (
                       <button
                         type="button"
@@ -252,9 +248,7 @@ function DayCountCalculatorInner() {
                         required
                         aria-invalid={!!fieldErrors[`pairs[${index}].start`]}
                         aria-describedby={
-                          fieldErrors[`pairs[${index}].start`]
-                            ? `start-${index}-error`
-                            : undefined
+                          fieldErrors[`pairs[${index}].start`] ? `start-${index}-error` : undefined
                         }
                       />
                       {fieldErrors[`pairs[${index}].start`] && (
@@ -378,7 +372,8 @@ export default function DayCountCalculator() {
   const domain = import.meta.env.PUBLIC_AUTH0_DOMAIN;
   const clientId = import.meta.env.PUBLIC_AUTH0_CLIENT_ID;
   const audience = import.meta.env.PUBLIC_AUTH0_AUDIENCE;
-  const redirectUri = import.meta.env.PUBLIC_AUTH0_REDIRECT_URI || `${window.location.origin}/callback`;
+  const redirectUri =
+    import.meta.env.PUBLIC_AUTH0_REDIRECT_URI || `${window.location.origin}/callback`;
 
   if (!domain || !clientId || !audience) {
     console.error('Auth0 configuration missing:', { domain, clientId, audience });

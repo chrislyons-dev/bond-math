@@ -63,6 +63,10 @@
   "license": "MIT",
   "author": "Chris Lyons",
   "lint-staged": {
+    "ui/**/*.{ts,js}": [
+      "bash -c 'cd ui && npm run typecheck'",
+      "prettier --write"
+    ],
     "services/gateway/**/*.{ts,js}": [
       "bash -c 'cd services/gateway && eslint --fix'",
       "bash -c 'cd services/gateway && npm run typecheck'",

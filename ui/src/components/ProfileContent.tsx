@@ -28,9 +28,7 @@ function ProfileContentInner() {
         setRole(payload[`${namespace}/role`] || 'Unknown');
       } catch (error) {
         console.error('Error getting token claims:', error);
-        setTokenError(
-          error instanceof Error ? error.message : 'Failed to get permissions'
-        );
+        setTokenError(error instanceof Error ? error.message : 'Failed to get permissions');
       }
     };
 
@@ -42,9 +40,7 @@ function ProfileContentInner() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-lg text-gray-600 dark:text-gray-400">
-          Loading profile...
-        </div>
+        <div className="text-lg text-gray-600 dark:text-gray-400">Loading profile...</div>
       </div>
     );
   }
@@ -55,9 +51,7 @@ function ProfileContentInner() {
         <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
           Authentication Required
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Please log in to view your profile.
-        </p>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">Please log in to view your profile.</p>
         <a href="/" className="btn-primary inline-block">
           Go Home
         </a>
@@ -82,20 +76,12 @@ function ProfileContentInner() {
           )}
           <div className="flex-1 space-y-4">
             <div>
-              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Name
-              </div>
-              <p className="text-lg text-gray-900 dark:text-white">
-                {user.name || 'N/A'}
-              </p>
+              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Name</div>
+              <p className="text-lg text-gray-900 dark:text-white">{user.name || 'N/A'}</p>
             </div>
             <div>
-              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                Email
-              </div>
-              <p className="text-lg text-gray-900 dark:text-white">
-                {user.email || 'N/A'}
-              </p>
+              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</div>
+              <p className="text-lg text-gray-900 dark:text-white">{user.email || 'N/A'}</p>
               {user.email_verified !== undefined && (
                 <span
                   className={`text-xs px-2 py-1 rounded ${
@@ -109,9 +95,7 @@ function ProfileContentInner() {
               )}
             </div>
             <div>
-              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                User ID
-              </div>
+              <div className="text-sm font-medium text-gray-500 dark:text-gray-400">User ID</div>
               <p className="text-sm font-mono text-gray-700 dark:text-gray-300 break-all">
                 {user.sub}
               </p>
@@ -122,9 +106,7 @@ function ProfileContentInner() {
 
       {/* Permissions Card */}
       <div className="card p-6">
-        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
-          Permissions
-        </h3>
+        <h3 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">Permissions</h3>
         {tokenError ? (
           <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
             <p className="text-red-700 dark:text-red-400 text-sm">{tokenError}</p>
@@ -139,13 +121,22 @@ function ProfileContentInner() {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
                         Permission
                       </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
                         Service
                       </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                      >
                         Access Level
                       </th>
                     </tr>
@@ -162,13 +153,15 @@ function ProfileContentInner() {
                             {service}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              access === 'read'
-                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
-                                : access === 'write'
-                                ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                                : 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
-                            }`}>
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                access === 'read'
+                                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                                  : access === 'write'
+                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                                    : 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
+                              }`}
+                            >
                               {access}
                             </span>
                           </td>
@@ -181,9 +174,7 @@ function ProfileContentInner() {
             </div>
           </div>
         ) : (
-          <div className="text-gray-600 dark:text-gray-400">
-            Loading permissions...
-          </div>
+          <div className="text-gray-600 dark:text-gray-400">Loading permissions...</div>
         )}
       </div>
 
@@ -193,9 +184,7 @@ function ProfileContentInner() {
           Raw User Object (Debug)
         </summary>
         <pre className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg overflow-auto text-xs">
-          <code className="text-gray-700 dark:text-gray-300">
-            {JSON.stringify(user, null, 2)}
-          </code>
+          <code className="text-gray-700 dark:text-gray-300">{JSON.stringify(user, null, 2)}</code>
         </pre>
       </details>
     </div>
@@ -206,7 +195,8 @@ export function ProfileContent() {
   const domain = import.meta.env.PUBLIC_AUTH0_DOMAIN;
   const clientId = import.meta.env.PUBLIC_AUTH0_CLIENT_ID;
   const audience = import.meta.env.PUBLIC_AUTH0_AUDIENCE;
-  const redirectUri = import.meta.env.PUBLIC_AUTH0_REDIRECT_URI || `${window.location.origin}/callback`;
+  const redirectUri =
+    import.meta.env.PUBLIC_AUTH0_REDIRECT_URI || `${window.location.origin}/callback`;
 
   if (!domain || !clientId || !audience) {
     console.error('Auth0 configuration missing:', { domain, clientId, audience });

@@ -61,9 +61,7 @@ function AuthButtonInner() {
   };
 
   if (isLoading) {
-    return (
-      <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 animate-pulse" />
-    );
+    return <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 animate-pulse" />;
   }
 
   return (
@@ -82,11 +80,13 @@ function AuthButtonInner() {
             className="w-10 h-10 rounded-full border-2 border-gray-300 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-400 transition-colors"
           />
         ) : (
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-            isAuthenticated
-              ? 'bg-primary-100 dark:bg-primary-900 border-2 border-primary-300 dark:border-primary-700'
-              : 'bg-gray-200 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500'
-          }`}>
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+              isAuthenticated
+                ? 'bg-primary-100 dark:bg-primary-900 border-2 border-primary-300 dark:border-primary-700'
+                : 'bg-gray-200 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500'
+            }`}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -224,7 +224,8 @@ export function AuthButton() {
   const domain = import.meta.env.PUBLIC_AUTH0_DOMAIN;
   const clientId = import.meta.env.PUBLIC_AUTH0_CLIENT_ID;
   const audience = import.meta.env.PUBLIC_AUTH0_AUDIENCE;
-  const redirectUri = import.meta.env.PUBLIC_AUTH0_REDIRECT_URI || `${window.location.origin}/callback`;
+  const redirectUri =
+    import.meta.env.PUBLIC_AUTH0_REDIRECT_URI || `${window.location.origin}/callback`;
 
   if (!domain || !clientId || !audience) {
     console.error('Auth0 configuration missing:', { domain, clientId, audience });
