@@ -30,11 +30,11 @@ export interface DatePair {
  * @see https://en.wikipedia.org/wiki/Day_count_convention
  */
 export type DayCountConvention =
-  | '30_360'        // U.S. 30/360 Bond Basis
-  | '30E_360'       // European 30E/360
-  | 'ACT_360'       // Actual/360 (Money Market)
-  | 'ACT_365F'      // Actual/365 Fixed
-  | 'ACT_ACT_ISDA'  // Actual/Actual ISDA
+  | '30_360' // U.S. 30/360 Bond Basis
+  | '30E_360' // European 30E/360
+  | 'ACT_360' // Actual/360 (Money Market)
+  | 'ACT_365F' // Actual/365 Fixed
+  | 'ACT_ACT_ISDA' // Actual/Actual ISDA
   | 'ACT_ACT_ICMA'; // Actual/Actual ICMA
 
 /**
