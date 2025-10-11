@@ -1,0 +1,15 @@
+# Cloudflare Pages Configuration
+# This file is used for local development with wrangler pages dev
+# Production deployment is handled via GitHub Actions with automatic Pages deployment
+
+name = "bond-math-ui"
+compatibility_date = "2025-10-10"
+
+[env.development]
+vars = { PUBLIC_API_BASE_URL = "http://localhost:8787" }
+
+[env.preview]
+vars = { PUBLIC_API_BASE_URL = "https://api-preview.bondmath.chrislyons.dev" }
+
+[env.production]
+vars = { PUBLIC_API_BASE_URL = "https://bondmath.chrislyons.dev" }

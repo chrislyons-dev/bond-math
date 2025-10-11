@@ -1,0 +1,284 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optimize font loading */
+@supports (font-variation-settings: normal) {
+  :root {
+    font-optical-sizing: auto;
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: light dark;
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+      Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+      monospace;
+  }
+
+  html {
+    font-family: var(--font-sans);
+  }
+
+  code {
+    font-family: var(--font-mono);
+  }
+
+  /* View transition animations */
+  @supports (view-transition-name: none) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.3s;
+    }
+  }
+
+  /* Form elements */
+  input,
+  select,
+  textarea {
+    @apply bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700;
+    @apply text-gray-900 dark:text-gray-100;
+    @apply focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  button:focus-visible,
+  a:focus-visible {
+    @apply outline-2 outline-offset-2 outline-blue-500;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  @supports (view-transition-name: none) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation: none;
+    }
+  }
+}
+
+@layer components {
+  /* Navigation link styling - optimize for performance */
+  .nav-link {
+    @apply py-2 px-1 min-h-[44px] flex items-center;
+    transition: color 0.2s ease;
+    position: relative;
+  }
+
+  .nav-link:hover {
+    @apply text-blue-600 dark:text-blue-400;
+  }
+
+  .nav-link-active {
+    @apply text-blue-600 dark:text-blue-400 font-medium;
+  }
+
+  /* Button styles - use transform for hardware acceleration */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium;
+    @apply min-h-[44px] min-w-[44px];
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply px-8 py-4 bg-blue-600 text-white rounded-lg font-medium;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    will-change: transform;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    @apply bg-blue-700;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    @apply px-8 py-4 border border-gray-300 dark:border-gray-700 rounded-lg font-medium;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+    will-change: transform;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    @apply border-blue-600 dark:border-blue-400;
+    transform: translateY(-1px);
+  }
+
+  /* Card styles - use transform for composited animations */
+  .card {
+    @apply p-6 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800;
+  }
+
+  .card-hover {
+    @apply p-6 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800;
+    transition: border-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    will-change: transform;
+  }
+
+  .card-hover:hover {
+    @apply border-blue-600 dark:border-blue-400 shadow-lg;
+    transform: translateY(-2px);
+  }
+
+  .card-featured {
+    @apply p-6 rounded-lg border-2;
+    @apply bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30;
+    @apply border-blue-200 dark:border-blue-800;
+  }
+
+  /* Badge/Tag styles */
+  .badge {
+    @apply px-3 py-1 text-sm rounded-full;
+  }
+
+  .badge-primary {
+    @apply px-3 py-1 text-sm rounded-full bg-blue-600 text-white;
+  }
+
+  .badge-secondary {
+    @apply px-3 py-1 text-sm rounded-full bg-gray-200 dark:bg-gray-800;
+  }
+
+  /* Icon container */
+  .icon-box {
+    @apply w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg;
+    @apply flex items-center justify-center flex-shrink-0;
+  }
+
+  .icon-box svg {
+    @apply w-6 h-6 text-blue-600 dark:text-blue-400;
+  }
+
+  /* Info box / CTA box */
+  .info-box {
+    @apply p-8 bg-gray-50 dark:bg-gray-900 rounded-lg;
+    @apply border border-gray-200 dark:border-gray-800;
+  }
+
+  .info-box-featured {
+    @apply p-8 rounded-lg border;
+    @apply bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30;
+    @apply border-blue-200 dark:border-blue-800;
+  }
+
+  /* Form controls */
+  .input {
+    @apply w-full px-4 py-2 rounded-lg;
+    @apply bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700;
+    @apply text-gray-900 dark:text-gray-100;
+    @apply focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+    @apply transition-colors;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1;
+  }
+
+  .error-text {
+    @apply text-sm text-red-600 dark:text-red-400 mt-1;
+  }
+
+  /* Section containers */
+  .section-container {
+    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20;
+  }
+
+  .section-container-narrow {
+    @apply max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20;
+  }
+
+  /* Common text styles */
+  .text-muted {
+    @apply text-gray-600 dark:text-gray-400;
+  }
+
+  .text-body {
+    @apply text-gray-700 dark:text-gray-300;
+  }
+
+  .text-heading {
+    @apply text-gray-900 dark:text-gray-100;
+  }
+
+  /* Headings */
+  .page-title {
+    @apply text-4xl sm:text-5xl font-bold mb-8;
+  }
+
+  .section-title {
+    @apply text-3xl sm:text-4xl font-bold text-center mb-12;
+  }
+
+  .subsection-title {
+    @apply text-2xl font-bold mb-4;
+  }
+
+  .feature-title {
+    @apply text-lg font-semibold mb-2;
+  }
+
+  /* Prose styling for content */
+  .prose h2 {
+    @apply text-xl font-bold mt-6 mb-3;
+  }
+
+  .prose h3 {
+    @apply text-lg font-semibold mt-4 mb-2;
+  }
+
+  .prose p {
+    @apply my-3;
+  }
+
+  .prose ul {
+    @apply list-disc pl-5 my-3;
+  }
+
+  .prose ol {
+    @apply list-decimal pl-5 my-3;
+  }
+
+  .prose li {
+    @apply my-1;
+  }
+
+  .prose code {
+    @apply bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm;
+  }
+
+  .prose pre {
+    @apply bg-gray-900 dark:bg-gray-950 p-4 rounded-lg overflow-x-auto my-4;
+  }
+
+  .prose pre code {
+    @apply bg-transparent p-0 text-gray-100;
+  }
+
+  .prose a {
+    @apply text-blue-600 dark:text-blue-400 hover:underline;
+  }
+
+  .prose strong {
+    @apply font-semibold;
+  }
+
+  .prose em {
+    @apply italic;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
