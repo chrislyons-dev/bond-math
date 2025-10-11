@@ -60,16 +60,23 @@ export class ApiError extends Error {
   }
 }
 
-const API_BASE_URL =
-  import.meta.env.PUBLIC_API_BASE_URL || 'https://bondmath.chrislyons.dev';
+/**
+ * Get API base URL - uses same origin in browser, falls back to env var or production URL
+ */
+function getApiBaseUrl(): string {
+  // In browser, use same origin for API calls
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  // During SSR/build, use env var or production URL
+  return import.meta.env.PUBLIC_API_BASE_URL || 'https://bondmath.chrislyons.dev';
+}
 
 /**
  * Calculate day count year fractions
  */
-export async function calculateDayCount(
-  request: DayCountRequest
-): Promise<DayCountResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/daycount/v1/count`, {
+export async function calculateDayCount(request: DayCountRequest): Promise<DayCountResponse> {
+  const response = await fetch(`${getApiBaseUrl()}/api/daycount/v1/count`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

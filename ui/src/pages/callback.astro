@@ -1,0 +1,12 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import { CallbackHandler } from '@components/CallbackHandler';
+---
+
+<BaseLayout
+  title="Completing Login - Bond Math"
+  description="Processing authentication"
+  currentPath="/callback"
+>
+  <CallbackHandler client:only="react" />
+</BaseLayout>

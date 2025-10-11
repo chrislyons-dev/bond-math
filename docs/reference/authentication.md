@@ -71,28 +71,81 @@ wrangler secret put AUTH0_AUDIENCE --config gateway.toml
 
 ## Auth0 Configuration
 
+### Auth0 Client Configurations
+
+| Variable                 | Value                                                        | Description                       |
+| ------------------------ | ------------------------------------------------------------ | --------------------------------- |
+| `AUTH0_ISSUER`           | `https://auth.bondmath.chrislyons.dev/`                      | The tenant’s OIDC issuer URL      |
+| `AUTH0_AUDIENCE`         | `https://bond-math.api`                                      | Your API identifier               |
+| `AUTH0_JWKS_URL`         | `https://auth.bondmath.chrislyons.dev/.well-known/jwks.json` | JWKS key set for verifying tokens |
+| `PUBLIC_AUTH0_DOMAIN`    | `auth.bondmath.chrislyons.dev`                               | For your SPA                      |
+| `PUBLIC_AUTH0_CLIENT_ID` | `CmvF4tGV7zqTfEk6MRAXXGkQBNPDO9Bu`                           | Auth0 client ID for login         |
+
 ### Create API
 
 1. **Auth0 Dashboard** → APIs → Create API
 2. **Identifier:** `https://api.bondmath.chrislyons.dev`
 3. **Signing Algorithm:** RS256
 
-### Define Scopes
+### Define Permissions
 
-```
-daycount:read
-daycount:write
-valuation:read
-valuation:write
-metrics:read
-metrics:write
-pricing:read
-pricing:write
-batch:execute
-admin:users:read
-admin:users:write
-admin:metrics:read
-admin:system:write
+**Auth0 Dashboard → APIs → Your API → Permissions**
+
+Add the following scopes:
+
+| Scope             | Description                                                     | Use Case                               |
+| ----------------- | --------------------------------------------------------------- | -------------------------------------- |
+| `daycount:read`   | View day count calculations (year fractions, accrual days)      | Public API access, read-only users     |
+| `daycount:write`  | Create new day count calculations                               | Professional tier batch processing     |
+| `valuation:read`  | View bond valuation results (price, yield, duration, convexity) | Market data consumers, analytics users |
+| `valuation:write` | Submit bond valuation requests                                  | Professional pricing tools             |
+| `metrics:read`    | Access user-specific API usage and performance metrics          | Personal dashboards, usage monitoring  |
+| `metrics:write`   | Submit custom metrics and telemetry data                        | Application instrumentation            |
+| `pricing:read`    | Read market pricing data and curves                             | Market surveillance, research tools    |
+| `pricing:write`   | Submit pricing requests and curve builds                        | Trading systems, pricing engines       |
+
+Potential future scopes:
+
+| Scope                | Description                                                      | Use Case                                 |
+| -------------------- | ---------------------------------------------------------------- | ---------------------------------------- |
+| `batch:execute`      | Run large-scale batch operations (multiple calculations at once) | High-volume professional workflows       |
+| `admin:users:read`   | View user accounts, roles, and permissions                       | Admin dashboards, user management UIs    |
+| `admin:users:write`  | Modify user roles, quotas, and access levels                     | User provisioning, tier upgrades         |
+| `admin:metrics:read` | Access system-wide metrics and analytics across all users        | System monitoring, capacity planning     |
+| `admin:system:write` | Modify system configuration, feature flags, and global settings  | Infrastructure management, ops workflows |
+
+**Role-to-Scope Mappings:**
+
+| Role         | Scopes                                                                                  |
+| ------------ | --------------------------------------------------------------------------------------- |
+| Free         | `daycount:read`, `valuation:read`, `metrics:read`, `pricing:read`                       |
+| Professional | All Free scopes + `daycount:write`, `valuation:write`, `metrics:write`, `pricing:write` |
+
+### Example JWT Content
+
+```json
+{
+  "iss": "https://auth.bondmath.chrislyons.dev/",
+  "sub": "auth0|me",
+  "aud": [
+    "https://bond-math.api",
+    "https://dev-z3hqqgufr7d32m25.us.auth0.com/userinfo"
+  ],
+  "iat": 9999999999,
+  "exp": 9999999999,
+  "scope": "openid",
+  "azp": "a-value",
+  "permissions": [
+    "daycount:read",
+    "daycount:write",
+    "metrics:read",
+    "metrics:write",
+    "pricing:read",
+    "pricing:write",
+    "valuation:read",
+    "valuation:write"
+  ]
+}
 ```
 
 ### Create Auth0 Action (Post-Login)
@@ -116,9 +169,7 @@ exports.onExecutePostLogin = async (event, api) => {
         'metrics:write',
         'pricing:read',
         'pricing:write',
-        'batch:execute',
       ],
-      admin: ['*all professional scopes*', 'admin:*'],
     }[role] || [];
 
   api.accessToken.setCustomClaim(`${namespace}/role`, role);

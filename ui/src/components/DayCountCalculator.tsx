@@ -159,9 +159,9 @@ export default function DayCountCalculator() {
           {/* Date Pairs */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <label className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Date Pairs
-              </label>
+              </h3>
               <button
                 type="button"
                 onClick={handleAddPair}

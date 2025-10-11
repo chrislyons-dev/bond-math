@@ -1,0 +1,9 @@
+---
+import { Auth0ProviderWithNavigate } from './Auth0ProviderWithNavigate';
+---
+
+<div id="auth0-root">
+  <Auth0ProviderWithNavigate client:only="react">
+    <slot />
+  </Auth0ProviderWithNavigate>
+</div>

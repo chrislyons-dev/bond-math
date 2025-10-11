@@ -1,5 +1,6 @@
 ---
 import ThemeToggle from './ThemeToggle';
+import { AuthButton } from './AuthButton';
 
 interface Props {
   currentPath?: string;
@@ -58,8 +59,9 @@ const navItems = [
             </a>
           ))
         }
-        <div class="ml-4">
+        <div class="ml-4 flex items-center gap-4">
           <ThemeToggle client:load />
+          <AuthButton client:load />
         </div>
       </div>
 
@@ -110,6 +112,9 @@ const navItems = [
           </a>
         ))
       }
+      <div class="pt-4 border-t border-gray-200 dark:border-gray-800">
+        <AuthButton client:load />
+      </div>
     </div>
   </nav>
 </header>

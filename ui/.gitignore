@@ -26,3 +26,6 @@ pnpm-debug.log*
 
 # Wrangler
 .wrangler/
+
+# SSL certificates (local development)
+certs/
