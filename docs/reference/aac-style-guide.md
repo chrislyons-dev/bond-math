@@ -82,7 +82,7 @@ Price ↔ yield calculations and cashflow schedule generation.
 @sla-tier high
 
 This is a stub implementation that returns hardcoded responses to validate
-the microapi framework integration.
+the flarelette framework integration.
 """
 ```
 

@@ -35,7 +35,7 @@ We will adopt the following HTTP routing frameworks:
 **Alternatives considered:** itty-router (too minimal), Worktop (ecosystem
 concerns), sunder (not CF-optimized), custom router (maintenance burden)
 
-### Python (Cloudflare Workers): **microapi** (custom microframework)
+### Python (Cloudflare Workers): **flarelette** (custom microframework)
 
 **Rationale:**
 
@@ -74,17 +74,17 @@ Despite different frameworks, we enforce consistency through:
 **Positive:**
 
 - Consistency across TypeScript/Python Workers (Hono-like patterns)
-- Developer velocity via battle-tested Hono and custom microapi
+- Developer velocity via battle-tested Hono and custom flarelette
 - Type safety with type hints (Python) and TypeScript
 - Excellent test support and observability built-in
 - Gateway middleware chains enable complex routing
-- microapi optimized for Cloudflare Workers constraints
+- flarelette optimized for Cloudflare Workers constraints
 
 **Negative:**
 
-- microapi requires maintenance (custom framework)
-- Team needs familiarity with both Hono and microapi
-- microapi less feature-rich than FastAPI
+- flarelette requires maintenance (custom framework)
+- Team needs familiarity with both Hono and flarelette
+- flarelette less feature-rich than FastAPI
 - Need to track Hono breaking changes
 
 ---
@@ -101,6 +101,6 @@ Despite different frameworks, we enforce consistency through:
 ## References
 
 - [Hono Documentation](https://hono.dev/)
-- [microapi Library](../../libs/microapi)
+- [flarelette Library](../../libs/flarelette)
 - [Cloudflare Python Workers](https://developers.cloudflare.com/workers/languages/python/)
 - [RFC 7807: Problem Details for HTTP APIs](https://tools.ietf.org/html/rfc7807)

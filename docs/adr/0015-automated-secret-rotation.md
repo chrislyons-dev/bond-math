@@ -74,7 +74,7 @@ deployment**.
 **Verification Logic:**
 
 ```python
-# Python (microapi)
+# Python (flarelette)
 def _verify_token(self, token):
     signature_valid = verify_signature(token, self.secret)
     if not signature_valid and self.previous_secret:

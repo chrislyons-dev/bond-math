@@ -25,13 +25,13 @@ ADR-0010).
 
 ## Decision
 
-Create **microapi**: a decorator-based microframework for Cloudflare Python
+Create **flarelette**: a decorator-based microframework for Cloudflare Python
 Workers.
 
 ### Architecture
 
 ```python
-from microapi import (
+from flarelette import (
     WorkersApp,
     Request,
     JsonResponse,
@@ -71,8 +71,8 @@ async def calculate_price(request: Request) -> JsonResponse:
 ### Library Structure
 
 ```
-libs/microapi/
-├── src/microapi/
+libs/flarelette/
+├── src/flarelette/
 │   ├── __init__.py      # Public exports
 │   ├── app.py           # WorkersApp, routing
 │   ├── request.py       # Request wrapper
@@ -96,8 +96,8 @@ libs/microapi/
 | Quart     | ~350KB | ASGI-based, too heavy                         |
 | Falcon    | ~250KB | WSGI-based                                    |
 
-microapi: **~15KB** pure Python, async-native, zero dependencies beyond stdlib +
-python-json-logger.
+flarelette: **~15KB** pure Python, async-native, zero dependencies beyond
+stdlib + python-json-logger.
 
 ---
 
@@ -149,7 +149,7 @@ Follows same pattern as TypeScript services (ADR-0011, ADR-0012).
 **Positive:**
 
 - Consistent Hono-like API across TypeScript/Python Workers
-- Under 1MB bundle size (microapi + service code)
+- Under 1MB bundle size (flarelette + service code)
 - Pure Python, no C extensions
 - Type hints for IDE support
 - Familiar decorator-based routing
@@ -172,7 +172,7 @@ Follows same pattern as TypeScript services (ADR-0011, ADR-0012).
 
 ---
 
-## Services Using microapi
+## Services Using flarelette
 
 - **bond-valuation** (services/bond-valuation)
 - **metrics** (services/metrics)
@@ -184,7 +184,7 @@ Lambda-based Python services continue using FastAPI per ADR-0010.
 
 ## Related Documentation
 
-- **Framework Code:** [libs/microapi](../../libs/microapi)
+- **Framework Code:** [libs/flarelette](../../libs/flarelette)
 - **Related ADRs:** ADR-0002 (Service Languages), ADR-0003 (Cloudflare Hosting),
   ADR-0010 (HTTP Routing Standards), ADR-0011 (Internal JWT), ADR-0013
   (Structured Logging)

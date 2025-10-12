@@ -30,12 +30,12 @@ Adopt **structured JSON logging** with a unified schema across all services.
 | Service Stack               | Library                                | Rationale                                                 |
 | --------------------------- | -------------------------------------- | --------------------------------------------------------- |
 | **TypeScript / Cloudflare** | `hono-pino` + `pino`                   | Fast, low-overhead JSON logger optimized for Hono/Workers |
-| **Python / Cloudflare**     | `python-json-logger` (microapi)        | Lightweight JSON formatter (~2KB) using stdlib logging    |
+| **Python / Cloudflare**     | `python-json-logger` (flarelette)      | Lightweight JSON formatter (~2KB) using stdlib logging    |
 | **Java**                    | `logback` + `logstash-logback-encoder` | Enterprise-grade, native JSON output, battle-tested       |
 
 **Note:** Python services running on Cloudflare Workers cannot use heavy
 frameworks like FastAPI or `structlog` due to runtime constraints. The
-`microapi` microframework uses Python's stdlib `logging` module with
+`flarelette` microframework uses Python's stdlib `logging` module with
 `python-json-logger` (2KB package) for JSON formatting.
 
 ---
@@ -119,10 +119,10 @@ logger.info({ userId: '123' }, 'User authenticated');
 
 ### Python / Cloudflare Workers
 
-**Library:** `python-json-logger` via `microapi`
+**Library:** `python-json-logger` via `flarelette`
 
 ```python
-from microapi.logging import StructuredLogger
+from flarelette.logging import StructuredLogger
 
 logger = StructuredLogger("daycount")
 logger.info("request_completed", request_id=req_id, duration=125, status=200)
@@ -131,7 +131,7 @@ logger.info("request_completed", request_id=req_id, duration=125, status=200)
 **Installation:**
 
 ```bash
-pip install microapi
+pip install flarelette
 ```
 
 **Configuration:**
@@ -257,7 +257,7 @@ All worth it for production observability and debugging capabilities.
 - [hono-pino Documentation](https://github.com/maou-shonen/hono-pino)
 - [Pino Documentation](https://getpino.io/)
 - [python-json-logger](https://github.com/madzak/python-json-logger)
-- [microapi Framework](../../libs/microapi/README.md)
+- [flarelette Framework](../../libs/flarelette/README.md)
 - [logstash-logback-encoder](https://github.com/logfellow/logstash-logback-encoder)
 - [ADR-0002: Service Languages](./0002-service-languages.md)
 - [Cloudflare Workers Runtime Limits](https://developers.cloudflare.com/workers/platform/limits/)

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datetime import date
 
-from core.bond_types import BondSpec
 from dateutil.relativedelta import relativedelta
+from core.bond_types import BondSpec
 
 
 class ScheduleBuilder:

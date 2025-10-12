@@ -45,7 +45,9 @@ exclude = ["src/six.py"]
 extend-exclude = [
   "src/dateutil/*",
   "src/flarelette/*",
-  "src/pythonjsonlogger/*"
+  "src/pythonjsonlogger/*",
+  "**/dateutil/**",
+  "src/bond_schedule/builder.py"
 ]
 
 [tool.ruff.lint]

@@ -150,7 +150,7 @@ interpolation, discount factor calculation, PV computation, tests
 ## Development
 
 ```bash
-pip install -e ../../libs/microapi[dev]  # Install
+pip install -e ../../libs/flarelette[dev]  # Install
 pytest                                    # Test
 mypy src && ruff check src                # Lint
 wrangler dev --config ../../iac/workers/pricing.toml  # Run local
@@ -158,6 +158,6 @@ wrangler dev --config ../../iac/workers/pricing.toml  # Run local
 
 ## References
 
-- [microapi](../../libs/microapi/README.md)
+- [flarelette](../../libs/flarelette/README.md)
 - [Pricing Reference](../../docs/reference/pricing.md)
 - [ADR-0013: Logging](../../docs/adr/0013-structured-logging-standards.md)
