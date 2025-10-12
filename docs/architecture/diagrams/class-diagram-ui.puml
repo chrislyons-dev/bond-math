@@ -20,9 +20,7 @@ interface Auth0ProviderWithNavigateProps {
 }
 
 class Auth0ProviderWithNavigatex <<effectful>> {
-  +{static} Auth0ProviderWithNavigate({
-  children,
-}: Auth0ProviderWithNavigateProps): JSX.Element
+  +{static} Auth0ProviderWithNavigate({ children }: Auth0ProviderWithNavigateProps): JSX.Element
 }
 note right of Auth0ProviderWithNavigatex
   Module: Auth0ProviderWithNavigatex
@@ -199,7 +197,6 @@ end note
 
 class versions <<pure>> {
   -{static} getMajorVersion(versionStr: string): string
-  -{static} _getMajorMinorVersion(versionStr: string): string
   +{static} getTechVersions(): TechVersions
   +{static} getDetailedVersions(): { astro: { name: string; version: string; fullVersion: string; description: s...
 }

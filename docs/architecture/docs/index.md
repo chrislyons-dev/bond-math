@@ -1,6 +1,6 @@
 # Bond Math Architecture Documentation
 
-> **Auto-generated from code** - Last updated: 2025-10-11
+> **Auto-generated from code** - Last updated: 2025-10-12
 
 This documentation is automatically generated from code annotations and
 infrastructure-as-code configuration using the Architecture as Code (AAC)

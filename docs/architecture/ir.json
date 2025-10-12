@@ -1008,6 +1008,12 @@
           "isReadonly": false
         },
         {
+          "name": "AUTH0_ISSUER",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
           "name": "INTERNAL_JWT_SECRET",
           "type": "string",
           "isOptional": true,
@@ -1880,7 +1886,7 @@
           "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
           "parameters": [
             {
-              "name": "{\r\n  children,\r\n}",
+              "name": "{ children }",
               "type": "Auth0ProviderWithNavigateProps",
               "isOptional": false
             }
@@ -2399,20 +2405,6 @@
       "functions": [
         {
           "name": "getMajorVersion",
-          "returnType": "string",
-          "parameters": [
-            {
-              "name": "versionStr",
-              "type": "string",
-              "isOptional": false
-            }
-          ],
-          "isAsync": false,
-          "isExported": false,
-          "stereotype": "pure"
-        },
-        {
-          "name": "_getMajorMinorVersion",
           "returnType": "string",
           "parameters": [
             {
