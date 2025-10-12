@@ -1,0 +1,752 @@
+openapi: 3.1.0
+info:
+  title: Bond Math API
+  version: '2025.10'
+  description: |
+    Multi-language, serverless microservices system for fixed-income pricing and metrics.
+
+    This API aggregates all services behind the Gateway Worker:
+    - Day-Count service (TypeScript)
+    - Bond Valuation service (Python)
+    - Metrics service (Python)
+    - Pricing Engine service (Java)
+
+    **Authentication:** All endpoints require Auth0 OIDC tokens verified by the Gateway.
+    The Gateway mints short-lived internal JWTs with `act` (actor) claims for service-to-service communication.
+
+  contact:
+    name: Bond Math Platform Team
+    url: https://bondmath.chrislyons.dev
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://bondmath.chrislyons.dev/api
+    description: Production API Gateway
+
+security:
+  - auth0: []
+
+tags:
+  - name: daycount
+    description: Day-count and year-fraction calculations
+  - name: valuation
+    description: Bond price ↔ yield calculations and schedule generation
+  - name: metrics
+    description: Duration, convexity, and yield-curve risk metrics
+  - name: pricing
+    description: Discounting engine for cashflow present value
+
+paths:
+  /daycount/v1/count:
+    post:
+      summary: Calculate year fractions
+      description: |
+        Calculates year fractions and accrual days for multiple date pairs using specified day-count conventions.
+
+        **Conventions supported:**
+        - `30_360` - U.S. 30/360 (Bond Basis)
+        - `30E_360` - European 30E/360
+        - `ACT_360` - Actual/360
+        - `ACT_365F` - Actual/365 (Fixed)
+        - `ACT_ACT_ISDA` - Actual/Actual (ISDA)
+        - `ACT_ACT_ICMA` - Actual/Actual (ICMA)
+      operationId: calculateDayCount
+      tags:
+        - daycount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DayCountRequest'
+            examples:
+              european30360:
+                summary: European 30E/360 calculation
+                value:
+                  pairs:
+                    - start: '2025-01-31'
+                      end: '2025-07-31'
+                    - start: '2025-07-31'
+                      end: '2026-01-31'
+                  convention: '30E_360'
+                  options:
+                    eomRule: true
+                  version: '2025.10'
+      responses:
+        '200':
+          description: Successful calculation
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: 'public, max-age=3600'
+            X-Service-Version:
+              schema:
+                type: string
+                example: '2025.10'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DayCountResponse'
+        '400':
+          description: Validation or calculation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /daycount/v1/health:
+    get:
+      summary: Health check
+      description: Returns service health status
+      operationId: daycountHealth
+      tags:
+        - daycount
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  service:
+                    type: string
+                    example: daycount
+                  version:
+                    type: string
+                    example: '2025.10'
+
+  /valuation/v1/price:
+    post:
+      summary: Calculate bond price from yield
+      description: |
+        Computes clean price, dirty price, and accrued interest given a yield to maturity.
+
+        Generates the full coupon schedule, obtains accrual fractions from the Day-Count service,
+        and discounts periodic coupons and redemption.
+
+        **Note:** `firstCouponDate` and `lastCouponDate` are optional but recommended for bonds
+        with odd first/last coupon periods. If omitted, the service attempts to infer a regular
+        schedule, which may fail for irregular structures.
+      operationId: calculatePrice
+      tags:
+        - valuation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PriceRequest'
+      responses:
+        '200':
+          description: Successful price calculation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValuationResponse'
+        '400':
+          description: Invalid request or calculation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /valuation/v1/yield:
+    post:
+      summary: Calculate yield from bond price
+      description: |
+        Solves for yield to maturity (YTM) given a bond price using iterative methods.
+
+        Generates the full coupon schedule, obtains accrual fractions from the Day-Count service,
+        and computes accrued interest and clean/dirty price.
+      operationId: calculateYield
+      tags:
+        - valuation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/YieldRequest'
+      responses:
+        '200':
+          description: Successful yield calculation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValuationResponse'
+        '400':
+          description: Invalid request or calculation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /metrics/v1/duration:
+    post:
+      summary: Calculate duration metrics
+      description: |
+        Computes Macaulay duration, modified duration, convexity, and PV01 by perturbing
+        yield/price and re-pricing.
+
+        Can consume cashflows from the valuation service or rebuild the schedule internally.
+      operationId: calculateDuration
+      tags:
+        - metrics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DurationRequest'
+      responses:
+        '200':
+          description: Successful duration calculation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DurationResponse'
+        '400':
+          description: Invalid request or calculation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /pricing/v1/value:
+    post:
+      summary: Calculate present value of cashflows
+      description: |
+        Takes a set of dated cashflows and a discount curve and computes present value.
+
+        Aligns cashflows with curve points (interpolates/extrapolates as needed),
+        computes discount factors, and returns PV by leg and total.
+
+        Optionally returns key-rate sensitivities if requested.
+      operationId: calculatePresentValue
+      tags:
+        - pricing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PricingRequest'
+            examples:
+              simpleValuation:
+                summary: Simple bond cashflows with zero curve
+                value:
+                  asOf: '2025-07-01'
+                  cashflows:
+                    - date: '2026-01-01'
+                      amount: 25.00
+                      currency: 'USD'
+                    - date: '2026-07-01'
+                      amount: 25.00
+                      currency: 'USD'
+                    - date: '2030-07-01'
+                      amount: 1025.00
+                      currency: 'USD'
+                  discountCurve:
+                    convention: 'ACT_365F'
+                    compounding: 'Continuous'
+                    nodes:
+                      - date: '2025-07-01'
+                        zeroRate: 0.042
+                      - date: '2026-07-01'
+                        zeroRate: 0.044
+                      - date: '2030-07-01'
+                        zeroRate: 0.047
+      responses:
+        '200':
+          description: Successful present value calculation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingResponse'
+        '400':
+          description: Invalid request or calculation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    auth0:
+      type: oauth2
+      description: Auth0 OIDC authentication
+      flows:
+        implicit:
+          authorizationUrl: https://YOUR_AUTH0_DOMAIN/authorize
+          scopes:
+            daycount:read: Read day-count calculations
+            valuation:read: Read bond valuation
+            metrics:read: Read bond metrics
+            pricing:read: Read pricing calculations
+
+  responses:
+    Unauthorized:
+      description: Unauthorized - Invalid or missing Auth0 token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            type: 'https://bondmath.chrislyons.dev/errors/unauthorized'
+            title: 'Unauthorized'
+            status: 401
+            detail: 'Invalid or missing authentication token'
+
+  schemas:
+    # Day-Count Service Schemas
+    DayCountRequest:
+      type: object
+      required:
+        - pairs
+        - convention
+      properties:
+        pairs:
+          type: array
+          description: Array of date pairs to calculate
+          minItems: 1
+          items:
+            type: object
+            required:
+              - start
+              - end
+            properties:
+              start:
+                type: string
+                format: date
+                description: Start date (ISO 8601)
+                example: '2025-01-31'
+              end:
+                type: string
+                format: date
+                description: End date (ISO 8601)
+                example: '2025-07-31'
+        convention:
+          $ref: '#/components/schemas/DayCountConvention'
+        options:
+          type: object
+          description: Optional calculation parameters
+          properties:
+            eomRule:
+              type: boolean
+              description: Apply end-of-month rule
+              default: false
+            frequency:
+              type: integer
+              description: Coupon frequency (for ACT_ACT_ICMA)
+              enum: [1, 2, 4, 12]
+        version:
+          type: string
+          description: API version (optional)
+          example: '2025.10'
+
+    DayCountResponse:
+      type: object
+      required:
+        - results
+        - convention
+        - version
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DayCountResult'
+        convention:
+          $ref: '#/components/schemas/DayCountConvention'
+        version:
+          type: string
+          example: '2025.10'
+
+    DayCountResult:
+      type: object
+      required:
+        - days
+        - yearFraction
+        - basis
+      properties:
+        days:
+          type: integer
+          description: Number of accrual days
+          example: 180
+        yearFraction:
+          type: number
+          format: double
+          description: Year fraction for the period
+          example: 0.5
+        basis:
+          type: integer
+          description: Day-count basis denominator
+          example: 360
+
+    DayCountConvention:
+      type: string
+      enum:
+        - '30_360'
+        - '30E_360'
+        - 'ACT_360'
+        - 'ACT_365F'
+        - 'ACT_ACT_ISDA'
+        - 'ACT_ACT_ICMA'
+      description: Day-count convention identifier
+
+    # Valuation Service Schemas
+    BondInstrument:
+      type: object
+      required:
+        - settlementDate
+        - maturityDate
+        - couponRate
+        - frequency
+        - face
+        - dayCount
+      properties:
+        settlementDate:
+          type: string
+          format: date
+          description: Settlement date
+          example: '2025-07-01'
+        maturityDate:
+          type: string
+          format: date
+          description: Maturity date
+          example: '2030-07-01'
+        couponRate:
+          type: number
+          format: double
+          description: Annual coupon rate (decimal)
+          example: 0.05
+        frequency:
+          type: integer
+          description: Coupon frequency per year
+          enum: [1, 2, 4, 12]
+          example: 2
+        face:
+          type: number
+          format: double
+          description: Face value
+          example: 100
+        dayCount:
+          $ref: '#/components/schemas/DayCountConvention'
+        eomRule:
+          type: boolean
+          description: Apply end-of-month rule
+          default: true
+        firstCouponDate:
+          type: string
+          format: date
+          description: First coupon date (optional, for odd first periods)
+          example: '2025-12-31'
+        lastCouponDate:
+          type: string
+          format: date
+          description: Last coupon date (optional, for odd last periods)
+          example: '2030-03-01'
+
+    PriceRequest:
+      allOf:
+        - $ref: '#/components/schemas/BondInstrument'
+        - type: object
+          required:
+            - yield
+          properties:
+            yield:
+              type: number
+              format: double
+              description: Yield to maturity (decimal)
+              example: 0.048
+
+    YieldRequest:
+      allOf:
+        - $ref: '#/components/schemas/BondInstrument'
+        - type: object
+          required:
+            - price
+          properties:
+            price:
+              type: number
+              format: double
+              description: Bond price
+              example: 99.948
+
+    ValuationResponse:
+      type: object
+      required:
+        - cleanPrice
+        - dirtyPrice
+        - accruedInterest
+        - yield
+      properties:
+        cleanPrice:
+          type: number
+          format: double
+          description: Clean price (ex-accrued)
+          example: 99.948
+        dirtyPrice:
+          type: number
+          format: double
+          description: Dirty price (including accrued)
+          example: 101.448
+        accruedInterest:
+          type: number
+          format: double
+          description: Accrued interest amount
+          example: 1.50
+        yield:
+          type: number
+          format: double
+          description: Yield to maturity
+          example: 0.048
+        nextCoupon:
+          type: string
+          format: date
+          description: Next coupon payment date
+          example: '2025-12-31'
+        cashflows:
+          type: array
+          description: Optional cashflow schedule
+          items:
+            $ref: '#/components/schemas/Cashflow'
+
+    # Metrics Service Schemas
+    DurationRequest:
+      allOf:
+        - $ref: '#/components/schemas/BondInstrument'
+        - type: object
+          properties:
+            price:
+              type: number
+              format: double
+              description: Bond price (if known)
+            yield:
+              type: number
+              format: double
+              description: Yield to maturity (if known)
+            bumpSize:
+              type: number
+              format: double
+              description: Bump size for perturbation (basis points)
+              default: 0.0001
+              example: 0.0001
+            cashflows:
+              type: array
+              description: Optional pre-computed cashflows from valuation service
+              items:
+                $ref: '#/components/schemas/Cashflow'
+
+    DurationResponse:
+      type: object
+      required:
+        - macaulayDuration
+        - modifiedDuration
+        - convexity
+        - pv01
+      properties:
+        macaulayDuration:
+          type: number
+          format: double
+          description: Macaulay duration (years)
+          example: 4.25
+        modifiedDuration:
+          type: number
+          format: double
+          description: Modified duration
+          example: 4.06
+        convexity:
+          type: number
+          format: double
+          description: Convexity
+          example: 22.15
+        pv01:
+          type: number
+          format: double
+          description: Price value of a basis point
+          example: 0.0406
+        keyRateMetrics:
+          type: object
+          description: Optional bucketed/key-rate sensitivities
+          additionalProperties:
+            type: number
+
+    # Pricing Service Schemas
+    PricingRequest:
+      type: object
+      required:
+        - asOf
+        - cashflows
+        - discountCurve
+      properties:
+        asOf:
+          type: string
+          format: date
+          description: Valuation date
+          example: '2025-07-01'
+        cashflows:
+          type: array
+          description: Dated cashflows to discount
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/Cashflow'
+        discountCurve:
+          $ref: '#/components/schemas/DiscountCurve'
+        includeKeyRatePV:
+          type: boolean
+          description: Include key-rate PV sensitivities
+          default: false
+
+    Cashflow:
+      type: object
+      required:
+        - date
+        - amount
+        - currency
+      properties:
+        date:
+          type: string
+          format: date
+          description: Payment date
+          example: '2026-01-01'
+        amount:
+          type: number
+          format: double
+          description: Cashflow amount
+          example: 25.00
+        currency:
+          type: string
+          description: Currency code (ISO 4217)
+          example: 'USD'
+
+    DiscountCurve:
+      type: object
+      required:
+        - convention
+        - compounding
+        - nodes
+      properties:
+        convention:
+          $ref: '#/components/schemas/DayCountConvention'
+        compounding:
+          type: string
+          enum:
+            - Continuous
+            - Annual
+            - Semiannual
+            - Quarterly
+          description: Compounding frequency for rates
+          example: 'Continuous'
+        nodes:
+          type: array
+          description: Curve data points
+          minItems: 1
+          items:
+            type: object
+            required:
+              - date
+            properties:
+              date:
+                type: string
+                format: date
+                description: Curve point date
+              zeroRate:
+                type: number
+                format: double
+                description: Zero rate at this point
+              discountFactor:
+                type: number
+                format: double
+                description: Discount factor at this point
+
+    PricingResponse:
+      type: object
+      required:
+        - pvTotal
+      properties:
+        pvTotal:
+          type: number
+          format: double
+          description: Total present value
+          example: 987.65
+        pvByLeg:
+          type: object
+          description: Present value broken down by leg/currency
+          additionalProperties:
+            type: number
+        keyRatePV:
+          type: object
+          description: Key-rate PV sensitivities (if requested)
+          additionalProperties:
+            type: number
+        dfAtNodes:
+          type: array
+          description: Discount factors at curve nodes (audit trail)
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              discountFactor:
+                type: number
+                format: double
+
+    # Common Error Response (RFC 7807)
+    ErrorResponse:
+      type: object
+      required:
+        - type
+        - title
+        - status
+        - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          description: Error type URI
+          example: 'https://bondmath.chrislyons.dev/errors/validation-error'
+        title:
+          type: string
+          description: Short error title
+          example: 'Validation Error'
+        status:
+          type: integer
+          description: HTTP status code
+          example: 400
+        detail:
+          type: string
+          description: Detailed error message
+          example: 'Request body must be valid JSON'
+        errors:
+          type: array
+          description: Field-level validation errors
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: Field path
+                example: 'pairs[0].start'
+              message:
+                type: string
+                description: Error message
+                example: 'Invalid date format'

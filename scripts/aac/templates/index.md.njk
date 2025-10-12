@@ -1,0 +1,87 @@
+# Bond Math Architecture Documentation
+
+> **Auto-generated from code** - Last updated: {{ currentDate }}
+
+This documentation is automatically generated from code annotations and infrastructure-as-code configuration using the Architecture as Code (AAC) pipeline.
+
+## Overview
+
+Bond Math is a microservices-based fixed income calculation platform built on Cloudflare Workers. The system provides:
+
+- **Day count calculations** - Authoritative year fraction calculations for fixed income instruments
+- **Bond valuation** - Price ↔ yield conversions and cashflow generation
+- **Risk metrics** - Duration, convexity, PV01, DV01 calculations
+- **Pricing** - Curve-based discounting and present value calculations
+
+## Architecture
+
+The system follows a microservices architecture with:
+
+- **{{ servicesCount }} services** deployed as Cloudflare Workers ({{ typescriptCount }} TypeScript, {{ pythonCount }} Python)
+- **{{ relationshipsCount }} service-to-service relationships** using service bindings
+- **{{ environmentsCount }} deployment environments** ({{ environmentNames }})
+
+## Services
+
+{% for item in servicesByLayer %}
+
+### {{ item.layer }}
+
+{% for service in item.services %}
+- **[{{ service.name }}](./components/{{ service.id }}.md)** ({{ service.technology }}) - {{ service.description }}
+{% endfor %}
+{% endfor %}
+
+## Documentation
+
+- **[Service Inventory](./services.md)** - Complete list of services with technical details
+- **Component Details** - Per-service documentation:
+{% for service in allServices %}
+  - [{{ service.name }}](./components/{{ service.id }}.md)
+{% endfor %}
+
+## Diagrams
+
+The following C4 diagrams are automatically generated:
+
+### System Context
+
+High-level view of the entire system
+
+![System Context Diagram](../diagrams/structurizr-SystemContext.png)
+
+### Containers
+
+All microservices and their relationships
+
+![Containers Diagram](../diagrams/structurizr-Containers.png)
+
+{% if deploymentEnvironments.length > 0 %}
+### Deployment Diagrams
+
+{% for env in deploymentEnvironments %}
+#### {{ env.title }} Environment
+
+![{{ env.title }} Deployment Diagram](../diagrams/structurizr-Deployment_{{ env.name }}.png)
+
+{% endfor %}
+{% endif %}
+
+## How This Was Generated
+
+This documentation is generated using the **Architecture as Code** pipeline:
+
+1. **Extract** - Parse JSDoc/docstrings from TypeScript and Python code
+2. **Extract** - Parse infrastructure configuration from wrangler.toml files
+3. **Validate** - Verify against JSON schema and check relationships
+4. **Generate DSL** - Create Structurizr DSL workspace
+5. **Render** - Generate PlantUML diagrams (PNG/SVG)
+6. **Generate Docs** - Create this markdown documentation
+
+To regenerate:
+
+```bash
+npm run docs:arch
+```
+
+See [ADR-0001](../../adr/0001-architecture-as-code.md) for details on the AAC approach.

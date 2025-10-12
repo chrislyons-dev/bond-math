@@ -1,0 +1,214 @@
+@startuml
+title Ui - Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+class ApiError {
+}
+note right of ApiError
+  
+Custom error class for API errors with field-level validation details.
+
+Extends Error with HTTP status code and optional field-level errors
+from RFC 7807 Problem Details responses.
+
+end note
+
+interface Auth0ProviderWithNavigateProps {
+  children: ReactNode
+}
+
+class Auth0ProviderWithNavigatex <<effectful>> {
+  +{static} Auth0ProviderWithNavigate({ children }: Auth0ProviderWithNavigateProps): JSX.Element
+}
+note right of Auth0ProviderWithNavigatex
+  Module: Auth0ProviderWithNavigatex
+  
+  Stereotype: <<effectful>>
+end note
+
+class AuthButtonx <<effectful>> {
+  -{static} AuthButtonInner(): JSX.Element
+  +{static} AuthButton(): JSX.Element
+}
+note right of AuthButtonx
+  Module: AuthButtonx
+  
+  Stereotype: <<effectful>>
+end note
+
+class CallbackHandlerx <<effectful>> {
+  -{static} CallbackHandlerInner(): JSX.Element
+  +{static} CallbackHandler(): JSX.Element
+}
+note right of CallbackHandlerx
+  Module: CallbackHandlerx
+  
+  Stereotype: <<effectful>>
+end note
+
+class client <<effectful>> {
+  -{static} getApiBaseUrl(): string
+  +{static} async calculateDayCount(request: DayCountRequest, token?: string | undefined): Promise<DayCountResponse>
+}
+note right of client
+  Module: client
+  
+  Stereotype: <<effectful>>
+end note
+
+interface DatePair {
+  start: string
+  end: string
+}
+note right of DatePair
+  
+API Client for Bond Math services
+
+end note
+
+class DayCountCalculatorx <<effectful>> {
+  -{static} DayCountCalculatorInner(): JSX.Element
+  +{static} DayCountCalculator(): JSX.Element
+}
+note right of DayCountCalculatorx
+  Module: DayCountCalculatorx
+  
+  Stereotype: <<effectful>>
+end note
+
+interface DayCountOptions {
+  eomRule?: boolean
+  frequency?: number
+}
+note right of DayCountOptions
+  
+Optional parameters for day count calculations.
+
+end note
+
+interface DayCountRequest {
+  pairs: DatePair[]
+  convention: DayCountConvention
+  options?: DayCountOptions
+}
+note right of DayCountRequest
+  
+Request payload for day count calculations.
+
+end note
+
+interface DayCountResponse {
+  results: DayCountResult[]
+  convention: DayCountConvention
+  version: string
+}
+note right of DayCountResponse
+  
+Response from day count calculation endpoint.
+
+end note
+
+interface DayCountResult {
+  days: number
+  yearFraction: number
+  basis: number
+}
+note right of DayCountResult
+  
+Result of a single day count calculation.
+
+end note
+
+interface ErrorResponse {
+  type: string
+  title: string
+  status: number
+  detail: string
+  errors?: Array<{
+    field?: string;
+    message: string;
+  }>
+}
+note right of ErrorResponse
+  
+RFC 7807 Problem Details error response.
+
+end note
+
+class LoginButtonx <<effectful>> {
+  +{static} LoginButton(): JSX.Element
+}
+note right of LoginButtonx
+  Module: LoginButtonx
+  
+  Stereotype: <<effectful>>
+end note
+
+class LogoutButtonx <<effectful>> {
+  +{static} LogoutButton(): JSX.Element
+}
+note right of LogoutButtonx
+  Module: LogoutButtonx
+  
+  Stereotype: <<effectful>>
+end note
+
+class ProfileContentx <<effectful>> {
+  -{static} ProfileContentInner(): JSX.Element
+  +{static} ProfileContent(): JSX.Element
+}
+note right of ProfileContentx
+  Module: ProfileContentx
+  
+  Stereotype: <<effectful>>
+end note
+
+interface TechVersions {
+  astro: string
+  react: string
+  tailwind: string
+  typescript: string
+  cloudflare: string
+}
+
+class ThemeTogglex <<effectful>> {
+  +{static} ThemeToggle(): JSX.Element
+}
+note right of ThemeTogglex
+  Module: ThemeTogglex
+  
+  Stereotype: <<effectful>>
+end note
+
+class validation <<effectful>> {
+  +{static} isValidDate(dateStr: string): boolean
+  +{static} isValidDateRange(start: string, end: string): boolean
+  +{static} formatDate(date: Date): string
+  +{static} getToday(): string
+  +{static} getDaysFromToday(days: number): string
+}
+note right of validation
+  Module: validation
+  
+  Stereotype: <<effectful>>
+end note
+
+class versions <<pure>> {
+  -{static} getMajorVersion(versionStr: string): string
+  +{static} getTechVersions(): TechVersions
+  +{static} getDetailedVersions(): { astro: { name: string; version: string; fullVersion: string; description: s...
+}
+note right of versions
+  Module: versions
+  
+  Stereotype: <<pure>>
+end note
+
+' Relationships
+DayCountRequest ..> DatePair : uses
+DayCountRequest ..> DayCountOptions : uses
+DayCountResponse ..> DayCountResult : uses
+
+@enduml

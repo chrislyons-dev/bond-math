@@ -1,0 +1,71 @@
+---
+import { getDetailedVersions } from '@lib/utils/versions';
+
+const currentYear = new Date().getFullYear();
+const versions = getDetailedVersions();
+---
+
+<footer class="mt-auto border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+  <div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- About -->
+      <div>
+        <h3 class="text-lg font-bold mb-3 text-gray-900 dark:text-white">Bond Math</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          A demonstration of Architecture as Code principles using fixed-income bond calculations.
+        </p>
+      </div>
+
+      <!-- Links -->
+      <div>
+        <h3 class="text-lg font-bold mb-3 text-gray-900 dark:text-white">Quick Links</h3>
+        <ul class="space-y-2 text-sm">
+          <li>
+            <a
+              href="/day-count"
+              class="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+            >
+              Day Count Calculator
+            </a>
+          </li>
+          <li>
+            <a
+              href="/about"
+              class="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+            >
+              About
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://github.com/chrislyons-dev/bond-math"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+            >
+              GitHub
+              <span class="sr-only">(opens in new tab)</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Tech Stack -->
+      <div>
+        <h3 class="text-lg font-bold mb-3 text-gray-900 dark:text-white">Built With</h3>
+        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+          <li>{versions.astro.name} {versions.astro.version}.x</li>
+          <li>{versions.react.name} {versions.react.version}.x</li>
+          <li>{versions.tailwind.name} {versions.tailwind.version}.x</li>
+          <li>{versions.cloudflare.fullVersion}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
+      <p class="text-center text-sm text-gray-600 dark:text-gray-400">
+        &copy; {currentYear} Bond Math. Built with ❤️ as a teaching project.
+      </p>
+    </div>
+  </div>
+</footer>

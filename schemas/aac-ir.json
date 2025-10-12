@@ -1,0 +1,419 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://bondmath.chrislyons.dev/schemas/aac-ir.json",
+  "title": "Architecture as Code - Intermediate Representation",
+  "description": "Schema for the intermediate representation (IR) generated from AAC annotations in code and infrastructure",
+  "type": "object",
+  "required": ["version", "project", "services", "relationships"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version",
+      "const": "1.0"
+    },
+    "project": {
+      "type": "object",
+      "description": "Project metadata",
+      "required": ["name", "description"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Project name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Project description"
+        },
+        "repository": {
+          "type": "string",
+          "description": "Repository URL"
+        }
+      }
+    },
+    "services": {
+      "type": "array",
+      "description": "All services (Workers, Pages, etc.)",
+      "items": {
+        "$ref": "#/definitions/service"
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "description": "Service-to-service relationships",
+      "items": {
+        "$ref": "#/definitions/relationship"
+      }
+    },
+    "components": {
+      "type": "array",
+      "description": "Components within services (classes, modules)",
+      "items": {
+        "$ref": "#/definitions/component"
+      }
+    },
+    "deploymentEnvironments": {
+      "type": "array",
+      "description": "Deployment environments (dev, staging, production)",
+      "items": {
+        "$ref": "#/definitions/deploymentEnvironment"
+      }
+    }
+  },
+  "definitions": {
+    "service": {
+      "type": "object",
+      "required": ["id", "name", "type", "layer", "description"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique service identifier (kebab-case)",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable service name"
+        },
+        "type": {
+          "type": "string",
+          "description": "Service runtime type",
+          "enum": [
+            "cloudflare-worker-typescript",
+            "cloudflare-worker-python",
+            "cloudflare-worker-rust",
+            "cloudflare-worker-java",
+            "cloudflare-pages",
+            "cloudflare-durable-object"
+          ]
+        },
+        "layer": {
+          "type": "string",
+          "description": "Architectural layer",
+          "enum": ["ui", "api-gateway", "business-logic", "data-access"]
+        },
+        "description": {
+          "type": "string",
+          "description": "One-line technical description"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Owning team"
+        },
+        "sourcePath": {
+          "type": "string",
+          "description": "Path to source code"
+        },
+        "internalRoutes": {
+          "type": "array",
+          "description": "Internal service routes",
+          "items": {
+            "type": "string"
+          }
+        },
+        "publicRoutes": {
+          "type": "array",
+          "description": "Public routes (if any)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "Service dependencies (service IDs)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "securityModel": {
+          "type": "string",
+          "description": "Authentication model",
+          "enum": ["none", "internal-jwt", "auth0-oidc", "oauth2", "api-key"]
+        },
+        "slaTier": {
+          "type": "string",
+          "description": "SLA tier",
+          "enum": ["critical", "high", "medium", "low"]
+        },
+        "endpoints": {
+          "type": "array",
+          "description": "Service endpoints",
+          "items": {
+            "$ref": "#/definitions/endpoint"
+          }
+        },
+        "configuration": {
+          "type": "object",
+          "description": "Service configuration",
+          "properties": {
+            "environment": {
+              "type": "array",
+              "description": "Environment variables",
+              "items": {
+                "$ref": "#/definitions/environmentVariable"
+              }
+            },
+            "bindings": {
+              "type": "array",
+              "description": "Service bindings",
+              "items": {
+                "$ref": "#/definitions/serviceBinding"
+              }
+            }
+          }
+        }
+      }
+    },
+    "endpoint": {
+      "type": "object",
+      "required": ["method", "path"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "HTTP method",
+          "enum": ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
+        },
+        "path": {
+          "type": "string",
+          "description": "Endpoint path"
+        },
+        "gatewayRoute": {
+          "type": "string",
+          "description": "Full gateway route (if exposed via gateway)"
+        },
+        "authentication": {
+          "type": "string",
+          "description": "Authentication requirement",
+          "enum": ["none", "internal-jwt", "auth0-oidc", "oauth2", "api-key"]
+        },
+        "scope": {
+          "type": "string",
+          "description": "Required OAuth2 scope"
+        },
+        "rateLimit": {
+          "type": "string",
+          "description": "Rate limit (e.g., '100/min')"
+        },
+        "cacheable": {
+          "type": "boolean",
+          "description": "Whether response is cacheable"
+        },
+        "cacheTtl": {
+          "type": "integer",
+          "description": "Cache TTL in seconds"
+        }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "required": ["source", "destination", "protocol"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Source service ID"
+        },
+        "destination": {
+          "type": "string",
+          "description": "Destination service ID"
+        },
+        "protocol": {
+          "type": "string",
+          "description": "Communication protocol",
+          "enum": ["service-binding", "https", "grpc", "websocket"]
+        },
+        "authentication": {
+          "type": "string",
+          "description": "Authentication method",
+          "enum": ["none", "internal-jwt", "auth0-jwt", "oauth2", "api-key"]
+        },
+        "binding": {
+          "type": "string",
+          "description": "Service binding name (for Cloudflare)"
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "required": ["id", "serviceId", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Component identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Component name"
+        },
+        "serviceId": {
+          "type": "string",
+          "description": "Parent service ID"
+        },
+        "type": {
+          "type": "string",
+          "description": "Component type",
+          "enum": ["class", "interface", "module", "function", "middleware"]
+        },
+        "description": {
+          "type": "string",
+          "description": "Component description"
+        },
+        "excludeFromDiagram": {
+          "type": "boolean",
+          "description": "Whether to exclude from generated diagrams",
+          "default": false
+        }
+      }
+    },
+    "serviceBinding": {
+      "type": "object",
+      "required": ["name", "target"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Binding name (e.g., SVC_DAYCOUNT)"
+        },
+        "target": {
+          "type": "string",
+          "description": "Target service ID"
+        },
+        "purpose": {
+          "type": "string",
+          "description": "Purpose of this binding"
+        }
+      }
+    },
+    "environmentVariable": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Variable name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Variable description"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether required",
+          "default": false
+        },
+        "secret": {
+          "type": "boolean",
+          "description": "Whether this is a secret",
+          "default": false
+        }
+      }
+    },
+    "deploymentEnvironment": {
+      "type": "object",
+      "required": ["name", "deploymentNodes"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Environment name",
+          "enum": ["development", "preview", "staging", "production"]
+        },
+        "deploymentNodes": {
+          "type": "array",
+          "description": "Deployment nodes in this environment",
+          "items": {
+            "$ref": "#/definitions/deploymentNode"
+          }
+        }
+      }
+    },
+    "deploymentNode": {
+      "type": "object",
+      "required": ["id", "name", "type"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Node identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Node name"
+        },
+        "type": {
+          "type": "string",
+          "description": "Node type",
+          "enum": ["infrastructure", "container"]
+        },
+        "technology": {
+          "type": "string",
+          "description": "Technology (e.g., 'Cloudflare Workers')"
+        },
+        "properties": {
+          "type": "object",
+          "description": "Node-specific properties",
+          "properties": {
+            "workerName": {
+              "type": "string"
+            },
+            "routes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "customDomains": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "kvNamespaces": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "binding": {
+                    "type": "string"
+                  },
+                  "namespaceId": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "r2Buckets": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "binding": {
+                    "type": "string"
+                  },
+                  "bucketName": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "durableObjects": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "binding": {
+                    "type": "string"
+                  },
+                  "className": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "containerInstances": {
+          "type": "array",
+          "description": "Service IDs running on this node",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

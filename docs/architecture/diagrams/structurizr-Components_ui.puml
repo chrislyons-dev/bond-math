@@ -1,0 +1,170 @@
+@startuml
+set separator none
+title Ui - Components
+
+top to bottom direction
+skinparam ranksep 60
+skinparam nodesep 30
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<bondmath.Ui.ApiError>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.Auth0ProviderWithNavigateProps>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.Auth0ProviderWithNavigatex>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.AuthButtonx>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.CallbackHandlerx>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.DatePair>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.DayCountCalculatorx>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.DayCountOptions>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.DayCountRequest>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.DayCountResponse>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.DayCountResult>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.ErrorResponse>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.LoginButtonx>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.LogoutButtonx>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.ProfileContentx>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.TechVersions>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.ThemeTogglex>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.client>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.validation>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui.versions>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Ui>> {
+  BorderColor #9a9a9a
+  FontColor #9a9a9a
+  shadowing false
+}
+
+rectangle "Ui\n<size:10>[Container: Cloudflare Pages]</size>" <<bondmath.Ui>> {
+  rectangle "==ApiError\n<size:10>[Component: class]</size>\n\nCustom error class for API errors with field-level validation details. Extends Error with HTTP status code and optional field-level errors from RFC 7807 Problem Details responses." <<bondmath.Ui.ApiError>> as bondmath.Ui.ApiError
+  rectangle "==Auth0ProviderWithNavigateProps\n<size:10>[Component: interface]</size>" <<bondmath.Ui.Auth0ProviderWithNavigateProps>> as bondmath.Ui.Auth0ProviderWithNavigateProps
+  rectangle "==Auth0ProviderWithNavigatex\n<size:10>[Component: module]</size>\n\nModule: Auth0ProviderWithNavigatex" <<bondmath.Ui.Auth0ProviderWithNavigatex>> as bondmath.Ui.Auth0ProviderWithNavigatex
+  rectangle "==AuthButtonx\n<size:10>[Component: module]</size>\n\nModule: AuthButtonx" <<bondmath.Ui.AuthButtonx>> as bondmath.Ui.AuthButtonx
+  rectangle "==CallbackHandlerx\n<size:10>[Component: module]</size>\n\nModule: CallbackHandlerx" <<bondmath.Ui.CallbackHandlerx>> as bondmath.Ui.CallbackHandlerx
+  rectangle "==client\n<size:10>[Component: module]</size>\n\nModule: client" <<bondmath.Ui.client>> as bondmath.Ui.client
+  rectangle "==DatePair\n<size:10>[Component: interface]</size>\n\nAPI Client for Bond Math services" <<bondmath.Ui.DatePair>> as bondmath.Ui.DatePair
+  rectangle "==DayCountCalculatorx\n<size:10>[Component: module]</size>\n\nModule: DayCountCalculatorx" <<bondmath.Ui.DayCountCalculatorx>> as bondmath.Ui.DayCountCalculatorx
+  rectangle "==DayCountOptions\n<size:10>[Component: interface]</size>\n\nOptional parameters for day count calculations." <<bondmath.Ui.DayCountOptions>> as bondmath.Ui.DayCountOptions
+  rectangle "==DayCountRequest\n<size:10>[Component: interface]</size>\n\nRequest payload for day count calculations." <<bondmath.Ui.DayCountRequest>> as bondmath.Ui.DayCountRequest
+  rectangle "==DayCountResponse\n<size:10>[Component: interface]</size>\n\nResponse from day count calculation endpoint." <<bondmath.Ui.DayCountResponse>> as bondmath.Ui.DayCountResponse
+  rectangle "==DayCountResult\n<size:10>[Component: interface]</size>\n\nResult of a single day count calculation." <<bondmath.Ui.DayCountResult>> as bondmath.Ui.DayCountResult
+  rectangle "==ErrorResponse\n<size:10>[Component: interface]</size>\n\nRFC 7807 Problem Details error response." <<bondmath.Ui.ErrorResponse>> as bondmath.Ui.ErrorResponse
+  rectangle "==LoginButtonx\n<size:10>[Component: module]</size>\n\nModule: LoginButtonx" <<bondmath.Ui.LoginButtonx>> as bondmath.Ui.LoginButtonx
+  rectangle "==LogoutButtonx\n<size:10>[Component: module]</size>\n\nModule: LogoutButtonx" <<bondmath.Ui.LogoutButtonx>> as bondmath.Ui.LogoutButtonx
+  rectangle "==ProfileContentx\n<size:10>[Component: module]</size>\n\nModule: ProfileContentx" <<bondmath.Ui.ProfileContentx>> as bondmath.Ui.ProfileContentx
+  rectangle "==TechVersions\n<size:10>[Component: interface]</size>" <<bondmath.Ui.TechVersions>> as bondmath.Ui.TechVersions
+  rectangle "==ThemeTogglex\n<size:10>[Component: module]</size>\n\nModule: ThemeTogglex" <<bondmath.Ui.ThemeTogglex>> as bondmath.Ui.ThemeTogglex
+  rectangle "==validation\n<size:10>[Component: module]</size>\n\nModule: validation" <<bondmath.Ui.validation>> as bondmath.Ui.validation
+  rectangle "==versions\n<size:10>[Component: module]</size>\n\nModule: versions" <<bondmath.Ui.versions>> as bondmath.Ui.versions
+}
+
+bondmath.Ui.DayCountRequest .[#707070,thickness=2].> bondmath.Ui.DatePair : "<color:#707070>Uses"
+bondmath.Ui.DayCountRequest .[#707070,thickness=2].> bondmath.Ui.DayCountOptions : "<color:#707070>Uses"
+bondmath.Ui.DayCountResponse .[#707070,thickness=2].> bondmath.Ui.DayCountResult : "<color:#707070>Uses"
+@enduml

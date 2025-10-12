@@ -1,0 +1,34 @@
+@startuml
+set separator none
+title Metrics - Components
+
+top to bottom direction
+skinparam ranksep 60
+skinparam nodesep 30
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<bondmath.Metrics.main>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.Metrics>> {
+  BorderColor #265277
+  FontColor #265277
+  shadowing false
+}
+
+rectangle "Metrics\n<size:10>[Container: Cloudflare Workers (Python)]</size>" <<bondmath.Metrics>> {
+  rectangle "==main\n<size:10>[Component: Python Module]</size>\n\nModule: main" <<bondmath.Metrics.main>> as bondmath.Metrics.main
+}
+
+@enduml

@@ -1,0 +1,183 @@
+@startuml
+title Gateway - Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+interface ActorClaim {
+  iss: string
+  sub: string
+  role?: string
+  perms: string[]
+  org?: string
+  uid?: string
+}
+note right of ActorClaim
+  
+Actor claim - represents "Service X acting for User Y"
+end note
+
+interface Auth0Claims {
+  iss: string
+  sub: string
+  aud: string | string[]
+  exp: number
+  iat: number
+  scope?: string
+  permissions?: string[]
+  'https://bondmath.chrislyons.dev/role'?: string
+  'https://bondmath.chrislyons.dev/permissions'?: string[]
+  'https://bondmath.chrislyons.dev/user_id'?: string
+  'https://bondmath.chrislyons.dev/org_id'?: string
+}
+note right of Auth0Claims
+  
+Auth0 JWT claims (after verification)
+end note
+
+interface Env {
+  AUTH0_DOMAIN: string
+  AUTH0_AUDIENCE: string
+  AUTH0_ISSUER: string
+  INTERNAL_JWT_SECRET?: string
+  INTERNAL_JWT_SECRET_CURRENT?: string
+  INTERNAL_JWT_SECRET_PREVIOUS?: string
+  INTERNAL_JWT_TTL?: string
+  ENVIRONMENT?: string
+  SVC_DAYCOUNT: Fetcher
+  SVC_VALUATION: Fetcher
+  SVC_METRICS: Fetcher
+  SVC_PRICING: Fetcher
+}
+note right of Env
+  
+Type definitions for Gateway Worker
+end note
+
+interface ErrorResponse {
+  type: string
+  title: string
+  status: number
+  detail: string
+  instance?: string
+}
+note right of ErrorResponse
+  
+RFC 7807 Problem Details error response
+end note
+
+interface InternalJWT {
+  iss: string
+  sub: string
+  aud: string
+  exp: number
+  rid: string
+  act: ActorClaim
+}
+note right of InternalJWT
+  
+Internal JWT payload structure
+end note
+
+interface JWK {
+  kty: string
+  use: string
+  kid: string
+  n: string
+  e: string
+  alg?: string
+  x5c?: string[]
+  x5t?: string
+}
+note right of JWK
+  
+JSON Web Key structure
+end note
+
+interface JWKS {
+  keys: JWK[]
+}
+note right of JWKS
+  
+Auth0 JWKS response structure
+end note
+
+class jwt <<effectful>> {
+  +{static} async mintInternalToken(auth0Claims: Auth0Claims, targetService: string, secret: string, ttl: number): Promise<string>
+  -{static} createActorClaim(auth0Claims: Auth0Claims): ActorClaim
+  -{static} extractPermissions(claims: Auth0Claims): string[]
+  -{static} async signJWT(payload: InternalJWT, secret: string): Promise<string>
+  -{static} async signData(data: string, secret: string): Promise<ArrayBuffer>
+  -{static} validateSecretStrength(secret: string, secretName: string): void
+  -{static} parseTokenParts(token: string): [string, string, string]
+  +{static} async verifyInternalToken(token: string, secret: string, expectedAudience: string, previousSecret?: string | undefined): Promise<InternalJWT>
+  -{static} async verifySignature(data: string, signature: ArrayBuffer, secret: string): Promise<boolean>
+  -{static} validateInternalClaims(payload: InternalJWT, expectedAudience: string): void
+  -{static} generateRequestId(): string
+  -{static} base64UrlEncode(data: string | ArrayBuffer): string
+  -{static} base64UrlDecodeToString(str: string): string
+  -{static} base64UrlDecodeToArrayBuffer(str: string): ArrayBuffer
+}
+note right of jwt
+  Module: jwt
+  
+  Stereotype: <<effectful>>
+end note
+
+class logger <<effectful>> {
+  +{static} createLogger(): Logger
+}
+note right of logger
+  Module: logger
+  
+  Stereotype: <<effectful>>
+end note
+
+class middleware <<effectful>> {
+  +{static} async requestId(c: Context<{ Bindings: Env; Variables: Variables; }, any, {}>, next: Next): Promise<void>
+  +{static} rateLimiter(options: { windowMs: number; maxRequests: number; }): (c: Context<{ Bindings: Env; Variables: Variables; }, any, {}>, next: Next) =...
+  +{static} async securityHeaders(c: Context<{ Bindings: Env; Variables: Variables; }, any, {}>, next: Next): Promise<void>
+  +{static} async timing(c: Context<{ Bindings: Env; Variables: Variables; }, any, {}>, next: Next): Promise<void>
+}
+note right of middleware
+  Module: middleware
+  
+  Stereotype: <<effectful>>
+end note
+
+class router <<effectful>> {
+  +{static} findServiceRoute(path: string): ServiceRoute | null
+  +{static} async routeToService(request: Request<unknown, CfProperties<unknown>>, route: ServiceRoute, env: Env, internalToken: string): Promise<Response>
+  -{static} createForwardedRequest(originalRequest: Request<unknown, CfProperties<unknown>>, route: ServiceRoute, internalToken: string): Request<unknown, CfProperties<unknown>>
+  +{static} getServiceIdentifier(route: ServiceRoute): string
+}
+note right of router
+  Module: router
+  
+  Stereotype: <<effectful>>
+end note
+
+interface ServiceRoute {
+  prefix: string
+  binding: keyof Env
+  stripPrefix: boolean
+}
+note right of ServiceRoute
+  
+Service route mapping
+end note
+
+interface Variables {
+  requestId: string
+  userId?: string
+}
+note right of Variables
+  
+Hono context variables
+end note
+
+' Relationships
+InternalJWT ..> ActorClaim : uses
+JWKS ..> JWK : uses
+
+@enduml

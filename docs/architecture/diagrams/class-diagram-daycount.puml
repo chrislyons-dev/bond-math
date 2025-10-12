@@ -1,0 +1,186 @@
+@startuml
+title Daycount - Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+interface ActorClaim {
+  iss: string
+  sub: string
+  role?: string
+  perms: string[]
+  org?: string
+  uid?: string
+}
+note right of ActorClaim
+  
+Actor claim from internal JWT
+Represents "Service X acting for User Y"
+end note
+
+interface DateComponents {
+  year: number
+  month: number
+  day: number
+}
+note right of DateComponents
+  
+Parsed date components for calculations
+
+end note
+
+interface DatePair {
+  start: string
+  end: string
+}
+note right of DatePair
+  
+Date pair for year fraction calculation
+end note
+
+interface DayCountOptions {
+  eomRule?: boolean
+  frequency?: number
+}
+note right of DayCountOptions
+  
+Options for day-count calculations
+end note
+
+interface DayCountRequest {
+  pairs: DatePair[]
+  convention: DayCountConvention
+  options?: DayCountOptions
+  version?: string
+}
+note right of DayCountRequest
+  
+Request body for /api/daycount/v1/count endpoint
+end note
+
+interface DayCountResponse {
+  results: DayCountResult[]
+  convention: DayCountConvention
+  version: string
+}
+note right of DayCountResponse
+  
+Response body for /api/daycount/v1/count endpoint
+end note
+
+interface DayCountResult {
+  days: number
+  yearFraction: number
+  basis: number
+}
+note right of DayCountResult
+  
+Single day-count calculation result
+end note
+
+interface Env {
+  INTERNAL_JWT_SECRET?: string
+  INTERNAL_JWT_SECRET_CURRENT?: string
+  INTERNAL_JWT_SECRET_PREVIOUS?: string
+  ENVIRONMENT?: string
+}
+note right of Env
+  
+Cloudflare Worker environment bindings
+end note
+
+interface ErrorResponse {
+  type: string
+  title: string
+  status: number
+  detail: string
+  instance?: string
+  errors?: Array<{
+    field?: string;
+    message: string;
+  }>
+}
+note right of ErrorResponse
+  
+Standard error response following RFC 7807 Problem Details
+end note
+
+class index <<effectful>> {
+  -{static} createErrorBody(status: number, title: string, detail: string, errors?: ValidationError[] | undefined): ErrorResponse
+  -{static} calculateSingle(startStr: string, endStr: string, convention: DayCountConvention, options: DayCountOptions): DayCountResult
+}
+note right of index
+  Module: index
+  
+  Stereotype: <<effectful>>
+end note
+
+class logger <<effectful>> {
+  +{static} createLogger(): Logger
+}
+note right of logger
+  Module: logger
+  
+  Stereotype: <<effectful>>
+end note
+
+class scopes <<effectful>> {
+  +{static} requireScopes(requiredScopes: string[]): (c: Context<any, any, {}>, next: Next) => Promise<void>
+  +{static} requireAnyScope(allowedScopes: string[]): (c: Context<any, any, {}>, next: Next) => Promise<void>
+  +{static} requireRole(allowedRoles: string[]): (c: Context<any, any, {}>, next: Next) => Promise<void>
+}
+note right of scopes
+  Module: scopes
+  
+  Stereotype: <<effectful>>
+end note
+
+class utils <<effectful>> {
+  +{static} parseDate(dateString: string): DateComponents
+  +{static} isLeapYear(year: number): boolean
+  +{static} actualDaysBetween(start: DateComponents, end: DateComponents): number
+  +{static} daysInMonth(year: number, month: number): number
+  +{static} isEndOfMonth(date: DateComponents): boolean
+  +{static} validateDateOrder(start: DateComponents, end: DateComponents): void
+}
+note right of utils
+  Module: utils
+  
+  Stereotype: <<effectful>>
+end note
+
+interface ValidationError {
+  field: string
+  message: string
+}
+note right of ValidationError
+  
+Validation error with field context
+end note
+
+class validators <<pure>> {
+  +{static} normalizeConvention(convention: string): DayCountConvention
+  +{static} validateRequest(body: unknown): ValidationError | null
+}
+note right of validators
+  Module: validators
+  
+  Stereotype: <<pure>>
+end note
+
+interface Variables {
+  requestId: string
+  actor: ActorClaim
+}
+note right of Variables
+  
+Hono context variables
+end note
+
+' Relationships
+DayCountRequest ..> DatePair : uses
+DayCountRequest ..> DayCountOptions : uses
+DayCountResponse ..> DayCountResult : uses
+Variables ..> ActorClaim : uses
+
+@enduml

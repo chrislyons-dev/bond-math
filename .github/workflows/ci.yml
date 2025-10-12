@@ -1,0 +1,369 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+# Cancel in-progress runs for the same workflow and branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Job 1: Code Quality Checks
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        run: |
+          pip install black ruff mypy pytest pytest-asyncio pytest-cov types-python-dateutil
+          # Install flarelette so services can import it
+          pip install -e libs/flarelette
+
+      - name: Format check (JavaScript/TypeScript)
+        run: npm run format:check
+
+      - name: Lint JavaScript/TypeScript
+        run: npm run lint
+
+      - name: Type check TypeScript
+        run: |
+          cd services/gateway && npm run typecheck
+          cd ../daycount && npm run typecheck
+          cd ../../ui && npm run typecheck
+
+      - name: Format check (Python)
+        run: |
+          python -m black --check services/bond-valuation/src
+          python -m black --check services/metrics/src
+          python -m black --check services/pricing/src
+          python -m black --check libs/flarelette/src
+
+      - name: Lint Python (ruff)
+        run: |
+          python -m ruff check services/bond-valuation/src
+          python -m ruff check services/metrics/src
+          python -m ruff check services/pricing/src
+          python -m ruff check libs/flarelette/src
+
+      - name: Type check Python (mypy)
+        run: |
+          bash -lc 'cd services/bond-valuation && python -m mypy --config-file pyproject.toml'
+          bash -lc 'cd services/metrics && python -m mypy --config-file pyproject.toml'
+          bash -lc 'cd services/pricing && python -m mypy --config-file pyproject.toml'
+          bash -lc 'cd libs/flarelette && python -m mypy --config-file pyproject.toml'
+
+  # Job 2: Gateway Service
+  gateway:
+    name: Gateway Service
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        working-directory: services/gateway
+        run: npm test
+
+      - name: Run tests with coverage
+        working-directory: services/gateway
+        run: npm run test:coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: services/gateway/coverage/coverage-final.json
+          flags: gateway
+          token: ${{ secrets.CODECOV_TOKEN }}
+        continue-on-error: true
+
+  # Job 3: Day Count Service
+  daycount:
+    name: Day Count Service
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        working-directory: services/daycount
+        run: npm test
+
+      - name: Run tests with coverage
+        working-directory: services/daycount
+        run: npm run test:coverage
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: services/daycount/coverage/coverage-final.json
+          flags: daycount
+          token: ${{ secrets.CODECOV_TOKEN }}
+        continue-on-error: true
+
+  # Job 4: Security Scan
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Run security scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+        continue-on-error: true
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+        if: always()
+        continue-on-error: true
+
+  # Job 5: Python Services Tests
+  python-services:
+    name: Python Services Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install pytest pytest-asyncio pytest-cov python-json-logger
+
+      - name: Test flarelette library
+        working-directory: libs/flarelette
+        run: |
+          pip install -e ".[dev]"
+          python -m pytest test/ -v --cov=src --cov-report=xml --cov-report=term
+        continue-on-error: true
+
+      - name: Test bond-valuation service
+        working-directory: services/bond-valuation
+        run: |
+          pip install -e ".[dev]"
+          python -m pytest test/ -v --cov=src --cov-report=xml --cov-report=term
+        continue-on-error: true
+
+      - name: Test metrics service
+        working-directory: services/metrics
+        run: |
+          pip install -e ".[dev]"
+          python -m pytest test/ -v --cov=src --cov-report=xml --cov-report=term
+        continue-on-error: true
+
+      - name: Test pricing service
+        working-directory: services/pricing
+        run: |
+          pip install -e ".[dev]"
+          python -m pytest test/ -v --cov=src --cov-report=xml --cov-report=term
+        continue-on-error: true
+
+  # Job 6: Build Validation
+  build:
+    name: Build Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [quality, gateway, daycount, python-services]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Wrangler configs (TypeScript)
+        run: |
+          cd services/gateway
+          npx wrangler deploy --config ../../iac/workers/gateway.toml --dry-run --outdir dist
+
+          cd ../daycount
+          npx wrangler deploy --config ../../iac/workers/daycount.toml --dry-run --outdir dist
+
+      - name: Build and validate UI
+        run: |
+          cd ui
+          npm run build
+          # Validate that the build output exists
+          test -d dist || (echo "UI build failed - dist directory not found" && exit 1)
+
+      - name: Validate Wrangler configs (Python)
+        run: |
+          # Python workers don't need build, just validate config syntax
+          npx wrangler deploy --config iac/workers/valuation.toml --dry-run || true
+          npx wrangler deploy --config iac/workers/metrics.toml --dry-run || true
+          npx wrangler deploy --config iac/workers/pricing.toml --dry-run || true
+
+  # Job 7: Documentation
+  docs:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check ADRs are valid
+        run: |
+          for file in docs/adr/*.md; do
+            echo "Checking $file"
+            # Verify file has required ADR structure
+            grep -q "^# ADR" "$file" || (echo "Missing ADR header in $file" && exit 1)
+            grep -q "Status:" "$file" || (echo "Missing Status in $file" && exit 1)
+          done
+
+      - name: Check for broken internal links
+        run: |
+          # Check that referenced ADRs exist
+          for file in docs/**/*.md; do
+            echo "Checking links in $file"
+            grep -o 'adr/[0-9][0-9][0-9][0-9]-.*\.md' "$file" | while read link; do
+              if [ ! -f "docs/$link" ]; then
+                echo "Broken link in $file: $link"
+                exit 1
+              fi
+            done
+          done
+
+  # Job 8: Commit Validation
+  commitlint:
+    name: Commit Message Lint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate commit messages
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.sha }} --verbose
+
+  # Job 9: Test Summary
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [quality, gateway, daycount, python-services, security, build, docs]
+    timeout-minutes: 5
+
+    steps:
+      - name: Check job results
+        run: |
+          echo "Quality: ${{ needs.quality.result }}"
+          echo "Gateway: ${{ needs.gateway.result }}"
+          echo "Day Count: ${{ needs.daycount.result }}"
+          echo "Python Services: ${{ needs.python-services.result }}"
+          echo "Security: ${{ needs.security.result }}"
+          echo "Build: ${{ needs.build.result }}"
+          echo "Docs: ${{ needs.docs.result }}"
+
+          if [[ "${{ needs.quality.result }}" == "failure" ]] || \
+             [[ "${{ needs.gateway.result }}" == "failure" ]] || \
+             [[ "${{ needs.daycount.result }}" == "failure" ]] || \
+             [[ "${{ needs.python-services.result }}" == "failure" ]] || \
+             [[ "${{ needs.build.result }}" == "failure" ]] || \
+             [[ "${{ needs.docs.result }}" == "failure" ]]; then
+            echo "❌ CI Failed"
+            exit 1
+          else
+            echo "✅ CI Passed"
+          fi

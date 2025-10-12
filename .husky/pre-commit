@@ -1,0 +1,2 @@
+npm run docs:arch
+npx lint-staged

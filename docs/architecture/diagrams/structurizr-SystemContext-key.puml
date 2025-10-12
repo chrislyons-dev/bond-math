@@ -1,0 +1,44 @@
+@startuml
+set separator none
+
+skinparam {
+  shadowing false
+  arrowFontSize 15
+  defaultTextAlignment center
+  wrapWidth 100
+  maxMessageSize 100
+}
+hide stereotype
+
+skinparam rectangle<<_transparent>> {
+  BorderColor transparent
+  BackgroundColor transparent
+  FontColor transparent
+}
+
+skinparam rectangle<<1>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+}
+rectangle "==Element" <<1>>
+
+skinparam rectangle<<2>> {
+  BackgroundColor #999999
+  FontColor #ffffff
+  BorderColor #6b6b6b
+}
+rectangle "==External" <<2>>
+
+skinparam person<<3>> {
+  BackgroundColor #08457e
+  FontColor #ffffff
+  BorderColor #053058
+}
+person "==Person" <<3>>
+
+rectangle "." <<_transparent>> as 4
+4 .[#707070,thickness=2].> 4 : "<color:#707070>Relationship"
+
+
+@enduml

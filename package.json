@@ -1,0 +1,112 @@
+{
+  "name": "bond-math",
+  "version": "0.1.0",
+  "description": "Multi-language, serverless microservices system for fixed-income pricing and metrics",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "format": "prettier --write \"**/*.{ts,js,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md,yml,yaml}\"",
+    "lint": "npm run lint --workspaces --if-present",
+    "lint:commit": "commitlint --edit",
+    "test": "npm run test --workspaces --if-present",
+    "test:unit": "npm run test:unit --workspaces --if-present",
+    "test:integration": "npm run test:integration --workspaces --if-present",
+    "test:e2e": "npm run test:e2e --workspaces --if-present",
+    "test:coverage": "npm run test:coverage --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:stack": "powershell -ExecutionPolicy Bypass -File scripts/start-local-stack.ps1",
+    "dev:stack:bash": "bash scripts/start-local-stack.sh",
+    "deploy": "npm run deploy --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules dist .wrangler",
+    "prepare": "husky",
+    "docs:arch": "npm run docs:arch:extract && npm run docs:arch:validate && npm run docs:arch:dsl && npm run docs:arch:render && npm run docs:arch:docs",
+    "docs:arch:extract": "cd scripts/aac && npm run build && cd ../.. && node scripts/aac/dist/1-extract/cli.js",
+    "docs:arch:validate": "node scripts/aac/dist/2-validate/cli.js",
+    "docs:arch:dsl": "node scripts/aac/dist/3-generate-dsl/cli.js",
+    "docs:arch:render": "node scripts/aac/dist/4-render-diagrams/cli.js",
+    "docs:arch:docs": "node scripts/aac/dist/5-generate-docs/cli.js",
+    "docs:arch:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-tools.ps1"
+  },
+  "workspaces": [
+    "services/gateway",
+    "services/daycount",
+    "services/valuation",
+    "services/metrics",
+    "services/pricing",
+    "ui",
+    "scripts/aac"
+  ],
+  "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@types/node": "^20.10.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.3",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0",
+    "wrangler": "^4.42.2"
+  },
+  "keywords": [
+    "bond-math",
+    "fixed-income",
+    "cloudflare-workers",
+    "architecture-as-code",
+    "microservices",
+    "serverless"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chrislyons-dev/bond-math.git"
+  },
+  "license": "MIT",
+  "author": "Chris Lyons",
+  "lint-staged:config": {
+    "concurrent": false,
+    "maxParallel": 1
+  },
+  "lint-staged": {
+    "*": "echo skip",
+    "ui/**/*.{ts,js}": [
+      "bash -c 'cd ui && npm run typecheck'",
+      "prettier --write"
+    ],
+    "services/gateway/**/*.{ts,js}": [
+      "bash -c 'cd services/gateway && eslint --fix'",
+      "bash -c 'cd services/gateway && npm run typecheck'",
+      "prettier --write"
+    ],
+    "services/daycount/**/*.{ts,js}": [
+      "bash -c 'cd services/daycount && eslint --fix'",
+      "bash -c 'cd services/daycount && npm run typecheck'",
+      "prettier --write"
+    ],
+    "services/bond-valuation/**/*.py": [
+      "bash -c 'cd services/bond-valuation && py -3 -m black .'",
+      "bash -c 'cd services/bond-valuation && py -3 -m ruff check --fix . --config pyproject.toml'",
+      "bash -c 'cd services/bond-valuation && py -3 -m mypy --config-file pyproject.toml'"
+    ],
+    "services/metrics/**/*.py": [
+      "bash -c 'cd services/metrics && py -3 -m black .'",
+      "bash -c 'cd services/metrics && py -3 -m ruff check --fix . --config pyproject.toml'",
+      "bash -c 'cd services/metrics && py -3 -m mypy --config-file pyproject.toml'"
+    ],
+    "services/pricing/**/*.py": [
+      "bash -c 'cd services/pricing && py -3 -m black .'",
+      "bash -c 'cd services/pricing && py -3 -m ruff check --fix . --config pyproject.toml'",
+      "bash -c 'cd services/pricing && py -3 -m mypy --config-file pyproject.toml'"
+    ],
+    "libs/flarelette/**/*.py": [
+      "bash -c 'cd libs/flarelette && py -3 -m black .'",
+      "bash -c 'cd libs/flarelette && py -3 -m ruff check --fix .'",
+      "bash -c 'cd libs/flarelette && py -3 -m mypy --config-file pyproject.toml'"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  }
+}

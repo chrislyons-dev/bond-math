@@ -1,0 +1,109 @@
+# ============================================================================
+# Bond Math - Local Development Secrets (Example)
+# ============================================================================
+#
+# This file shows the required secrets for local development with Wrangler.
+#
+# SETUP INSTRUCTIONS:
+# 1. Copy this file to .dev.vars (it's gitignored):
+#    cp .dev.vars.example .dev.vars
+#
+# 2. Generate a secure secret:
+#    openssl rand -base64 32
+#
+# 3. Replace placeholder values below with real values
+#
+# 4. Start services locally:
+#    npm run dev --prefix ../../services/gateway
+#
+# IMPORTANT:
+# - .dev.vars is gitignored - never commit it!
+# - Use DIFFERENT secrets for production (set via wrangler secret put)
+# - Same INTERNAL_JWT_SECRET must be used across ALL services
+#
+# See: docs/reference/authentication.md for complete documentation
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# Internal JWT Secret (REQUIRED - All Services)
+# ----------------------------------------------------------------------------
+# This secret is used to sign and verify internal JWTs between services.
+# MUST be the same value for Gateway, DayCount, Valuation, Metrics, Pricing.
+#
+# Generate with: openssl rand -base64 32
+# Minimum length: 32 bytes (for HMAC-SHA256 security)
+#
+INTERNAL_JWT_SECRET="REPLACE_WITH_YOUR_GENERATED_SECRET_MIN_32_BYTES"
+
+# ----------------------------------------------------------------------------
+# Auth0 Configuration (REQUIRED - Gateway Only)
+# ----------------------------------------------------------------------------
+# These values come from your Auth0 Dashboard after setup.
+# See: docs/reference/authentication.md for setup instructions
+#
+# AUTH0_DOMAIN: Your Auth0 tenant domain (e.g., "your-tenant.auth0.com")
+AUTH0_DOMAIN="your-tenant.auth0.com"
+
+# AUTH0_AUDIENCE: API identifier from Auth0 API settings
+# Should match the identifier you created in Auth0 Dashboard
+AUTH0_AUDIENCE="https://api.bondmath.chrislyons.dev"
+
+# ----------------------------------------------------------------------------
+# Optional Configuration
+# ----------------------------------------------------------------------------
+
+# INTERNAL_JWT_TTL: Token lifetime in seconds
+# Default: 90 seconds (recommended for zero-trust)
+# Increase only if you experience token expiry issues
+INTERNAL_JWT_TTL="90"
+
+# ENVIRONMENT: Environment name for logging/debugging
+# Options: development, preview, production
+# Default: development (when using .dev.vars)
+ENVIRONMENT="development"
+
+# LOG_LEVEL: Logging verbosity
+# Options: debug, info, warn, error
+# Default: info
+# Use "debug" for local development to see detailed logs
+LOG_LEVEL="debug"
+
+# ----------------------------------------------------------------------------
+# Usage Examples
+# ----------------------------------------------------------------------------
+#
+# Start Gateway locally:
+#   cd services/gateway
+#   npm run dev
+#   # Gateway will load secrets from ../../iac/workers/.dev.vars
+#
+# Start DayCount service locally:
+#   cd services/daycount
+#   npm run dev
+#   # DayCount will load secrets from ../../iac/workers/.dev.vars
+#
+# Test secret configuration:
+#   curl http://localhost:8787/health
+#   # Should return 200 OK if secrets are configured correctly
+#
+# ----------------------------------------------------------------------------
+# Security Reminders
+# ----------------------------------------------------------------------------
+#
+# ✅ DO:
+#   - Generate secrets with: openssl rand -base64 32
+#   - Keep .dev.vars in .gitignore (it already is)
+#   - Use different secrets for dev/preview/production
+#   - Rotate secrets every 90 days
+#
+# ❌ DON'T:
+#   - Commit .dev.vars to git
+#   - Share .dev.vars via email/Slack
+#   - Use production secrets in .dev.vars
+#   - Use weak/guessable secrets
+#
+# For production deployment, use:
+#   wrangler secret put INTERNAL_JWT_SECRET --config gateway.toml
+#
+# See docs/reference/authentication.md for complete guide
+# ============================================================================

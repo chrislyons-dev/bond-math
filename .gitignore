@@ -1,0 +1,165 @@
+# ==========================
+# 🧩 Dependencies & Caches
+# ==========================
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.cache/
+.tox/
+.Python
+*.cover
+*.log
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ==========================
+# 🧰 Build & Dist Artifacts
+# ==========================
+dist/
+build/
+*.egg-info/
+target/
+.mf/
+*.tsbuildinfo
+
+# ==========================
+# ☁️ Cloudflare / Workers
+# ==========================
+.wrangler/
+.workers/
+.wrangler/
+*.dev.json
+*.dev.toml
+.dev.vars
+.claude*
+**/reviews*
+wrangler.toml.backup
+
+# ==========================
+# 🐍 Python Virtual Envs
+# ==========================
+.venv/
+env/
+venv/
+
+# ==========================
+# 💾 Local Runtime Artifacts
+# ==========================
+*.tmp
+*.pid
+*.lock
+uv.lock
+*.sqlite
+.env
+.env.*
+.envrc
+.env.local
+.env.*.local
+*.env
+
+# ==========================
+# 🪵 Logs
+# ==========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ==========================
+# 🔐 Secrets
+# ==========================
+*.pem
+*.key
+secrets.json
+credentials.json
+
+# ==========================
+# ⚙️ IDEs & Editors
+# ==========================
+# VS Code - keep shared snippets, ignore local settings
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+Thumbs.db
+
+# ==========================
+# 🧪 Test Coverage
+# ==========================
+.coverage
+.coverage.*
+.nyc_output/
+coverage/
+htmlcov/
+*.lcov
+
+# ==========================
+# 🪄 Java / Gradle / Maven
+# ==========================
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+.gradle/
+.mvn/
+out/
+bin/
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans/
+.sts4-cache/
+pom.xml.*
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+hs_err_pid*
+replay_pid*
+*.iws
+*.iml
+*.ipr
+.mtj.tmp/
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# ==========================
+# 🧭 Terraform
+# ==========================
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
+
+# ==========================
+# 🧼 Temporary Files
+# ==========================
+tmp/
+temp/
+*.tmp
+
+# ==========================
+# 🗂️ Local Dev Copies
+# ==========================
+services/*/src/flarelette/
+services/*/src/pythonjsonlogger/
+services/*/src/dateutil/
+services/*/src/six.py

@@ -1,0 +1,194 @@
+---
+import BaseLayout from '@layouts/BaseLayout.astro';
+import { getDetailedVersions } from '@lib/utils/versions';
+
+const versions = getDetailedVersions();
+---
+
+<BaseLayout title="Bond Math - Fixed Income Calculations" currentPath="/">
+  <div class="max-w-4xl mx-auto">
+    <!-- Hero Section -->
+    <div class="text-center mb-16 animate-fade-in">
+      <h1
+        class="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent"
+      >
+        Bond Math
+      </h1>
+      <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8">
+        Fixed-income bond calculations using Architecture as Code principles
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/day-count" class="btn btn-primary px-8 py-3 text-lg">
+          Try Day Count Calculator
+        </a>
+        <a href="/about" class="btn btn-secondary px-8 py-3 text-lg"> Learn More </a>
+      </div>
+    </div>
+
+    <!-- Features Grid -->
+    <div class="grid md:grid-cols-2 gap-8 mb-16">
+      <!-- Feature 1 -->
+      <div class="card p-6 hover:shadow-lg transition-shadow">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-8 h-8 text-primary-600"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+              ></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-2 text-gray-900 dark:text-white">
+              Day Count Conventions
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              Calculate year fractions using industry-standard conventions: ACT/360, ACT/365F,
+              30/360, and more.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="card p-6 hover:shadow-lg transition-shadow">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-8 h-8 text-primary-600"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232 1.232 3.23 0 4.462l-1.403 1.403m-4.106-6.267a3.004 3.004 0 01-1.743-1.743m0 0a3.004 3.004 0 00-1.743 1.743m1.743-1.743l6.267 6.267"
+              ></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-2 text-gray-900 dark:text-white">Blazing Fast</h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              Built on Cloudflare Workers for global edge performance. Calculations run in
+              milliseconds.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 3 -->
+      <div class="card p-6 hover:shadow-lg transition-shadow">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-8 h-8 text-primary-600"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-2 text-gray-900 dark:text-white">
+              Architecture as Code
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              Demonstrates modern software architecture patterns with auto-generated documentation.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="card p-6 hover:shadow-lg transition-shadow">
+        <div class="flex items-start space-x-4">
+          <div class="flex-shrink-0">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-8 h-8 text-primary-600"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
+              ></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold mb-2 text-gray-900 dark:text-white">Type-Safe & Tested</h3>
+            <p class="text-gray-600 dark:text-gray-400">
+              Built with TypeScript and Python with comprehensive testing and validation.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tech Stack -->
+    <div
+      class="card p-8 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 border-blue-200 dark:border-blue-800"
+    >
+      <h2 class="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">
+        Built With Modern Technologies
+      </h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div>
+          <div class="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">
+            {versions.astro.name}
+            {versions.astro.version}
+          </div>
+          <div class="text-sm text-gray-600 dark:text-gray-300">{versions.astro.description}</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">
+            {versions.react.name}
+            {versions.react.version}
+          </div>
+          <div class="text-sm text-gray-600 dark:text-gray-300">{versions.react.description}</div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">
+            {versions.tailwind.name}
+            {versions.tailwind.version}
+          </div>
+          <div class="text-sm text-gray-600 dark:text-gray-300">
+            {versions.tailwind.description}
+          </div>
+        </div>
+        <div>
+          <div class="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">
+            {versions.cloudflare.name}
+          </div>
+          <div class="text-sm text-gray-600 dark:text-gray-300">
+            {versions.cloudflare.description}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>

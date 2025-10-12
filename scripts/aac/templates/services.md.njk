@@ -1,0 +1,81 @@
+# Service Inventory
+
+> **Auto-generated from code** - Last updated: {{ currentDate }}
+
+Complete inventory of all services in the Bond Math architecture.
+
+## Summary
+
+| Service | Type | Layer | Description |
+|---------|------|-------|-------------|
+{% for service in services %}
+| [{{ service.name }}](#{{ service.id }}) | {{ service.technology }} | {{ service.layerTitle }} | {{ service.description }} |
+{% endfor %}
+
+## Service Details
+
+{% for service in services %}
+
+### {{ service.name }} {{ '{#' }}{{ service.id }}{{ '}' }}
+
+**ID:** `{{ service.id }}`
+**Type:** {{ service.type }}
+**Layer:** {{ service.layerTitle }}
+
+{{ service.description }}
+
+{% if service.endpoints.length > 0 %}
+**Endpoints:**
+
+{% for endpoint in service.endpoints %}
+- `{{ endpoint.method }} {{ endpoint.path }}`
+{% if endpoint.authentication %}
+  - **Auth:** {{ endpoint.authentication }}
+{% endif %}
+{% if endpoint.rateLimit %}
+  - **Rate Limit:** {{ endpoint.rateLimit }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if service.outgoingDependencies.length > 0 %}
+**Dependencies (outgoing):**
+
+{% for dep in service.outgoingDependencies %}
+- {{ dep.targetName }} (`{{ dep.protocol }}`{% if dep.authentication %}, auth: {{ dep.authentication }}{% endif %})
+{% endfor %}
+{% endif %}
+
+{% if service.incomingDependencies.length > 0 %}
+**Used by (incoming):**
+
+{% for dep in service.incomingDependencies %}
+- {{ dep.sourceName }}
+{% endfor %}
+{% endif %}
+
+{% if service.configuration.environment.length > 0 %}
+**Environment Variables:**
+
+{% for env in service.configuration.environment %}
+- `{{ env.name }}`{% if env.required %} (required){% endif %}{% if env.description %} - {{ env.description }}{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if service.configuration.bindings.length > 0 %}
+**Bindings:**
+
+{% for binding in service.configuration.bindings %}
+- `{{ binding.name }}` → {{ binding.target }}{% if binding.purpose %} ({{ binding.purpose }}){% endif %}
+{% endfor %}
+{% endif %}
+
+{% if service.componentCount > 0 %}
+**Components:** {{ service.componentCount }}
+
+![{{ service.name }} Component Diagram](../diagrams/structurizr-Components_{{ service.identifier }}.png)
+{% endif %}
+
+**[View detailed documentation →](./components/{{ service.id }}.md)**
+
+{% endfor %}

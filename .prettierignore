@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+dist/
+build/
+coverage/
+
+# Generated files
+*.min.js
+*.bundle.js
+.wrangler/
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Logs
+*.log
+
+# Documentation (preserve formatting)
+CHANGELOG.md
+LICENSE

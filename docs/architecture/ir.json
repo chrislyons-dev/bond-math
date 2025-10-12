@@ -1,0 +1,2658 @@
+{
+  "version": "1.0",
+  "project": {
+    "name": "bond-math",
+    "description": "Multi-language, serverless microservices system for fixed-income pricing and metrics",
+    "repository": "https://github.com/chrislyons-dev/bond-math.git"
+  },
+  "services": [
+    {
+      "id": "bond-valuation",
+      "name": "Bond Valuation",
+      "type": "cloudflare-worker-python",
+      "layer": "business-logic",
+      "description": "Price ↔ yield calculations and cashflow generation for bullet bonds",
+      "owner": "platform-team",
+      "internalRoutes": ["/price", "/yield", "/health"],
+      "dependencies": ["svc-daycount"],
+      "securityModel": "internal-jwt",
+      "slaTier": "high",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/price",
+          "gatewayRoute": "POST /api/valuation/v1/price",
+          "authentication": "internal-jwt",
+          "scope": "valuation:write"
+        },
+        {
+          "method": "POST",
+          "path": "/yield",
+          "gatewayRoute": "POST /api/valuation/v1/yield",
+          "authentication": "internal-jwt",
+          "scope": "valuation:write"
+        }
+      ]
+    },
+    {
+      "id": "daycount",
+      "name": "Daycount",
+      "type": "cloudflare-worker-typescript",
+      "layer": "business-logic",
+      "description": "Authoritative day-count and year-fraction calculations for fixed income",
+      "owner": "platform-team",
+      "sourcePath": "C:\\Users\\chris\\git\\bond-math\\services\\daycount",
+      "internalRoutes": ["/count", "/health"],
+      "dependencies": [],
+      "securityModel": "internal-jwt",
+      "slaTier": "high",
+      "endpoints": []
+    },
+    {
+      "id": "gateway",
+      "name": "Gateway",
+      "type": "cloudflare-worker-typescript",
+      "layer": "api-gateway",
+      "description": "Entry point for all API traffic - handles Auth0 verification, internal JWT minting, and service routing",
+      "owner": "platform-team",
+      "sourcePath": "C:\\Users\\chris\\git\\bond-math\\services\\gateway",
+      "internalRoutes": ["/health", "/api/*"],
+      "dependencies": ["svc-daycount", "svc-valuation", "svc-metrics", "svc-pricing"],
+      "securityModel": "auth0-oidc",
+      "slaTier": "critical",
+      "endpoints": []
+    },
+    {
+      "id": "metrics",
+      "name": "Metrics",
+      "type": "cloudflare-worker-python",
+      "layer": "business-logic",
+      "description": "Bond risk metrics (duration, convexity, PV01, DV01)",
+      "owner": "platform-team",
+      "internalRoutes": ["/duration", "/convexity", "/risk", "/health"],
+      "dependencies": ["svc-bond-valuation"],
+      "securityModel": "internal-jwt",
+      "slaTier": "high",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/duration",
+          "gatewayRoute": "POST /api/metrics/v1/duration",
+          "authentication": "internal-jwt",
+          "scope": "metrics:write"
+        },
+        {
+          "method": "POST",
+          "path": "/convexity",
+          "gatewayRoute": "POST /api/metrics/v1/convexity",
+          "authentication": "internal-jwt",
+          "scope": "metrics:write"
+        },
+        {
+          "method": "POST",
+          "path": "/risk",
+          "gatewayRoute": "POST /api/metrics/v1/risk",
+          "authentication": "internal-jwt",
+          "scope": "metrics:write"
+        }
+      ]
+    },
+    {
+      "id": "pricing",
+      "name": "Pricing",
+      "type": "cloudflare-worker-python",
+      "layer": "business-logic",
+      "description": "Curve-based cashflow discounting and present value calculations",
+      "owner": "platform-team",
+      "internalRoutes": ["/value", "/scenario", "/key-rate", "/health"],
+      "dependencies": [],
+      "securityModel": "internal-jwt",
+      "slaTier": "high",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/value",
+          "gatewayRoute": "POST /api/pricing/v1/value",
+          "authentication": "internal-jwt",
+          "scope": "pricing:write"
+        },
+        {
+          "method": "POST",
+          "path": "/scenario",
+          "gatewayRoute": "POST /api/pricing/v1/scenario",
+          "authentication": "internal-jwt",
+          "scope": "pricing:write"
+        },
+        {
+          "method": "POST",
+          "path": "/key-rate",
+          "gatewayRoute": "POST /api/pricing/v1/key-rate",
+          "authentication": "internal-jwt",
+          "scope": "pricing:write"
+        }
+      ]
+    },
+    {
+      "id": "ui",
+      "name": "Ui",
+      "type": "cloudflare-pages",
+      "layer": "ui",
+      "description": "User interface for bond math calculations - Astro static site with React islands",
+      "owner": "platform-team",
+      "sourcePath": "C:\\Users\\chris\\git\\bond-math\\ui",
+      "dependencies": ["svc-gateway (via HTTPS)"],
+      "securityModel": "auth0-oidc",
+      "slaTier": "high",
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/daycount/v1/count",
+          "authentication": "auth0-oidc",
+          "scope": "daycount:write",
+          "cacheable": false
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "source": "gateway",
+      "destination": "bond-valuation",
+      "protocol": "service-binding",
+      "authentication": "internal-jwt",
+      "binding": "SVC_VALUATION"
+    },
+    {
+      "source": "gateway",
+      "destination": "daycount",
+      "protocol": "service-binding",
+      "authentication": "internal-jwt",
+      "binding": "SVC_DAYCOUNT"
+    },
+    {
+      "source": "gateway",
+      "destination": "metrics",
+      "protocol": "service-binding",
+      "authentication": "internal-jwt",
+      "binding": "SVC_METRICS"
+    },
+    {
+      "source": "gateway",
+      "destination": "pricing",
+      "protocol": "service-binding",
+      "authentication": "internal-jwt",
+      "binding": "SVC_PRICING"
+    },
+    {
+      "source": "ui",
+      "destination": "gateway",
+      "protocol": "https",
+      "authentication": "auth0-jwt"
+    }
+  ],
+  "components": [
+    {
+      "id": "bond-valuation.main",
+      "name": "main",
+      "serviceId": "bond-valuation",
+      "type": "module",
+      "description": "Module: main",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "calculate_price",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculate_yield",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "daycount.ActorClaim",
+      "name": "ActorClaim",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\r\nActor claim from internal JWT\r\nRepresents \"Service X acting for User Y\"",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "iss",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "sub",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "perms",
+          "type": "string[]",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "uid",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "daycount.DateComponents",
+      "name": "DateComponents",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\r\nParsed date components for calculations\r\n",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "year",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "month",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "day",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "daycount.DatePair",
+      "name": "DatePair",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\r\nDate pair for year fraction calculation",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "start",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "end",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "daycount.DayCountOptions",
+      "name": "DayCountOptions",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\r\nOptions for day-count calculations",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "eomRule",
+          "type": "boolean",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "frequency",
+          "type": "number",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "daycount.DayCountRequest",
+      "name": "DayCountRequest",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\r\nRequest body for /api/daycount/v1/count endpoint",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "pairs",
+          "type": "DatePair[]",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "convention",
+          "type": "DayCountConvention",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "options",
+          "type": "DayCountOptions",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "daycount.DayCountResponse",
+      "name": "DayCountResponse",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\r\nResponse body for /api/daycount/v1/count endpoint",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "results",
+          "type": "DayCountResult[]",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "convention",
+          "type": "DayCountConvention",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "daycount.DayCountResult",
+      "name": "DayCountResult",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\r\nSingle day-count calculation result",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "days",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "yearFraction",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "basis",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "daycount.Env",
+      "name": "Env",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\r\nCloudflare Worker environment bindings",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "INTERNAL_JWT_SECRET",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "INTERNAL_JWT_SECRET_CURRENT",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "INTERNAL_JWT_SECRET_PREVIOUS",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "ENVIRONMENT",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "daycount.ErrorResponse",
+      "name": "ErrorResponse",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\r\nStandard error response following RFC 7807 Problem Details",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "type",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "status",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "detail",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "instance",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "errors",
+          "type": "Array<{\r\n    field?: string;\r\n    message: string;\r\n  }>",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "daycount.index",
+      "name": "index",
+      "serviceId": "daycount",
+      "type": "module",
+      "description": "Module: index",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "createErrorBody",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").ErrorResponse",
+          "parameters": [
+            {
+              "name": "status",
+              "type": "number",
+              "isOptional": false
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "detail",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "errors",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/validators\").ValidationError[] | undefined",
+              "isOptional": true
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculateSingle",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DayCountResult",
+          "parameters": [
+            {
+              "name": "startStr",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "endStr",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "convention",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DayCountConvention",
+              "isOptional": false
+            },
+            {
+              "name": "options",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DayCountOptions",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "daycount.logger",
+      "name": "logger",
+      "serviceId": "daycount",
+      "type": "module",
+      "description": "Module: logger",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "createLogger",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/pino/pino\").Logger",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "daycount.scopes",
+      "name": "scopes",
+      "serviceId": "daycount",
+      "type": "module",
+      "description": "Module: scopes",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "requireScopes",
+          "returnType": "(c: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<any, any, {}>, next: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next) => Promise<void>",
+          "parameters": [
+            {
+              "name": "requiredScopes",
+              "type": "string[]",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "requireAnyScope",
+          "returnType": "(c: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<any, any, {}>, next: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next) => Promise<void>",
+          "parameters": [
+            {
+              "name": "allowedScopes",
+              "type": "string[]",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "requireRole",
+          "returnType": "(c: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<any, any, {}>, next: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next) => Promise<void>",
+          "parameters": [
+            {
+              "name": "allowedRoles",
+              "type": "string[]",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "daycount.utils",
+      "name": "utils",
+      "serviceId": "daycount",
+      "type": "module",
+      "description": "Module: utils",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "parseDate",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DateComponents",
+          "parameters": [
+            {
+              "name": "dateString",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "isLeapYear",
+          "returnType": "boolean",
+          "parameters": [
+            {
+              "name": "year",
+              "type": "number",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        },
+        {
+          "name": "actualDaysBetween",
+          "returnType": "number",
+          "parameters": [
+            {
+              "name": "start",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DateComponents",
+              "isOptional": false
+            },
+            {
+              "name": "end",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DateComponents",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "daysInMonth",
+          "returnType": "number",
+          "parameters": [
+            {
+              "name": "year",
+              "type": "number",
+              "isOptional": false
+            },
+            {
+              "name": "month",
+              "type": "number",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        },
+        {
+          "name": "isEndOfMonth",
+          "returnType": "boolean",
+          "parameters": [
+            {
+              "name": "date",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DateComponents",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        },
+        {
+          "name": "validateDateOrder",
+          "returnType": "void",
+          "parameters": [
+            {
+              "name": "start",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DateComponents",
+              "isOptional": false
+            },
+            {
+              "name": "end",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DateComponents",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "daycount.ValidationError",
+      "name": "ValidationError",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\r\nValidation error with field context",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "field",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "daycount.validators",
+      "name": "validators",
+      "serviceId": "daycount",
+      "type": "module",
+      "description": "Module: validators",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "normalizeConvention",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/types\").DayCountConvention",
+          "parameters": [
+            {
+              "name": "convention",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        },
+        {
+          "name": "validateRequest",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/daycount/src/validators\").ValidationError | null",
+          "parameters": [
+            {
+              "name": "body",
+              "type": "unknown",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        }
+      ],
+      "stereotype": "pure"
+    },
+    {
+      "id": "daycount.Variables",
+      "name": "Variables",
+      "serviceId": "daycount",
+      "type": "interface",
+      "description": "\r\nHono context variables",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "requestId",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "actor",
+          "type": "ActorClaim",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "gateway.ActorClaim",
+      "name": "ActorClaim",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\r\nActor claim - represents \"Service X acting for User Y\"",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "iss",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "sub",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "perms",
+          "type": "string[]",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "org",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "uid",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "gateway.Auth0Claims",
+      "name": "Auth0Claims",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\r\nAuth0 JWT claims (after verification)",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "iss",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "sub",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "aud",
+          "type": "string | string[]",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "exp",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "iat",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "permissions",
+          "type": "string[]",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "'https://bondmath.chrislyons.dev/role'",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "'https://bondmath.chrislyons.dev/permissions'",
+          "type": "string[]",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "'https://bondmath.chrislyons.dev/user_id'",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "'https://bondmath.chrislyons.dev/org_id'",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "gateway.Env",
+      "name": "Env",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\r\nType definitions for Gateway Worker",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "AUTH0_DOMAIN",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "AUTH0_AUDIENCE",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "AUTH0_ISSUER",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "INTERNAL_JWT_SECRET",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "INTERNAL_JWT_SECRET_CURRENT",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "INTERNAL_JWT_SECRET_PREVIOUS",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "INTERNAL_JWT_TTL",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "ENVIRONMENT",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "SVC_DAYCOUNT",
+          "type": "Fetcher",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "SVC_VALUATION",
+          "type": "Fetcher",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "SVC_METRICS",
+          "type": "Fetcher",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "SVC_PRICING",
+          "type": "Fetcher",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "gateway.ErrorResponse",
+      "name": "ErrorResponse",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\r\nRFC 7807 Problem Details error response",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "type",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "status",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "detail",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "instance",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "gateway.InternalJWT",
+      "name": "InternalJWT",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\r\nInternal JWT payload structure",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "iss",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "sub",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "aud",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "exp",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "rid",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "act",
+          "type": "ActorClaim",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "gateway.JWK",
+      "name": "JWK",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\r\nJSON Web Key structure",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "kty",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "use",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "kid",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "n",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "e",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "alg",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "x5c",
+          "type": "string[]",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "x5t",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "gateway.JWKS",
+      "name": "JWKS",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\r\nAuth0 JWKS response structure",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "keys",
+          "type": "JWK[]",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "gateway.jwt",
+      "name": "jwt",
+      "serviceId": "gateway",
+      "type": "module",
+      "description": "Module: jwt",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "mintInternalToken",
+          "returnType": "Promise<string>",
+          "parameters": [
+            {
+              "name": "auth0Claims",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Auth0Claims",
+              "isOptional": false
+            },
+            {
+              "name": "targetService",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "secret",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "ttl",
+              "type": "number",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "createActorClaim",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").ActorClaim",
+          "parameters": [
+            {
+              "name": "auth0Claims",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Auth0Claims",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "extractPermissions",
+          "returnType": "string[]",
+          "parameters": [
+            {
+              "name": "claims",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Auth0Claims",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "signJWT",
+          "returnType": "Promise<string>",
+          "parameters": [
+            {
+              "name": "payload",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").InternalJWT",
+              "isOptional": false
+            },
+            {
+              "name": "secret",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "signData",
+          "returnType": "Promise<ArrayBuffer>",
+          "parameters": [
+            {
+              "name": "data",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "secret",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "validateSecretStrength",
+          "returnType": "void",
+          "parameters": [
+            {
+              "name": "secret",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "secretName",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "parseTokenParts",
+          "returnType": "[string, string, string]",
+          "parameters": [
+            {
+              "name": "token",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "verifyInternalToken",
+          "returnType": "Promise<import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").InternalJWT>",
+          "parameters": [
+            {
+              "name": "token",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "secret",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "expectedAudience",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "previousSecret",
+              "type": "string | undefined",
+              "isOptional": true
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "verifySignature",
+          "returnType": "Promise<boolean>",
+          "parameters": [
+            {
+              "name": "data",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "signature",
+              "type": "ArrayBuffer",
+              "isOptional": false
+            },
+            {
+              "name": "secret",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "validateInternalClaims",
+          "returnType": "void",
+          "parameters": [
+            {
+              "name": "payload",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").InternalJWT",
+              "isOptional": false
+            },
+            {
+              "name": "expectedAudience",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "generateRequestId",
+          "returnType": "string",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "base64UrlEncode",
+          "returnType": "string",
+          "parameters": [
+            {
+              "name": "data",
+              "type": "string | ArrayBuffer",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "base64UrlDecodeToString",
+          "returnType": "string",
+          "parameters": [
+            {
+              "name": "str",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "base64UrlDecodeToArrayBuffer",
+          "returnType": "ArrayBuffer",
+          "parameters": [
+            {
+              "name": "str",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "gateway.logger",
+      "name": "logger",
+      "serviceId": "gateway",
+      "type": "module",
+      "description": "Module: logger",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "createLogger",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/pino/pino\").Logger",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "gateway.middleware",
+      "name": "middleware",
+      "serviceId": "gateway",
+      "type": "module",
+      "description": "Module: middleware",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "requestId",
+          "returnType": "Promise<void>",
+          "parameters": [
+            {
+              "name": "c",
+              "type": "import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<{ Bindings: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Env; Variables: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Variables; }, any, {}>",
+              "isOptional": false
+            },
+            {
+              "name": "next",
+              "type": "import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "rateLimiter",
+          "returnType": "(c: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<{ Bindings: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Env; Variables: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Variables; }, any, {}>, next: import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next) => Promise<void | Response>",
+          "parameters": [
+            {
+              "name": "options",
+              "type": "{ windowMs: number; maxRequests: number; }",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "securityHeaders",
+          "returnType": "Promise<void>",
+          "parameters": [
+            {
+              "name": "c",
+              "type": "import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<{ Bindings: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Env; Variables: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Variables; }, any, {}>",
+              "isOptional": false
+            },
+            {
+              "name": "next",
+              "type": "import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "timing",
+          "returnType": "Promise<void>",
+          "parameters": [
+            {
+              "name": "c",
+              "type": "import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/context\").Context<{ Bindings: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Env; Variables: import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Variables; }, any, {}>",
+              "isOptional": false
+            },
+            {
+              "name": "next",
+              "type": "import(\"C:/Users/chris/git/bond-math/node_modules/hono/dist/types/types\").Next",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "gateway.router",
+      "name": "router",
+      "serviceId": "gateway",
+      "type": "module",
+      "description": "Module: router",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "findServiceRoute",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").ServiceRoute | null",
+          "parameters": [
+            {
+              "name": "path",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        },
+        {
+          "name": "routeToService",
+          "returnType": "Promise<Response>",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request<unknown, CfProperties<unknown>>",
+              "isOptional": false
+            },
+            {
+              "name": "route",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").ServiceRoute",
+              "isOptional": false
+            },
+            {
+              "name": "env",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").Env",
+              "isOptional": false
+            },
+            {
+              "name": "internalToken",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "createForwardedRequest",
+          "returnType": "Request<unknown, CfProperties<unknown>>",
+          "parameters": [
+            {
+              "name": "originalRequest",
+              "type": "Request<unknown, CfProperties<unknown>>",
+              "isOptional": false
+            },
+            {
+              "name": "route",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").ServiceRoute",
+              "isOptional": false
+            },
+            {
+              "name": "internalToken",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "getServiceIdentifier",
+          "returnType": "string",
+          "parameters": [
+            {
+              "name": "route",
+              "type": "import(\"C:/Users/chris/git/bond-math/services/gateway/src/types\").ServiceRoute",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "gateway.ServiceRoute",
+      "name": "ServiceRoute",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\r\nService route mapping",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "prefix",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "binding",
+          "type": "keyof Env",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "stripPrefix",
+          "type": "boolean",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "gateway.Variables",
+      "name": "Variables",
+      "serviceId": "gateway",
+      "type": "interface",
+      "description": "\r\nHono context variables",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "requestId",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "metrics.main",
+      "name": "main",
+      "serviceId": "metrics",
+      "type": "module",
+      "description": "Module: main",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "calculate_duration",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculate_convexity",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculate_risk_metrics",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "pricing.main",
+      "name": "main",
+      "serviceId": "pricing",
+      "type": "module",
+      "description": "Module: main",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "calculate_present_value",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculate_scenarios",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculate_key_rate_pv01",
+          "returnType": "JsonResponse",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "Request",
+              "isOptional": false
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "ui.ApiError",
+      "name": "ApiError",
+      "serviceId": "ui",
+      "type": "class",
+      "description": "\r\nCustom error class for API errors with field-level validation details.\r\n\r\nExtends Error with HTTP status code and optional field-level errors\r\nfrom RFC 7807 Problem Details responses.\r\n",
+      "excludeFromDiagram": false,
+      "properties": [],
+      "methods": [],
+      "extends": "Error"
+    },
+    {
+      "id": "ui.Auth0ProviderWithNavigateProps",
+      "name": "Auth0ProviderWithNavigateProps",
+      "serviceId": "ui",
+      "type": "interface",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "children",
+          "type": "ReactNode",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "ui.Auth0ProviderWithNavigatex",
+      "name": "Auth0ProviderWithNavigatex",
+      "serviceId": "ui",
+      "type": "module",
+      "description": "Module: Auth0ProviderWithNavigatex",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "Auth0ProviderWithNavigate",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
+          "parameters": [
+            {
+              "name": "{ children }",
+              "type": "Auth0ProviderWithNavigateProps",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "ui.AuthButtonx",
+      "name": "AuthButtonx",
+      "serviceId": "ui",
+      "type": "module",
+      "description": "Module: AuthButtonx",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "AuthButtonInner",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "AuthButton",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "ui.CallbackHandlerx",
+      "name": "CallbackHandlerx",
+      "serviceId": "ui",
+      "type": "module",
+      "description": "Module: CallbackHandlerx",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "CallbackHandlerInner",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "CallbackHandler",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "ui.client",
+      "name": "client",
+      "serviceId": "ui",
+      "type": "module",
+      "description": "Module: client",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "getApiBaseUrl",
+          "returnType": "string",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "calculateDayCount",
+          "returnType": "Promise<import(\"C:/Users/chris/git/bond-math/ui/src/lib/api/client\").DayCountResponse>",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "import(\"C:/Users/chris/git/bond-math/ui/src/lib/api/client\").DayCountRequest",
+              "isOptional": false
+            },
+            {
+              "name": "token",
+              "type": "string | undefined",
+              "isOptional": true
+            }
+          ],
+          "isAsync": true,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "ui.DatePair",
+      "name": "DatePair",
+      "serviceId": "ui",
+      "type": "interface",
+      "description": "\r\nAPI Client for Bond Math services\r\n",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "start",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "end",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "ui.DayCountCalculatorx",
+      "name": "DayCountCalculatorx",
+      "serviceId": "ui",
+      "type": "module",
+      "description": "Module: DayCountCalculatorx",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "DayCountCalculatorInner",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "DayCountCalculator",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "ui.DayCountOptions",
+      "name": "DayCountOptions",
+      "serviceId": "ui",
+      "type": "interface",
+      "description": "\r\nOptional parameters for day count calculations.\r\n",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "eomRule",
+          "type": "boolean",
+          "isOptional": true,
+          "isReadonly": false
+        },
+        {
+          "name": "frequency",
+          "type": "number",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "ui.DayCountRequest",
+      "name": "DayCountRequest",
+      "serviceId": "ui",
+      "type": "interface",
+      "description": "\r\nRequest payload for day count calculations.\r\n",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "pairs",
+          "type": "DatePair[]",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "convention",
+          "type": "DayCountConvention",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "options",
+          "type": "DayCountOptions",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "ui.DayCountResponse",
+      "name": "DayCountResponse",
+      "serviceId": "ui",
+      "type": "interface",
+      "description": "\r\nResponse from day count calculation endpoint.\r\n",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "results",
+          "type": "DayCountResult[]",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "convention",
+          "type": "DayCountConvention",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "ui.DayCountResult",
+      "name": "DayCountResult",
+      "serviceId": "ui",
+      "type": "interface",
+      "description": "\r\nResult of a single day count calculation.\r\n",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "days",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "yearFraction",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "basis",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "ui.ErrorResponse",
+      "name": "ErrorResponse",
+      "serviceId": "ui",
+      "type": "interface",
+      "description": "\r\nRFC 7807 Problem Details error response.\r\n",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "type",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "status",
+          "type": "number",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "detail",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "errors",
+          "type": "Array<{\r\n    field?: string;\r\n    message: string;\r\n  }>",
+          "isOptional": true,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "ui.LoginButtonx",
+      "name": "LoginButtonx",
+      "serviceId": "ui",
+      "type": "module",
+      "description": "Module: LoginButtonx",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "LoginButton",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "ui.LogoutButtonx",
+      "name": "LogoutButtonx",
+      "serviceId": "ui",
+      "type": "module",
+      "description": "Module: LogoutButtonx",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "LogoutButton",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "ui.ProfileContentx",
+      "name": "ProfileContentx",
+      "serviceId": "ui",
+      "type": "module",
+      "description": "Module: ProfileContentx",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "ProfileContentInner",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "ProfileContent",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "ui.TechVersions",
+      "name": "TechVersions",
+      "serviceId": "ui",
+      "type": "interface",
+      "excludeFromDiagram": false,
+      "properties": [
+        {
+          "name": "astro",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "react",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "tailwind",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "typescript",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        },
+        {
+          "name": "cloudflare",
+          "type": "string",
+          "isOptional": false,
+          "isReadonly": false
+        }
+      ],
+      "methods": []
+    },
+    {
+      "id": "ui.ThemeTogglex",
+      "name": "ThemeTogglex",
+      "serviceId": "ui",
+      "type": "module",
+      "description": "Module: ThemeTogglex",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "ThemeToggle",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/node_modules/@types/react/jsx-runtime\").JSX.Element",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "ui.validation",
+      "name": "validation",
+      "serviceId": "ui",
+      "type": "module",
+      "description": "Module: validation",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "isValidDate",
+          "returnType": "boolean",
+          "parameters": [
+            {
+              "name": "dateStr",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "isValidDateRange",
+          "returnType": "boolean",
+          "parameters": [
+            {
+              "name": "start",
+              "type": "string",
+              "isOptional": false
+            },
+            {
+              "name": "end",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "formatDate",
+          "returnType": "string",
+          "parameters": [
+            {
+              "name": "date",
+              "type": "Date",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        },
+        {
+          "name": "getToday",
+          "returnType": "string",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        },
+        {
+          "name": "getDaysFromToday",
+          "returnType": "string",
+          "parameters": [
+            {
+              "name": "days",
+              "type": "number",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "effectful"
+        }
+      ],
+      "stereotype": "effectful"
+    },
+    {
+      "id": "ui.versions",
+      "name": "versions",
+      "serviceId": "ui",
+      "type": "module",
+      "description": "Module: versions",
+      "excludeFromDiagram": false,
+      "functions": [
+        {
+          "name": "getMajorVersion",
+          "returnType": "string",
+          "parameters": [
+            {
+              "name": "versionStr",
+              "type": "string",
+              "isOptional": false
+            }
+          ],
+          "isAsync": false,
+          "isExported": false,
+          "stereotype": "pure"
+        },
+        {
+          "name": "getTechVersions",
+          "returnType": "import(\"C:/Users/chris/git/bond-math/ui/src/lib/utils/versions\").TechVersions",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        },
+        {
+          "name": "getDetailedVersions",
+          "returnType": "{ astro: { name: string; version: string; fullVersion: string; description: string; }; react: { name: string; version: string; fullVersion: string; description: string; }; tailwind: { name: string; version: string; fullVersion: string; description: string; }; typescript: { name: string; version: string; fullVersion: string; description: string; }; cloudflare: { name: string; version: string; fullVersion: string; description: string; }; }",
+          "parameters": [],
+          "isAsync": false,
+          "isExported": true,
+          "stereotype": "pure"
+        }
+      ],
+      "stereotype": "pure"
+    }
+  ],
+  "componentRelationships": [
+    {
+      "source": "daycount.DayCountRequest",
+      "destination": "daycount.DatePair",
+      "technology": "Uses"
+    },
+    {
+      "source": "daycount.DayCountRequest",
+      "destination": "daycount.DayCountOptions",
+      "technology": "Uses"
+    },
+    {
+      "source": "daycount.DayCountResponse",
+      "destination": "daycount.DayCountResult",
+      "technology": "Uses"
+    },
+    {
+      "source": "daycount.Variables",
+      "destination": "daycount.ActorClaim",
+      "technology": "Uses"
+    },
+    {
+      "source": "gateway.InternalJWT",
+      "destination": "gateway.ActorClaim",
+      "technology": "Uses"
+    },
+    {
+      "source": "gateway.JWKS",
+      "destination": "gateway.JWK",
+      "technology": "Uses"
+    },
+    {
+      "source": "ui.DayCountRequest",
+      "destination": "ui.DatePair",
+      "technology": "Uses"
+    },
+    {
+      "source": "ui.DayCountRequest",
+      "destination": "ui.DayCountOptions",
+      "technology": "Uses"
+    },
+    {
+      "source": "ui.DayCountResponse",
+      "destination": "ui.DayCountResult",
+      "technology": "Uses"
+    }
+  ],
+  "deploymentEnvironments": [
+    {
+      "name": "development",
+      "deploymentNodes": [
+        {
+          "id": "gateway-development",
+          "name": "bond-math-gateway-dev",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-gateway-dev",
+            "routes": []
+          },
+          "containerInstances": ["gateway"]
+        },
+        {
+          "id": "ui-development",
+          "name": "bond-math-ui",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-ui",
+            "routes": []
+          },
+          "containerInstances": ["ui"]
+        }
+      ]
+    },
+    {
+      "name": "preview",
+      "deploymentNodes": [
+        {
+          "id": "gateway-preview",
+          "name": "bond-math-gateway-preview",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-gateway-preview",
+            "routes": []
+          },
+          "containerInstances": ["gateway"]
+        },
+        {
+          "id": "daycount-preview",
+          "name": "bond-math-daycount-preview",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-daycount-preview",
+            "routes": []
+          },
+          "containerInstances": ["daycount"]
+        },
+        {
+          "id": "bond-valuation-preview",
+          "name": "bond-math-valuation-preview",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-valuation-preview",
+            "routes": []
+          },
+          "containerInstances": ["bond-valuation"]
+        },
+        {
+          "id": "metrics-preview",
+          "name": "bond-math-metrics-preview",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-metrics-preview",
+            "routes": []
+          },
+          "containerInstances": ["metrics"]
+        },
+        {
+          "id": "pricing-preview",
+          "name": "bond-math-pricing-preview",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-pricing-preview",
+            "routes": []
+          },
+          "containerInstances": ["pricing"]
+        },
+        {
+          "id": "ui-preview",
+          "name": "bond-math-ui",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-ui",
+            "routes": []
+          },
+          "containerInstances": ["ui"]
+        }
+      ]
+    },
+    {
+      "name": "production",
+      "deploymentNodes": [
+        {
+          "id": "gateway-production",
+          "name": "bond-math-gateway",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-gateway",
+            "routes": []
+          },
+          "containerInstances": ["gateway"]
+        },
+        {
+          "id": "daycount-production",
+          "name": "bond-math-daycount",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-daycount",
+            "routes": []
+          },
+          "containerInstances": ["daycount"]
+        },
+        {
+          "id": "bond-valuation-production",
+          "name": "bond-math-valuation",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-valuation",
+            "routes": []
+          },
+          "containerInstances": ["bond-valuation"]
+        },
+        {
+          "id": "metrics-production",
+          "name": "bond-math-metrics",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-metrics",
+            "routes": []
+          },
+          "containerInstances": ["metrics"]
+        },
+        {
+          "id": "pricing-production",
+          "name": "bond-math-pricing",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-pricing",
+            "routes": []
+          },
+          "containerInstances": ["pricing"]
+        },
+        {
+          "id": "ui-production",
+          "name": "bond-math-ui",
+          "type": "container",
+          "technology": "Cloudflare Workers",
+          "properties": {
+            "workerName": "bond-math-ui",
+            "routes": []
+          },
+          "containerInstances": ["ui"]
+        }
+      ]
+    }
+  ]
+}

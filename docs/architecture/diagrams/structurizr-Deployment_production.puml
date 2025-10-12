@@ -1,0 +1,120 @@
+@startuml
+set separator none
+title Bond Math - Production Deployment
+
+top to bottom direction
+skinparam ranksep 60
+skinparam nodesep 30
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<Production.bondmathvaluation.BondValuation_1>> {
+  BackgroundColor #3776ab
+  FontColor #ffffff
+  BorderColor #265277
+  shadowing false
+}
+skinparam rectangle<<Production.bondmathdaycount.Daycount_1>> {
+  BackgroundColor #3178c6
+  FontColor #ffffff
+  BorderColor #22548a
+  shadowing false
+}
+skinparam rectangle<<Production.bondmathgateway.Gateway_1>> {
+  BackgroundColor #3178c6
+  FontColor #ffffff
+  BorderColor #22548a
+  shadowing false
+}
+skinparam rectangle<<Production.bondmathmetrics.Metrics_1>> {
+  BackgroundColor #3776ab
+  FontColor #ffffff
+  BorderColor #265277
+  shadowing false
+}
+skinparam rectangle<<Production.bondmathpricing.Pricing_1>> {
+  BackgroundColor #3776ab
+  FontColor #ffffff
+  BorderColor #265277
+  shadowing false
+}
+skinparam rectangle<<Production.bondmathui.Ui_1>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<Production.bondmathdaycount>> {
+  BackgroundColor #ffffff
+  FontColor #000000
+  BorderColor #888888
+  shadowing false
+}
+skinparam rectangle<<Production.bondmathgateway>> {
+  BackgroundColor #ffffff
+  FontColor #000000
+  BorderColor #888888
+  shadowing false
+}
+skinparam rectangle<<Production.bondmathmetrics>> {
+  BackgroundColor #ffffff
+  FontColor #000000
+  BorderColor #888888
+  shadowing false
+}
+skinparam rectangle<<Production.bondmathpricing>> {
+  BackgroundColor #ffffff
+  FontColor #000000
+  BorderColor #888888
+  shadowing false
+}
+skinparam rectangle<<Production.bondmathui>> {
+  BackgroundColor #ffffff
+  FontColor #000000
+  BorderColor #888888
+  shadowing false
+}
+skinparam rectangle<<Production.bondmathvaluation>> {
+  BackgroundColor #ffffff
+  FontColor #000000
+  BorderColor #888888
+  shadowing false
+}
+
+rectangle "bond-math-gateway\n<size:10>[Deployment Node: Cloudflare Workers]</size>" <<Production.bondmathgateway>> as Production.bondmathgateway {
+  rectangle "==Gateway\n<size:10>[Container: Cloudflare Workers (TypeScript)]</size>\n\nEntry point for all API traffic - handles Auth0 verification, internal JWT minting, and service routing" <<Production.bondmathgateway.Gateway_1>> as Production.bondmathgateway.Gateway_1
+}
+
+rectangle "bond-math-daycount\n<size:10>[Deployment Node: Cloudflare Workers]</size>" <<Production.bondmathdaycount>> as Production.bondmathdaycount {
+  rectangle "==Daycount\n<size:10>[Container: Cloudflare Workers (TypeScript)]</size>\n\nAuthoritative day-count and year-fraction calculations for fixed income" <<Production.bondmathdaycount.Daycount_1>> as Production.bondmathdaycount.Daycount_1
+}
+
+rectangle "bond-math-valuation\n<size:10>[Deployment Node: Cloudflare Workers]</size>" <<Production.bondmathvaluation>> as Production.bondmathvaluation {
+  rectangle "==Bond Valuation\n<size:10>[Container: Cloudflare Workers (Python)]</size>\n\nPrice ↔ yield calculations and cashflow generation for bullet bonds" <<Production.bondmathvaluation.BondValuation_1>> as Production.bondmathvaluation.BondValuation_1
+}
+
+rectangle "bond-math-metrics\n<size:10>[Deployment Node: Cloudflare Workers]</size>" <<Production.bondmathmetrics>> as Production.bondmathmetrics {
+  rectangle "==Metrics\n<size:10>[Container: Cloudflare Workers (Python)]</size>\n\nBond risk metrics (duration, convexity, PV01, DV01)" <<Production.bondmathmetrics.Metrics_1>> as Production.bondmathmetrics.Metrics_1
+}
+
+rectangle "bond-math-pricing\n<size:10>[Deployment Node: Cloudflare Workers]</size>" <<Production.bondmathpricing>> as Production.bondmathpricing {
+  rectangle "==Pricing\n<size:10>[Container: Cloudflare Workers (Python)]</size>\n\nCurve-based cashflow discounting and present value calculations" <<Production.bondmathpricing.Pricing_1>> as Production.bondmathpricing.Pricing_1
+}
+
+rectangle "bond-math-ui\n<size:10>[Deployment Node: Cloudflare Workers]</size>" <<Production.bondmathui>> as Production.bondmathui {
+  rectangle "==Ui\n<size:10>[Container: Cloudflare Pages]</size>\n\nUser interface for bond math calculations - Astro static site with React islands" <<Production.bondmathui.Ui_1>> as Production.bondmathui.Ui_1
+}
+
+Production.bondmathgateway.Gateway_1 .[#707070,thickness=2].> Production.bondmathdaycount.Daycount_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
+Production.bondmathgateway.Gateway_1 .[#707070,thickness=2].> Production.bondmathvaluation.BondValuation_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
+Production.bondmathgateway.Gateway_1 .[#707070,thickness=2].> Production.bondmathmetrics.Metrics_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
+Production.bondmathgateway.Gateway_1 .[#707070,thickness=2].> Production.bondmathpricing.Pricing_1 : "<color:#707070>Uses\n<color:#707070><size:8>[Service Binding (internal-jwt)]</size>"
+Production.bondmathui.Ui_1 .[#707070,thickness=2].> Production.bondmathgateway.Gateway_1 : "<color:#707070>Uses\n<color:#707070><size:8>[https (auth0-jwt)]</size>"
+@enduml

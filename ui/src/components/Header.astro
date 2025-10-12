@@ -1,0 +1,154 @@
+---
+import ThemeToggle from './ThemeToggle';
+import { AuthButton } from './AuthButton';
+
+interface Props {
+  currentPath?: string;
+}
+
+const { currentPath = '/' } = Astro.props;
+
+const navItems = [
+  { href: '/', label: 'Home' },
+  { href: '/day-count', label: 'Day Count' },
+  { href: '/about', label: 'About' },
+];
+---
+
+<header
+  class="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm"
+>
+  <nav class="container mx-auto px-4 py-4" aria-label="Main navigation">
+    <div class="flex items-center justify-between">
+      <!-- Logo/Brand -->
+      <a
+        href="/"
+        class="flex items-center space-x-3 text-xl font-bold text-gray-900 dark:text-white transition-colors"
+        aria-label="Bond Math home"
+      >
+        <img
+          src="/bm_light_64.png"
+          alt="Bond Math logo"
+          class="w-10 h-10 dark:hidden"
+          width="64"
+          height="64"
+        />
+        <img
+          src="/bm_dark_64.png"
+          alt="Bond Math logo"
+          class="w-10 h-10 hidden dark:block"
+          width="64"
+          height="64"
+        />
+        <span>Bond Math</span>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <div class="hidden md:flex items-center space-x-1">
+        {
+          navItems.map((item) => (
+            <a
+              href={item.href}
+              class:list={[
+                'px-4 py-2 rounded-lg font-medium transition-colors',
+                currentPath === item.href
+                  ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
+              ]}
+              aria-current={currentPath === item.href ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          ))
+        }
+        <div class="ml-4 flex items-center gap-4">
+          <ThemeToggle client:load />
+          <AuthButton client:load />
+        </div>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <div class="flex md:hidden items-center space-x-2">
+        <ThemeToggle client:load />
+        <button
+          id="mobile-menu-button"
+          type="button"
+          class="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+          aria-label="Toggle navigation menu"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-6 h-6"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 space-y-2">
+      {
+        navItems.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              'block px-4 py-2 rounded-lg font-medium transition-colors',
+              currentPath === item.href
+                ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
+            ]}
+            aria-current={currentPath === item.href ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+      <div class="pt-4 border-t border-gray-200 dark:border-gray-800">
+        <AuthButton client:load />
+      </div>
+    </div>
+  </nav>
+</header>
+
+<script>
+  // Mobile menu toggle
+  const menuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  menuButton?.addEventListener('click', () => {
+    const isExpanded = menuButton.getAttribute('aria-expanded') === 'true';
+    menuButton.setAttribute('aria-expanded', String(!isExpanded));
+    mobileMenu?.classList.toggle('hidden');
+  });
+
+  // Close mobile menu when clicking outside
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (
+      mobileMenu &&
+      !mobileMenu.contains(target) &&
+      !menuButton?.contains(target) &&
+      !mobileMenu.classList.contains('hidden')
+    ) {
+      mobileMenu.classList.add('hidden');
+      menuButton?.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Close mobile menu when navigating
+  document.addEventListener('astro:page-load', () => {
+    mobileMenu?.classList.add('hidden');
+    menuButton?.setAttribute('aria-expanded', 'false');
+  });
+</script>

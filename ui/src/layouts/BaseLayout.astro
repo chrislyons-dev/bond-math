@@ -1,0 +1,140 @@
+---
+import Header from '@components/Header.astro';
+import Footer from '@components/Footer.astro';
+import '@/styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  currentPath?: string;
+}
+
+const {
+  title,
+  description = 'Bond Math - Fixed income calculations using Architecture as Code principles',
+  currentPath,
+} = Astro.props;
+
+const siteUrl = import.meta.env.PUBLIC_SITE_URL || 'https://bondmath.chrislyons.dev';
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
+---
+
+<!doctype html>
+<html lang="en" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Favicons with theme support -->
+    <link rel="icon" href="/bm_light_favicon.ico" media="(prefers-color-scheme: light)" />
+    <link rel="icon" href="/bm_dark_favicon.ico" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/bm_light_favicon.ico" />
+
+    <!-- Apple Touch Icons -->
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/bm_light_180.png"
+      media="(prefers-color-scheme: light)"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/bm_dark_180.png"
+      media="(prefers-color-scheme: dark)"
+    />
+    <link rel="apple-touch-icon" sizes="180x180" href="/bm_light_180.png" />
+
+    <!-- Various icon sizes -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/bm_light_32.png"
+      media="(prefers-color-scheme: light)"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/bm_dark_32.png"
+      media="(prefers-color-scheme: dark)"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="64x64"
+      href="/bm_light_64.png"
+      media="(prefers-color-scheme: light)"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="64x64"
+      href="/bm_dark_64.png"
+      media="(prefers-color-scheme: dark)"
+    />
+
+    <!-- SEO -->
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="Bond Math" />
+    <meta property="og:image" content={`${siteUrl}/bm_light_1024.png`} />
+    <meta property="og:image:width" content="1024" />
+    <meta property="og:image:height" content="1024" />
+    <meta property="og:image:alt" content="Bond Math - Fixed income calculations" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={`${siteUrl}/bm_light_1024.png`} />
+    <meta name="twitter:image:alt" content="Bond Math - Fixed income calculations" />
+
+    <!-- Preload critical fonts if any -->
+    <!-- <link rel="preload" href="/fonts/..." as="font" type="font/woff2" crossorigin> -->
+
+    <!-- Theme color -->
+    <meta name="theme-color" content="#0ea5e9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0369a1" media="(prefers-color-scheme: dark)" />
+
+    <!-- Prevent theme flash -->
+    <script is:inline>
+      const theme = (() => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark';
+        }
+        return 'light';
+      })();
+
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
+  </head>
+  <body
+    class="flex flex-col min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors"
+  >
+    <Header currentPath={currentPath} />
+    <main class="flex-1 container mx-auto px-4 py-8">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

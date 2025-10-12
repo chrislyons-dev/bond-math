@@ -1,0 +1,145 @@
+# {{ service.name }}
+
+> **Auto-generated from code** - Last updated: {{ currentDate }}
+
+## Overview
+
+- **Service ID:** `{{ service.id }}`
+- **Type:** {{ service.type }}
+- **Layer:** {{ service.layerTitle }}
+
+{{ service.description }}
+
+{% if service.endpoints.length > 0 %}
+## Endpoints
+
+{% for endpoint in service.endpoints %}
+### `{{ endpoint.method }} {{ endpoint.path }}`
+
+{% if endpoint.authentication or endpoint.scope or endpoint.rateLimit or endpoint.cacheable != undefined %}
+**Configuration:**
+
+{% if endpoint.authentication %}
+- **Authentication:** {{ endpoint.authentication }}
+{% endif %}
+{% if endpoint.scope %}
+- **Scope:** {{ endpoint.scope }}
+{% endif %}
+{% if endpoint.rateLimit %}
+- **Rate Limit:** {{ endpoint.rateLimit }}
+{% endif %}
+{% if endpoint.cacheable != undefined %}
+- **Cacheable:** {% if endpoint.cacheable %}Yes{% else %}No{% endif %}{% if endpoint.cacheable and endpoint.cacheTtl %} (TTL: {{ endpoint.cacheTtl }}s){% endif %}
+{% endif %}
+
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if service.outgoingDependencies.length > 0 or service.incomingDependencies.length > 0 %}
+## Dependencies
+
+{% if service.outgoingDependencies.length > 0 %}
+### Outgoing Dependencies
+
+This service depends on:
+
+{% for dep in service.outgoingDependencies %}
+- **{{ dep.targetName }}**
+  - Protocol: `{{ dep.protocol }}`
+{% if dep.authentication %}
+  - Authentication: {{ dep.authentication }}
+{% endif %}
+{% if dep.binding %}
+  - Service Binding: `{{ dep.binding }}`
+{% endif %}
+{% endfor %}
+
+{% endif %}
+
+{% if service.incomingDependencies.length > 0 %}
+### Incoming Dependencies
+
+This service is used by:
+
+{% for dep in service.incomingDependencies %}
+- **{{ dep.sourceName }}**
+{% endfor %}
+
+{% endif %}
+{% endif %}
+
+{% if service.configuration.environment.length > 0 or service.configuration.bindings.length > 0 %}
+## Configuration
+
+{% if service.configuration.environment.length > 0 %}
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+{% for env in service.configuration.environment %}
+| `{{ env.name }}` | {% if env.required %}Yes{% else %}No{% endif %} | {{ env.description or '-' }} |
+{% endfor %}
+
+{% endif %}
+
+{% if service.configuration.bindings.length > 0 %}
+### Bindings
+
+| Name | Target | Purpose |
+|------|--------|----------|
+{% for binding in service.configuration.bindings %}
+| `{{ binding.name }}` | {{ binding.target or '-' }} | {{ binding.purpose or '-' }} |
+{% endfor %}
+
+{% endif %}
+{% endif %}
+
+{% if service.visibleComponents.length > 0 %}
+## Components
+
+This service contains {{ service.visibleComponents.length }} component(s):
+
+### Component Diagram
+
+High-level component relationships:
+
+![{{ service.name }} Component Diagram](../../diagrams/structurizr-Components_{{ service.identifier }}.png)
+
+{% if service.type.includes('typescript') or service.type.includes('python') %}
+### Class Diagram
+
+Detailed UML class diagram showing properties, methods, and relationships:
+
+![{{ service.name }} Class Diagram](../../diagrams/class-diagram-{{ service.id }}.png)
+
+{% endif %}
+
+{% for item in service.componentsByType %}
+### {{ item.type }}s
+
+{% for comp in item.components %}
+#### {{ comp.name or comp.id }}
+
+{% if comp.description %}
+{{ comp.description }}
+
+{% endif %}
+{% endfor %}
+{% endfor %}
+{% endif %}
+
+{% if service.excludedComponents.length > 0 %}
+### Excluded Components
+
+The following {{ service.excludedComponents.length }} component(s) are excluded from diagrams (utilities, DTOs, etc.):
+
+{% for comp in service.excludedComponents %}
+- {{ comp.name or comp.id }}{% if comp.type %} ({{ comp.type }}){% endif %}
+{% endfor %}
+
+{% endif %}
+
+---
+
+[← Back to Service Inventory](../services.md) | [Architecture Overview](../index.md)

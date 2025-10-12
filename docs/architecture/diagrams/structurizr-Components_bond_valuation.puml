@@ -1,0 +1,34 @@
+@startuml
+set separator none
+title Bond Valuation - Components
+
+top to bottom direction
+skinparam ranksep 60
+skinparam nodesep 30
+
+skinparam {
+  arrowFontSize 10
+  defaultTextAlignment center
+  wrapWidth 200
+  maxMessageSize 100
+}
+
+hide stereotype
+
+skinparam rectangle<<bondmath.BondValuation.main>> {
+  BackgroundColor #dddddd
+  FontColor #000000
+  BorderColor #9a9a9a
+  shadowing false
+}
+skinparam rectangle<<bondmath.BondValuation>> {
+  BorderColor #265277
+  FontColor #265277
+  shadowing false
+}
+
+rectangle "Bond Valuation\n<size:10>[Container: Cloudflare Workers (Python)]</size>" <<bondmath.BondValuation>> {
+  rectangle "==main\n<size:10>[Component: Python Module]</size>\n\nModule: main" <<bondmath.BondValuation.main>> as bondmath.BondValuation.main
+}
+
+@enduml
