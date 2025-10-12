@@ -72,10 +72,10 @@ jobs:
 
       - name: Type check Python (mypy)
         run: |
-          python -m mypy  --config-file services/bond-valuation/pyproject.toml services/bond-valuation/src
-          python -m mypy --config-file services/metrics/pyproject.toml services/metrics/src
-          python -m mypy --config-file services/pricing/pyproject.toml services/pricing/src
-          python -m mypy --config-file libs/flarelette/pyproject.toml libs/flarelette/src
+          bash -lc 'cd services/bond-valuation && python -m mypy --config-file pyproject.toml src'
+          bash -lc 'cd services/metrics && python -m mypy --config-file pyproject.toml src'
+          bash -lc 'cd services/pricing && python -m mypy --config-file pyproject.toml src'
+          bash -lc 'cd libs/flarelette && python -m mypy --config-file pyproject.toml src'
 
   # Job 2: Gateway Service
   gateway:
