@@ -84,7 +84,10 @@ ignore = [
 
 # MyPy - Type checker
 [tool.mypy]
-files = ["src"]
+python_version = "3.11"
+files = ["src"]            # so you can run `mypy` with no args here
+mypy_path = ["src"]        # make `core`, `calculators`, etc. importable
+namespace_packages = true  # keep if any package dirs lack __init__.py
 python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true

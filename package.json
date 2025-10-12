@@ -88,22 +88,22 @@
     "services/bond-valuation/**/*.py": [
       "bash -c 'cd services/bond-valuation && py -3 -m black .'",
       "bash -c 'cd services/bond-valuation && py -3 -m ruff check --fix . --config pyproject.toml'",
-      "bash -c 'cd services/bond-valuation && py -3 -m mypy --config-file pyproject.toml src'"
+      "bash -c 'cd services/bond-valuation && py -3 -m mypy --config-file pyproject.toml'"
     ],
     "services/metrics/**/*.py": [
       "bash -c 'cd services/metrics && py -3 -m black .'",
       "bash -c 'cd services/metrics && py -3 -m ruff check --fix . --config pyproject.toml'",
-      "bash -c 'cd services/metrics && py -3 -m mypy --config-file pyproject.toml src'"
+      "bash -c 'cd services/metrics && py -3 -m mypy --config-file pyproject.toml'"
     ],
     "services/pricing/**/*.py": [
       "bash -c 'cd services/pricing && py -3 -m black .'",
       "bash -c 'cd services/pricing && py -3 -m ruff check --fix . --config pyproject.toml'",
-      "bash -c 'cd services/pricing && py -3 -m mypy --config-file pyproject.toml src'"
+      "bash -c 'cd services/pricing && py -3 -m mypy --config-file pyproject.toml'"
     ],
     "libs/flarelette/**/*.py": [
       "bash -c 'cd libs/flarelette && py -3 -m black .'",
       "bash -c 'cd libs/flarelette && py -3 -m ruff check --fix .'",
-      "bash -c 'cd libs/flarelette && py -3 -m mypy --config-file pyproject.toml src'"
+      "bash -c 'cd libs/flarelette && py -3 -m mypy --config-file pyproject.toml'"
     ],
     "*.{json,md,yml,yaml}": [
       "prettier --write"
