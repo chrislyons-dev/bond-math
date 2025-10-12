@@ -147,7 +147,7 @@ app.all('/api/*', async (c) => {
       auth0Token,
       c.env.AUTH0_DOMAIN,
       c.env.AUTH0_AUDIENCE,
-      c.env.AUTH0_ISSUER as string
+      c.env.AUTH0_ISSUER
     );
 
     // Store user ID in context for rate limiting and logging
