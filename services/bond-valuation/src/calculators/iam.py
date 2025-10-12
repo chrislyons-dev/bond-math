@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from ..types import BondSpec, Cashflow, PricingResult
-from .base import BondCalculator, newton_raphson
+from calculators.base import BondCalculator, newton_raphson
+from core.bond_types import BondSpec, Cashflow, PricingResult
 
 
 class InterestAtMaturityCalculator(BondCalculator):

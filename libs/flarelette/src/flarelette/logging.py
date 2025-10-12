@@ -8,7 +8,7 @@ import time
 from collections.abc import Awaitable, Callable
 from typing import Any
 
-from pythonjsonlogger import jsonlogger
+from pythonjsonlogger.json import JsonFormatter
 
 from .request import Request
 from .response import Response
@@ -33,7 +33,7 @@ class StructuredLogger:
         # Only add handler if not already configured
         if not self._logger.handlers:
             handler = logging.StreamHandler()
-            formatter = jsonlogger.JsonFormatter(
+            formatter = JsonFormatter(
                 "%(timestamp)s %(level)s %(service)s %(message)s",
                 rename_fields={"levelname": "level"},
             )

@@ -20,18 +20,18 @@
 
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import type { Env, Variables } from './types';
-import { verifyAuth0Token, extractBearerToken } from './auth0';
-import { mintInternalToken } from './jwt';
-import { findServiceRoute, routeToService, getServiceIdentifier } from './router';
+import { extractBearerToken, verifyAuth0Token } from './auth0';
 import {
-  createUnauthorizedResponse,
   createNotFoundResponse,
-  handleError,
+  createUnauthorizedResponse,
   globalErrorHandler,
+  handleError,
 } from './errors';
-import { logger, requestId, rateLimiter, securityHeaders, timing } from './middleware';
+import { mintInternalToken } from './jwt';
 import { logger as pinoLogger } from './logger';
+import { logger, rateLimiter, requestId, securityHeaders, timing } from './middleware';
+import { findServiceRoute, getServiceIdentifier, routeToService } from './router';
+import type { Env, Variables } from './types';
 
 const VERSION = '2025.10';
 
@@ -146,7 +146,8 @@ app.all('/api/*', async (c) => {
     const auth0Claims = await verifyAuth0Token(
       auth0Token,
       c.env.AUTH0_DOMAIN,
-      c.env.AUTH0_AUDIENCE
+      c.env.AUTH0_AUDIENCE,
+      c.env.AUTH0_ISSUER as string
     );
 
     // Store user ID in context for rate limiting and logging

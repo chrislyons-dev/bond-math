@@ -31,6 +31,7 @@ dev = [
 line-length = 88
 target-version = ['py311']
 include = '\.pyi?$'
+exclude = '(^|.*/)src/(six\.py|dateutil/.*|flarelette/.*|pythonjsonlogger/.*)$'
 extend-exclude = '''
 /(
   # directories
@@ -49,6 +50,14 @@ extend-exclude = '''
 [tool.ruff]
 line-length = 88
 target-version = "py311"
+
+exclude = ["**/six.py"]
+
+extend-exclude = [
+  "**/src/dateutil/*",
+  "**/src/flarelette/*",
+  "**/src/pythonjsonlogger/*"
+]
 
 [tool.ruff.lint]
 select = [
@@ -75,6 +84,7 @@ ignore = [
 
 # MyPy - Type checker
 [tool.mypy]
+files = ["src"]
 python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
@@ -86,6 +96,16 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 strict_equality = true
+exclude = '(^|.*[\\/])src[\\/](six\.py|dateutil[\\/].*|flarelette[\\/].*|pythonjsonlogger[\\/].*)$'
+
+[[tool.mypy.overrides]]
+module = ["js", "js.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["flarelette", "flarelette.*", "pythonjsonlogger", "pythonjsonlogger.*", "dateutil", "dateutil.*"]
+follow_imports = "skip"
+ignore_errors = true
 
 # Pytest - Testing framework
 [tool.pytest.ini_options]

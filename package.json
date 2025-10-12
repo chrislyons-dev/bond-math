@@ -19,6 +19,8 @@
     "test:coverage": "npm run test:coverage --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "dev": "npm run dev --workspaces --if-present",
+    "dev:stack": "powershell -ExecutionPolicy Bypass -File scripts/start-local-stack.ps1",
+    "dev:stack:bash": "bash scripts/start-local-stack.sh",
     "deploy": "npm run deploy --workspaces --if-present",
     "clean": "npm run clean --workspaces --if-present && rm -rf node_modules dist .wrangler",
     "prepare": "husky",
@@ -46,7 +48,8 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.3",
     "prettier": "^3.1.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "wrangler": "^4.42.2"
   },
   "keywords": [
     "bond-math",
@@ -62,7 +65,12 @@
   },
   "license": "MIT",
   "author": "Chris Lyons",
+  "lint-staged:config": {
+    "concurrent": false,
+    "maxParallel": 1
+  },
   "lint-staged": {
+    "*": "echo skip",
     "ui/**/*.{ts,js}": [
       "bash -c 'cd ui && npm run typecheck'",
       "prettier --write"
@@ -79,23 +87,23 @@
     ],
     "services/bond-valuation/**/*.py": [
       "bash -c 'cd services/bond-valuation && py -3 -m black .'",
-      "bash -c 'cd services/bond-valuation && py -3 -m ruff check --fix .'",
-      "bash -c 'cd services/bond-valuation && py -3 -m mypy src'"
+      "bash -c 'cd services/bond-valuation && py -3 -m ruff check --fix . --config pyproject.toml'",
+      "bash -c 'cd services/bond-valuation && py -3 -m mypy --config-file pyproject.toml src'"
     ],
     "services/metrics/**/*.py": [
       "bash -c 'cd services/metrics && py -3 -m black .'",
-      "bash -c 'cd services/metrics && py -3 -m ruff check --fix .'",
-      "bash -c 'cd services/metrics && py -3 -m mypy src'"
+      "bash -c 'cd services/metrics && py -3 -m ruff check --fix . --config pyproject.toml'",
+      "bash -c 'cd services/metrics && py -3 -m mypy --config-file pyproject.toml src'"
     ],
     "services/pricing/**/*.py": [
       "bash -c 'cd services/pricing && py -3 -m black .'",
-      "bash -c 'cd services/pricing && py -3 -m ruff check --fix .'",
-      "bash -c 'cd services/pricing && py -3 -m mypy src'"
+      "bash -c 'cd services/pricing && py -3 -m ruff check --fix . --config pyproject.toml'",
+      "bash -c 'cd services/pricing && py -3 -m mypy --config-file pyproject.toml src'"
     ],
-    "libs/microapi/**/*.py": [
-      "bash -c 'cd libs/microapi && py -3 -m black .'",
-      "bash -c 'cd libs/microapi && py -3 -m ruff check --fix .'",
-      "bash -c 'cd libs/microapi && py -3 -m mypy src'"
+    "libs/flarelette/**/*.py": [
+      "bash -c 'cd libs/flarelette && py -3 -m black .'",
+      "bash -c 'cd libs/flarelette && py -3 -m ruff check --fix .'",
+      "bash -c 'cd libs/flarelette && py -3 -m mypy --config-file pyproject.toml src'"
     ],
     "*.{json,md,yml,yaml}": [
       "prettier --write"

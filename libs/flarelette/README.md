@@ -1,14 +1,15 @@
-# workers-py
+# flarelette
 
-Lightweight microframework for Cloudflare Python Workers.
+Lightweight API framework for Cloudflare Python Workers - like Starlette but for
+Workers.
 
-**Version:** 0.1.0
+**Version:** 0.1.2
 
 ## Features
 
 - Flask-style routing with decorators
 - Schema-based request validation (no pydantic)
-- Structured JSON logging (ADR-0013 compliant)
+- Structured JSON logging
 - Middleware support
 - Security headers by default
 - Type-safe with full type hints
@@ -17,8 +18,8 @@ Lightweight microframework for Cloudflare Python Workers.
 ## Quick Start
 
 ```python
-from workers_py import App, Request, JsonResponse, Field, validate_body
-from workers_py.logging import StructuredLogger, LoggingMiddleware
+from flarelette import App, Request, JsonResponse, Field, validate_body
+from flarelette.logging import StructuredLogger, LoggingMiddleware
 
 # Initialize app
 app = App()
@@ -121,12 +122,7 @@ Validation errors return 422 with descriptive messages.
 ```bash
 pytest                  # Run tests
 pytest --cov           # Coverage
-mypy src/workers_py    # Type check
+mypy src/flarelette    # Type check
 ruff check src         # Lint
 black src              # Format
 ```
-
-## References
-
-- [ADR-0013: Structured Logging](../../docs/adr/0013-structured-logging-standards.md)
-- [Cloudflare Python Workers](https://developers.cloudflare.com/workers/languages/python/)

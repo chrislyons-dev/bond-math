@@ -42,10 +42,24 @@ export default defineConfig({
           https: httpsConfig,
           port: 4321,
           strictPort: true, // Fail if port 4321 is not available
+          proxy: {
+            '/api': {
+              target: 'http://localhost:8791',
+              changeOrigin: true,
+              secure: false,
+            },
+          },
         }
       : {
           port: 4321,
           strictPort: true,
+          proxy: {
+            '/api': {
+              target: 'http://localhost:8791',
+              changeOrigin: true,
+              secure: false,
+            },
+          },
         },
     resolve: {
       alias: {

@@ -3,14 +3,26 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "microapi"
-version = "0.1.0"
-description = "Lightweight micro API framework for Cloudflare Python Workers"
+name = "flarelette"
+version = "0.1.2"
+description = "Lightweight API framework for Cloudflare Python Workers - like Starlette but for Workers"
+readme = "README.md"
 authors = [
     {name = "Chris Lyons", email = "chris@chrislyons.dev"}
 ]
 license = {text = "MIT"}
 requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
 dependencies = [
     "python-json-logger>=2.0.0",
 ]
@@ -26,11 +38,11 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["microapi"]
+packages = ["flarelette"]
 package-dir = {"" = "src"}
 
 [tool.setuptools.package-data]
-microapi = ["py.typed"]
+flarelette = ["py.typed"]
 
 [tool.black]
 line-length = 100
@@ -57,7 +69,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["microapi"]
+known-first-party = ["flarelette"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -69,6 +81,10 @@ check_untyped_defs = true
 strict_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["js", "js.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -9,6 +9,7 @@ export interface Env {
   // Auth0 Configuration
   AUTH0_DOMAIN: string;
   AUTH0_AUDIENCE: string;
+  AUTH0_ISSUER: string;
 
   // Internal JWT Configuration
   INTERNAL_JWT_SECRET?: string; // Legacy - for backward compatibility

@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { verifyAuth0Token, extractBearerToken } from '../src/auth0';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { extractBearerToken, verifyAuth0Token } from '../src/auth0';
 import type { Auth0Claims } from '../src/types';
 
 // Helper to create typed fetch mock
@@ -55,6 +55,7 @@ const createValidToken = (mockDomain: string, mockAudience: string): string => {
 describe('Auth0 Module', () => {
   const mockDomain = 'test.auth0.com';
   const mockAudience = 'https://api.bondmath.dev';
+  const mockIssuer = `https://${mockDomain}/`;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -98,13 +99,13 @@ describe('Auth0 Module', () => {
   describe('verifyAuth0Token', () => {
     describe('Token Format Validation', () => {
       it('should reject token with invalid format (not 3 parts)', async () => {
-        await expect(verifyAuth0Token('invalid.token', mockDomain, mockAudience)).rejects.toThrow(
-          'Invalid token format'
-        );
+        await expect(
+          verifyAuth0Token('invalid.token', mockDomain, mockAudience, mockIssuer)
+        ).rejects.toThrow('Invalid token format');
       });
 
       it('should reject token with empty parts', async () => {
-        await expect(verifyAuth0Token('..', mockDomain, mockAudience)).rejects.toThrow(
+        await expect(verifyAuth0Token('..', mockDomain, mockAudience, mockIssuer)).rejects.toThrow(
           'Invalid token format'
         );
       });
@@ -112,17 +113,17 @@ describe('Auth0 Module', () => {
       it('should handle token with missing header part', async () => {
         const malformedToken = '.eyJzdWI6MTIzNDU2Nzg5MH0.signature';
 
-        await expect(verifyAuth0Token(malformedToken, mockDomain, mockAudience)).rejects.toThrow(
-          'Invalid token format'
-        );
+        await expect(
+          verifyAuth0Token(malformedToken, mockDomain, mockAudience, mockIssuer)
+        ).rejects.toThrow('Invalid token format');
       });
 
       it('should handle token with missing payload part', async () => {
         const malformedToken = 'eyJhbGc6IlJTMjU2In0..signature';
 
-        await expect(verifyAuth0Token(malformedToken, mockDomain, mockAudience)).rejects.toThrow(
-          'Invalid token format'
-        );
+        await expect(
+          verifyAuth0Token(malformedToken, mockDomain, mockAudience, mockIssuer)
+        ).rejects.toThrow('Invalid token format');
       });
     });
 
@@ -141,7 +142,7 @@ describe('Auth0 Module', () => {
           iss: 'https://wrong-domain.auth0.com/',
         });
 
-        await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow(
+        await expect(verifyAuth0Token(token, mockDomain, mockAudience, mockIssuer)).rejects.toThrow(
           'Invalid token issuer'
         );
       });
@@ -151,7 +152,7 @@ describe('Auth0 Module', () => {
           aud: 'https://wrong-audience.example.com',
         });
 
-        await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow(
+        await expect(verifyAuth0Token(token, mockDomain, mockAudience, mockIssuer)).rejects.toThrow(
           'Invalid token audience'
         );
       });
@@ -161,7 +162,7 @@ describe('Auth0 Module', () => {
           aud: ['https://wrong1.example.com', 'https://wrong2.example.com'],
         });
 
-        await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow(
+        await expect(verifyAuth0Token(token, mockDomain, mockAudience, mockIssuer)).rejects.toThrow(
           'Invalid token audience'
         );
       });
@@ -171,7 +172,7 @@ describe('Auth0 Module', () => {
           exp: Math.floor(Date.now() / 1000) - 3600, // Expired 1 hour ago
         });
 
-        await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow(
+        await expect(verifyAuth0Token(token, mockDomain, mockAudience, mockIssuer)).rejects.toThrow(
           'Token expired'
         );
       });
@@ -181,7 +182,7 @@ describe('Auth0 Module', () => {
           exp: Math.floor(Date.now() / 1000) - 1, // Expired 1 second ago to ensure it fails
         });
 
-        await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow(
+        await expect(verifyAuth0Token(token, mockDomain, mockAudience, mockIssuer)).rejects.toThrow(
           'Token expired'
         );
       });
@@ -197,7 +198,9 @@ describe('Auth0 Module', () => {
         });
 
         // Will fail at key not found, but we can verify fetch was called
-        await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow();
+        await expect(
+          verifyAuth0Token(token, mockDomain, mockAudience, mockIssuer)
+        ).rejects.toThrow();
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const userAgentMatcher = expect.stringContaining('BondMath-Gateway');
@@ -213,7 +216,7 @@ describe('Auth0 Module', () => {
         });
 
         expect(global.fetch).toHaveBeenCalledWith(
-          `https://${mockDomain}/.well-known/jwks.json`,
+          `${mockIssuer}.well-known/jwks.json`,
           requestMatcher
         );
       });
@@ -227,7 +230,7 @@ describe('Auth0 Module', () => {
           statusText: 'Internal Server Error',
         });
 
-        await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow(
+        await expect(verifyAuth0Token(token, mockDomain, mockAudience, mockIssuer)).rejects.toThrow(
           'Failed to fetch JWKS: 500 Internal Server Error'
         );
       });
@@ -240,7 +243,7 @@ describe('Auth0 Module', () => {
         abortError.name = 'AbortError';
         global.fetch = createFetchRejectMock(abortError);
 
-        await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow(
+        await expect(verifyAuth0Token(token, mockDomain, mockAudience, mockIssuer)).rejects.toThrow(
           'JWKS fetch timeout after 5 seconds'
         );
       });
@@ -264,7 +267,7 @@ describe('Auth0 Module', () => {
             }),
         });
 
-        await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow(
+        await expect(verifyAuth0Token(token, mockDomain, mockAudience, mockIssuer)).rejects.toThrow(
           'Key not found in JWKS'
         );
       });
@@ -274,7 +277,7 @@ describe('Auth0 Module', () => {
 
         global.fetch = createFetchRejectMock(new Error('Network error'));
 
-        await expect(verifyAuth0Token(token, mockDomain, mockAudience)).rejects.toThrow(
+        await expect(verifyAuth0Token(token, mockDomain, mockAudience, mockIssuer)).rejects.toThrow(
           'Network error'
         );
       });

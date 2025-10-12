@@ -46,12 +46,17 @@ class Response:
 
     def to_workers_response(self) -> Any:
         """Convert to Cloudflare Workers Response object."""
-        # This will be called by the Workers runtime
-        return {
-            "body": self.body,
-            "status": self.status,
-            "headers": self.headers,
-        }
+        # Import Response from js namespace (Cloudflare Workers API)
+        from js import Response as WorkersResponse
+
+        # Create proper Workers Response object
+        return WorkersResponse.new(
+            self.body,
+            {
+                "status": self.status,
+                "headers": self.headers,
+            },
+        )
 
 
 class JsonResponse(Response):

@@ -15,22 +15,22 @@ const SERVICE_ROUTES: ServiceRoute[] = [
   {
     prefix: '/api/daycount',
     binding: 'SVC_DAYCOUNT',
-    stripPrefix: false,
+    stripPrefix: true,
   },
   {
     prefix: '/api/valuation',
     binding: 'SVC_VALUATION',
-    stripPrefix: false,
+    stripPrefix: true,
   },
   {
     prefix: '/api/metrics',
     binding: 'SVC_METRICS',
-    stripPrefix: false,
+    stripPrefix: true,
   },
   {
     prefix: '/api/pricing',
     binding: 'SVC_PRICING',
-    stripPrefix: false,
+    stripPrefix: true,
   },
 ];
 

@@ -16,8 +16,15 @@ This is a stub implementation that returns hardcoded responses to validate
 the microapi framework integration.
 """
 
-from microapi import Field, JsonResponse, Request, create_worker_app, require_scopes, validate_body
-from microapi.errors import ValidationError
+from flarelette import (
+    Field,
+    JsonResponse,
+    Request,
+    create_worker_app,
+    require_scopes,
+    validate_body,
+)
+from flarelette.errors import ValidationError
 
 # Constants
 SERVICE_NAME = "pricing"

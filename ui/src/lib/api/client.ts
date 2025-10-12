@@ -193,7 +193,7 @@ export async function calculateDayCount(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${getApiBaseUrl()}/api/daycount/v1/count`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/daycount/count`, {
     method: 'POST',
     headers,
     body: JSON.stringify(request),

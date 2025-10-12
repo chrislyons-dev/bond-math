@@ -3,8 +3,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 
-from ..schedule.builder import ScheduleBuilder
-from ..types import BondSpec, BondType, Cashflow, DayCountFunc, PricingResult
+from bond_schedule.builder import ScheduleBuilder
+from core.bond_types import BondSpec, BondType, Cashflow, DayCountFunc, PricingResult
 
 
 def newton_raphson(

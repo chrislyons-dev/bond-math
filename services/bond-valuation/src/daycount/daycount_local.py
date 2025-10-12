@@ -6,7 +6,7 @@ For production, consider calling the authoritative daycount service.
 
 from datetime import date
 
-from ..types import DayCount
+from core.bond_types import DayCount
 
 
 def calculate_year_fraction(start: date, end: date, convention: DayCount) -> float:

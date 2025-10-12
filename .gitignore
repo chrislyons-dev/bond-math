@@ -122,3 +122,9 @@ temp/
 **/reviews*
 .wrangler/
 wrangler.toml.backup
+
+# Local dev: flarelette copied into services for wrangler compatibility
+services/*/src/flarelette/
+services/*/src/pythonjsonlogger/
+services/*/src/dateutil/
+services/*/src/six.py

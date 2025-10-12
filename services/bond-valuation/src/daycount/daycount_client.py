@@ -7,9 +7,8 @@ from collections.abc import Awaitable, Callable
 from datetime import date
 from typing import Any
 
-from microapi import Request
-
-from ..types import DayCount
+from core.bond_types import DayCount
+from flarelette import Request
 
 
 def _map_convention(dc: DayCount) -> str:
@@ -44,7 +43,7 @@ async def calculate_year_fraction(
     Raises:
         RuntimeError: If daycount service call fails
     """
-    env = request.env  # type: ignore[attr-defined]
+    env = request.env
     if not hasattr(env, "SVC_DAYCOUNT"):
         raise RuntimeError("Daycount service binding not available (SVC_DAYCOUNT)")
 

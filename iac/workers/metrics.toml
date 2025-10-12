@@ -1,6 +1,7 @@
 name = "bond-math-metrics"
 main = "../../services/metrics/src/main.py"
 compatibility_date = "2025-01-01"
+compatibility_flags = ["python_workers"]
 
 # Service metadata for Architecture as Code
 # @service metrics

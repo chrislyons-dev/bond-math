@@ -8,7 +8,6 @@ import time
 from typing import Any
 
 import pytest
-
 from microapi import Request
 from microapi.auth import InternalJWT, JWTMiddleware
 from microapi.errors import ForbiddenError, UnauthorizedError

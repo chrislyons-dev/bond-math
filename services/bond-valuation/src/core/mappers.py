@@ -3,7 +3,7 @@
 from datetime import date
 from typing import Any
 
-from .types import (
+from core.bond_types import (
     BondSpec,
     BondType,
     Cashflow,

@@ -3,6 +3,8 @@
 import json
 from typing import Any
 
+from js import URL
+
 
 class Request:
     """Wrapper for Cloudflare Workers Request object with security features."""
@@ -29,8 +31,8 @@ class Request:
     @property
     def path(self) -> str:
         """Get request path without query string."""
-        url_obj = self._request.url
-        return str(url_obj.split("?")[0].split("#")[0])
+        url_obj = URL.new(str(self._request.url))
+        return str(url_obj.pathname)
 
     def header(self, name: str, default: str | None = None) -> str | None:
         """Get header value with safe defaults.

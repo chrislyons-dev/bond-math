@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from ..types import BondSpec, Cashflow, PricingResult
-from .base import BondCalculator
+from calculators.base import BondCalculator
+from core.bond_types import BondSpec, Cashflow, PricingResult
 
 
 class DiscountedCalculator(BondCalculator):

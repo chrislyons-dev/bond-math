@@ -1,13 +1,13 @@
-name = "bond-math-pricing"
-main = "../../services/pricing/src/main.py"
+name = "bond-math-valuation"
+main = "src/main.py"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["python_workers"]
 
 # Service metadata for Architecture as Code
-# @service pricing
+# @service bond-valuation
 # @type cloudflare-worker-python
 # @layer business-logic
-# @description Curve-based cashflow discounting and present value calculations
+# @description Clean/dirty price � yield calculations and cashflow generation
 
 [observability]
 enabled = true
@@ -18,12 +18,12 @@ enabled = true
 
 # Development environment
 [env.dev]
-name = "bond-math-pricing-dev"
+name = "bond-math-valuation-dev"
 vars = { ENVIRONMENT = "development" }
 
 # Preview environment
 [env.preview]
-name = "bond-math-pricing-preview"
+name = "bond-math-valuation-preview"
 vars = { ENVIRONMENT = "preview" }
 
 # Production environment (default)

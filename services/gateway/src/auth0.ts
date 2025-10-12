@@ -5,7 +5,7 @@
  * @module auth0
  */
 
-import type { JWKS, JWK, Auth0Claims } from './types';
+import type { Auth0Claims, JWK, JWKS } from './types';
 
 interface JWTHeader {
   alg: string;
@@ -19,13 +19,15 @@ interface JWTHeader {
  * @param token - Auth0 access token
  * @param domain - Auth0 domain (e.g., "your-tenant.auth0.com")
  * @param audience - Expected audience claim
+ * @param issuer - Expected issuer claim (e.g., "https://auth.bondmath.chrislyons.dev/")
  * @returns Decoded and verified token claims
  * @throws Error if verification fails
  */
 export async function verifyAuth0Token(
   token: string,
   domain: string,
-  audience: string
+  audience: string,
+  issuer: string
 ): Promise<Auth0Claims> {
   // Split token into parts
   const parts = token.split('.');
@@ -45,10 +47,10 @@ export async function verifyAuth0Token(
   const payload = JSON.parse(atob(payloadB64)) as Auth0Claims;
 
   // Validate basic claims
-  validateTokenClaims(payload, domain, audience);
+  validateTokenClaims(payload, issuer, audience);
 
   // Fetch JWKS and verify signature
-  const jwk = await fetchJWK(domain, header.kid);
+  const jwk = await fetchJWK(issuer, header.kid);
   await verifySignature(token, jwk);
 
   return payload;
@@ -59,14 +61,12 @@ export async function verifyAuth0Token(
  * Low cyclomatic complexity - simple validations
  *
  * @param claims - Token claims to validate
- * @param domain - Expected Auth0 domain
+ * @param issuer - Expected issuer
  * @param audience - Expected audience
  * @throws Error if any validation fails
  */
-function validateTokenClaims(claims: Auth0Claims, domain: string, audience: string): void {
-  const expectedIssuer = `https://${domain}/`;
-
-  if (claims.iss !== expectedIssuer) {
+function validateTokenClaims(claims: Auth0Claims, issuer: string, audience: string): void {
+  if (claims.iss !== issuer) {
     throw new Error('Invalid token issuer');
   }
 
@@ -89,8 +89,8 @@ function validateTokenClaims(claims: Auth0Claims, domain: string, audience: stri
  * @returns JSON Web Key
  * @throws Error if key not found or fetch fails
  */
-async function fetchJWK(domain: string, kid: string): Promise<JWK> {
-  const jwksUrl = `https://${domain}/.well-known/jwks.json`;
+async function fetchJWK(issuer: string, kid: string): Promise<JWK> {
+  const jwksUrl = `${issuer}.well-known/jwks.json`;
 
   // Add timeout to prevent hanging requests
   const controller = new AbortController();
