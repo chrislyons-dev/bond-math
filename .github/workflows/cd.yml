@@ -251,7 +251,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          pip install -e libs/microapi
+          pip install -e libs/flarelette
 
       - name: Deploy ${{ matrix.service }} to Cloudflare
         env:

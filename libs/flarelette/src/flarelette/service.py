@@ -96,7 +96,7 @@ def create_worker_handler(app: App) -> Any:
     """Create Cloudflare Workers entry point for an app.
 
     Args:
-        app: Microapi App instance
+        app: flarelette App instance
 
     Returns:
         Worker handler function

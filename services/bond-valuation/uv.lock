@@ -36,7 +36,7 @@ name = "bond-valuation-service"
 version = "2025.10"
 source = { editable = "." }
 dependencies = [
-    { name = "microapi" },
+    { name = "flarelette" },
     { name = "python-dateutil" },
 ]
 
@@ -54,7 +54,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=23.0.0" },
-    { name = "microapi", editable = "../../libs/microapi" },
+    { name = "flarelette", editable = "../../libs/flarelette" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21.0" },
@@ -188,9 +188,9 @@ wheels = [
 ]
 
 [[package]]
-name = "microapi"
+name = "flarelette"
 version = "0.1.0"
-source = { editable = "../../libs/microapi" }
+source = { editable = "../../libs/flarelette" }
 dependencies = [
     { name = "python-json-logger" },
 ]

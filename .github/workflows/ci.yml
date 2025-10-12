@@ -41,8 +41,8 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install black ruff mypy pytest pytest-asyncio pytest-cov types-python-dateutil
-          # Install microapi so services can import it
-          pip install -e libs/microapi
+          # Install flarelette so services can import it
+          pip install -e libs/flarelette
 
       - name: Format check (JavaScript/TypeScript)
         run: npm run format:check
@@ -61,21 +61,21 @@ jobs:
           python -m black --check services/bond-valuation/src
           python -m black --check services/metrics/src
           python -m black --check services/pricing/src
-          python -m black --check libs/microapi/src
+          python -m black --check libs/flarelette/src
 
       - name: Lint Python (ruff)
         run: |
           python -m ruff check services/bond-valuation/src
           python -m ruff check services/metrics/src
           python -m ruff check services/pricing/src
-          python -m ruff check libs/microapi/src
+          python -m ruff check libs/flarelette/src
 
       - name: Type check Python (mypy)
         run: |
           python -m mypy services/bond-valuation/src
           python -m mypy services/metrics/src
           python -m mypy services/pricing/src
-          python -m mypy libs/microapi/src
+          python -m mypy libs/flarelette/src
 
   # Job 2: Gateway Service
   gateway:
@@ -210,8 +210,8 @@ jobs:
         run: |
           pip install pytest pytest-asyncio pytest-cov python-json-logger
 
-      - name: Test microapi library
-        working-directory: libs/microapi
+      - name: Test flarelette library
+        working-directory: libs/flarelette
         run: |
           pip install -e ".[dev]"
           python -m pytest test/ -v --cov=src --cov-report=xml --cov-report=term

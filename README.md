@@ -118,7 +118,7 @@ demonstrate in code and diagrams.
 │   ├── 📁 tf/                   # Terraform modules for Cloudflare
 │   └── 📁 workers/              # Wrangler config files
 ├── 📁 libs/
-│   └── 📁 microapi/             # Micro API framework for Python Workers
+│   └── 📁 flarelette/             # Micro API framework for Python Workers
 ├── 📁 services/
 │   ├── 📁 gateway/              # TypeScript: Gateway Worker (Auth0, JWT, routing)
 │   ├── 📁 bond-valuation/       # Python: Price ↔ yield & schedules

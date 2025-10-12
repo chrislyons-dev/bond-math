@@ -1,2 +1,2 @@
--e file:../../libs/microapi
+-e file:../../libs/flarelette
 python-dateutil>=2.9

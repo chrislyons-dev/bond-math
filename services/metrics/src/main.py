@@ -13,7 +13,7 @@ Duration, modified duration, convexity, and related risk measures for bonds.
 @sla-tier high
 
 This is a stub implementation that returns hardcoded responses to validate
-the microapi framework integration.
+the flarelette framework integration.
 """
 
 from flarelette import (

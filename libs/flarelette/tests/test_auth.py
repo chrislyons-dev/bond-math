@@ -8,10 +8,11 @@ import time
 from typing import Any
 
 import pytest
-from microapi import Request
-from microapi.auth import InternalJWT, JWTMiddleware
-from microapi.errors import ForbiddenError, UnauthorizedError
-from microapi.response import JsonResponse
+
+from flarelette import Request
+from flarelette.auth import InternalJWT, JWTMiddleware
+from flarelette.errors import ForbiddenError, UnauthorizedError
+from flarelette.response import JsonResponse
 
 
 class MockRequest:

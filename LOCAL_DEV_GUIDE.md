@@ -38,8 +38,8 @@ cd services/bond-valuation && py -3 -m pip install -e ".[dev]" && cd ../..
 cd services/metrics && py -3 -m pip install -e ".[dev]" && cd ../..
 cd services/pricing && py -3 -m pip install -e ".[dev]" && cd ../..
 
-# Install microapi library (if not already installed)
-cd libs/microapi && py -3 -m pip install -e ".[dev]" && cd ../..
+# Install flarelette library (if not already installed)
+cd libs/flarelette && py -3 -m pip install -e ".[dev]" && cd ../..
 ```
 
 ### 2. Configure Secrets
